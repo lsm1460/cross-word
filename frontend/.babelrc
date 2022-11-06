@@ -1,0 +1,33 @@
+{
+  "presets": ["next/babel"],
+  "plugins": [
+    "@babel/syntax-dynamic-import",
+    [
+      "lodash",
+      {
+        "id": ["lodash"]
+      }
+    ],
+    [
+      "module-resolver",
+      {
+        "root": ["./"],
+        "alias": {
+          "@": "./",
+          "@consts": "./consts",
+          "@utils": "./utils",
+          "@pages": "./pages",
+          "@sagas": "./sagas",
+          "@reducers": "./reducers",
+          "@layouts": "./layouts",
+          "@components": "./components"
+        }
+      }
+    ]
+  ],
+  "env": {
+    "production": {
+      "plugins": ["transform-remove-console"]
+    }
+  }
+}
