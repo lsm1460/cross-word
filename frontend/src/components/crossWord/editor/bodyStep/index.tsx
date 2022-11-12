@@ -13,28 +13,9 @@ interface Props {
   setBoard: Dispatch<SetStateAction<string[][]>>;
 }
 function BodyStep({ setEditorStep, board, setBoard }: Props) {
-  const [indexItem, setIndexItem] = useState<{ li: number; ii: number }>(null);
-
-  const setWord = (_li: number, _ii: number) => {
-    setIndexItem({
-      li: _li,
-      ii: _ii,
-    });
-  };
-
   return (
     <div className={cx('body-wrap')}>
-      {indexItem && (
-        <WordInput
-          indexItem={indexItem}
-          board={board}
-          setBoard={setBoard}
-          closeInput={() => {
-            setIndexItem(null);
-          }}
-        />
-      )}
-      <WordBoard boardType="editor" board={board} setWord={setWord} />
+      <WordBoard boardType="editor" board={board} />
     </div>
   );
 }

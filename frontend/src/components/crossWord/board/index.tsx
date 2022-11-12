@@ -5,9 +5,8 @@ const cx = classNames.bind(styles);
 interface Props {
   boardType: 'editor' | 'viewer';
   board: string[][];
-  setWord: (_lineIndex: number, _itemIndex: number) => void;
 }
-function WordBoard({ boardType, board, setWord }: Props) {
+function WordBoard({ boardType, board }: Props) {
   return (
     <div className={cx('board-wrap')}>
       <div className={cx('board')}>
@@ -16,16 +15,11 @@ function WordBoard({ boardType, board, setWord }: Props) {
             <div
               key={`${_li}-${_ii}-${_item}`}
               style={{
-                backgroundColor: _item ? 'transparent' : '#333',
-                cursor: (boardType === 'viewer' && _item) || boardType === 'editor' ? 'pointer' : 'default',
-              }}
-              onClick={(_event) => {
-                if ((boardType === 'viewer' && _item) || boardType === 'editor') {
-                  setWord(_li, _ii);
-                }
+                backgroundColor: _item.trim() ? 'transparent' : '#333',
+                cursor: boardType === 'viewer' && _item.trim() ? 'pointer' : 'default',
               }}
             >
-              {_item}
+              <span>{_item}</span>
             </div>
           ))
         )}
