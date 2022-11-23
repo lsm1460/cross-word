@@ -27,11 +27,18 @@
         border-top: 1px solid #222;
       }
 
-      span {
+      span.word {
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
+      }
+
+      span.num {
+        position: absolute;
+        left: 3px;
+        top: 1px;
+        font-size: 10px;
       }
     }
   }
