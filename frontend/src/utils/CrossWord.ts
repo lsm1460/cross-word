@@ -1,7 +1,15 @@
 import _ from 'lodash';
 
-type WordItem = { dir: 'horizon' | 'vertical'; x1: number; x2: number; y1: number; y2: number; key: string };
-type WordTableType = { [key: string]: WordItem };
+export type WordItem = {
+  dir: 'horizon' | 'vertical';
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+  key: string;
+  num?: number;
+};
+export type WordTableType = { [key: string]: WordItem };
 
 export default class CrossWord {
   MAX_WIDTH_SIZE = 10 as const;
@@ -10,6 +18,7 @@ export default class CrossWord {
   startTopPos = 0;
   startLeftPos = 0;
   endBottomPos = 0;
+  questionNumber = 0;
 
   wordTable: WordTableType = {};
   board: string[][] = null;
@@ -113,6 +122,7 @@ export default class CrossWord {
     _direction?: 'normal' | 'reverse'
   ): WordItem => {
     let _char = _word.split('');
+    let qNum = 0;
 
     if (_direction === 'reverse') {
       _char = _.reverse(_char);
@@ -168,17 +178,13 @@ export default class CrossWord {
         };
       }
 
-      const checkBoard = _.pick(
-        _wordBoard,
-        Object.keys(_wordBoard).filter((_k) => _k !== _hitKey)
-      );
-      if (this.checkCollapse(checkBoard, item)) {
+      if (this.checkCollapse(_wordBoard, item)) {
         // 충돌이 났다면 다른 단어와 엮일 수 있는지 확인한다.
-        let [_otherHitKey] = this.findHitKey(checkBoard, _char);
+        let [_otherHitKey] = this.findHitKey(_wordBoard, _char);
 
         if (_otherHitKey) {
           // 다른 단어와 엮일 수 있다면 위치를 다시 찾아본다.
-          return this.findWordPosition(checkBoard, _otherHitKey, _word, _originBoard, 'reverse');
+          return this.findWordPosition(_wordBoard, _otherHitKey, _word, _originBoard, 'reverse');
         } else {
           if (_direction !== 'reverse') {
             return this.findWordPosition(_originBoard, _hitKey, _word, _originBoard, 'reverse');
@@ -190,30 +196,9 @@ export default class CrossWord {
         return item;
       }
     } catch (e) {
-      const _wordHasBlank = _word.replace(/./g, ' ') + '  ';
-
-      let _y = 0;
+      console.log('this.board.length', this.board.length, _word);
+      let _y = this.board.length + this.startTopPos + 1;
       let _x = 0;
-      let hasSpace = false;
-
-      for (let i = 0; i < this.board.length; i++) {
-        const _lineText = this.board[i].join('');
-
-        if (_lineText.includes(_wordHasBlank)) {
-          const _rText = _lineText.replace(_wordHasBlank, ` ${_word} `);
-
-          _y = i;
-          _x = _rText.indexOf(_word);
-
-          hasSpace = true;
-
-          break;
-        }
-      }
-
-      if (!hasSpace) {
-        _y = this.board.length;
-      }
 
       return {
         key: _word,
@@ -237,8 +222,6 @@ export default class CrossWord {
       if (_wordItem) {
         const _yPos = _wordItem.y1 + Math.abs(this.startTopPos);
         const _xPos = _wordItem.x1 + Math.abs(this.startLeftPos);
-
-        _wordItem.dir;
 
         _wordItem.key.split('').forEach((_spelling, _i) => {
           if (_wordItem.dir === 'horizon') {
@@ -284,4 +267,6 @@ export default class CrossWord {
   getWordTable = () => this.wordTable;
 
   getCrossWordBoard = () => this.board;
+
+  getStartPos = () => ({ x: this.startLeftPos, y: this.startTopPos });
 }

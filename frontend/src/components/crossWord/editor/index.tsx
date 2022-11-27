@@ -1,23 +1,28 @@
-import styles from './editor.module.scss';
 import classNames from 'classnames/bind';
+import styles from './editor.module.scss';
 const cx = classNames.bind(styles);
 //
 import { CROSS_WORD_EDITOR_STEP } from '@/consts/types';
 import { useState } from 'react';
-import IntroStep from './introStep';
 import BodyStep from './bodyStep';
-import { BOARD_SIZE } from '@/consts/crossWord';
+import IntroStep from './introStep';
+import ResultStep from './resultStep';
 
 function CrossWordEditor() {
   const [editorStep, setEditorStep] = useState<CROSS_WORD_EDITOR_STEP>('intro');
-  const [board, setBoard] = useState<string[][]>(
-    new Array(BOARD_SIZE).fill(undefined).map(() => new Array(BOARD_SIZE).fill(''))
-  );
+  const [nickname, setNickname] = useState('');
+  const [wordList, setWordList] = useState<string[]>([]);
+  const [hintList, setHintList] = useState<string[]>([]);
 
   return (
     <div className={cx('editor-wrap')}>
-      {editorStep === 'intro' && <IntroStep setEditorStep={setEditorStep} />}
-      {editorStep === 'body' && <BodyStep setEditorStep={setEditorStep} board={board} setBoard={setBoard} />}
+      {editorStep === 'intro' && <IntroStep setEditorStep={setEditorStep} setNickname={setNickname} />}
+      {editorStep === 'body' && (
+        <BodyStep setEditorStep={setEditorStep} setWordList={setWordList} setHintList={setHintList} />
+      )}
+      {editorStep === 'result' && (
+        <ResultStep setEditorStep={setEditorStep} wordList={wordList} hintList={hintList} nickname={nickname} />
+      )}
     </div>
   );
 }
