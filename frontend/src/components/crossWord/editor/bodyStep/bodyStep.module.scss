@@ -17,6 +17,7 @@
     border-radius: 10px 10px 0 0;
     transition: .3s transform;
     background-color: #ffffff;
+    overflow: auto;
   }
 
   &.active {

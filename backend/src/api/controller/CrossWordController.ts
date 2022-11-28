@@ -1,6 +1,6 @@
-import { AppDataSource } from "../../data-source";
-import { Request, Response } from "express";
-import { request } from "http";
+import { AppDataSource } from '../../data-source';
+import { Request, Response } from 'express';
+import { request } from 'http';
 
 export default class CrossWordController {
   getWord = async (req: Request, res: Response) => {
@@ -10,18 +10,17 @@ export default class CrossWordController {
     const axios = require('axios');
 
     try {
-
       // request
       // ({
       //   url: 'https://stdict.korean.go.kr/api/search.do',
       //   method: 'get',
-        // params: {
-        //   'key': '285C75717B54083F74D4D67FEF622076',
-        //   'type_search': 'search',
-        //   'req_type':'json',
-        //   'q': req.body.wordtext
-        // }
-        
+      // params: {
+      //   'key': '285C75717B54083F74D4D67FEF622076',
+      //   'type_search': 'search',
+      //   'req_type':'json',
+      //   'q': req.body.wordtext
+      // }
+
       // }
 
       // response
@@ -36,20 +35,23 @@ export default class CrossWordController {
       //   lastbuilddate: '20221127125354'
       // }
 
-      await axios.get('https://stdict.korean.go.kr/api/search.do', {params: {
-        'key': '285C75717B54083F74D4D67FEF622076',
-        'type_search': 'search',
-        'req_type':'json',
-        'q': req.body.wordtext
-        }
-      })
-      .then(function(response){
-        
-        console.log(response.data);
-        res.json(response.data);
-      })
-    }catch(err) {
-      console.log(err);
+      await axios
+        .get('https://stdict.korean.go.kr/api/search.do', {
+          params: {
+            key: '285C75717B54083F74D4D67FEF622076',
+            type_search: 'search',
+            req_type: 'json',
+            q: req.query.wordtext,
+          },
+        })
+        .then(function (response) {
+          res.status(200).json(response.data);
+        })
+        .catch(function (error) {
+          throw error;
+        });
+    } catch (err) {
+      res.status(400).json(err);
     }
   };
 }
