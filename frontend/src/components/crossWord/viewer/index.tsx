@@ -2,23 +2,23 @@ import classNames from 'classnames/bind';
 import styles from './viewer.module.scss';
 const cx = classNames.bind(styles);
 //
-import { CROSS_WORD_VIEWER_STEP } from '@/types';
+import { CrossWordViewerStep, MakerData } from '@/consts/types';
 import { useState } from 'react';
 import BodyStep from './bodyStep';
 import IntroStep from './introStep';
 import ResultStep from './resultStep';
 
 interface Props {
-  hintList: string[];
+  makerData: MakerData;
 }
-function CrossWordViewer({ hintList }: Props) {
-  const [editorStep, setEditorStep] = useState<CROSS_WORD_VIEWER_STEP>('intro');
+function CrossWordViewer({ makerData }: Props) {
+  const [editorStep, setEditorStep] = useState<CrossWordViewerStep>('intro');
   const [nickname, setNickname] = useState('');
 
   return (
     <div className={cx('editor-wrap')}>
       {editorStep === 'intro' && <IntroStep setEditorStep={setEditorStep} setNickname={setNickname} />}
-      {editorStep === 'body' && <BodyStep setEditorStep={setEditorStep} hintList={hintList} />}
+      {editorStep === 'body' && <BodyStep setEditorStep={setEditorStep} makerData={makerData} />}
       {editorStep === 'result' && <ResultStep />}
     </div>
   );

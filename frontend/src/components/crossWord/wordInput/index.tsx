@@ -1,18 +1,19 @@
-import styles from './wordInput.module.scss';
 import classNames from 'classnames/bind';
+import styles from './wordInput.module.scss';
 const cx = classNames.bind(styles);
 //
-import { Dispatch, SetStateAction, useState, useEffect } from 'react';
-import _ from 'lodash';
 import { BOARD_SIZE } from '@/consts/crossWord';
+import { Board } from '@/consts/types';
+import _ from 'lodash';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 const WORD_DIRECTION = ['horizon', 'vertical'] as const;
 type WordDirection = typeof WORD_DIRECTION[number];
 
 interface Props {
   indexItem: { li: number; ii: number };
-  board: string[][];
-  setBoard: Dispatch<SetStateAction<string[][]>>;
+  board: Board;
+  setBoard: Dispatch<SetStateAction<Board>>;
   closeInput: () => void;
 }
 function WordInput({ indexItem, board, setBoard, closeInput }: Props) {

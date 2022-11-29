@@ -2,16 +2,22 @@ import classNames from 'classnames/bind';
 import styles from './bodyStep.module.scss';
 const cx = classNames.bind(styles);
 //
-import { CROSS_WORD_VIEWER_STEP } from '@/types';
+import { CrossWordViewerStep, MakerData } from '@/consts/types';
 import { Dispatch, SetStateAction } from 'react';
+import WordBoard from '../../board';
+import HintList from '../../hintList';
 
-const initState: [string, string][] = [];
 interface Props {
-  setEditorStep: Dispatch<SetStateAction<CROSS_WORD_VIEWER_STEP>>;
-  hintList: string[];
+  setEditorStep: Dispatch<SetStateAction<CrossWordViewerStep>>;
+  makerData: MakerData;
 }
-function BodyStep({ setEditorStep, hintList }: Props) {
-  return <></>;
+function BodyStep({ setEditorStep, makerData }: Props) {
+  return (
+    <div>
+      <WordBoard boardType="viewer" board={makerData.board} numberBoard={makerData.qNBoard} />
+      <HintList hintGroup={makerData.hintList} />
+    </div>
+  );
 }
 
 export default BodyStep;

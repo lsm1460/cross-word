@@ -9,7 +9,11 @@ function Home() {
       <br />
       <p>작성된 게임 리스트</p>
       <ul>
-        <li></li>
+        <li>
+          <Link href="/view/dummy">
+            <a>viewer dummy</a>
+          </Link>
+        </li>
       </ul>
     </div>
   );

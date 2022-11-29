@@ -1,3 +1,4 @@
+import { Board } from '@/consts/types';
 import _ from 'lodash';
 
 export type WordItem = {
@@ -21,7 +22,7 @@ export default class CrossWord {
   questionNumber = 0;
 
   wordTable: WordTableType = {};
-  board: string[][] = null;
+  board: Board = null;
 
   constructor(_maxSize: number = 10) {
     this.puzzleMaxWidth = _maxSize;

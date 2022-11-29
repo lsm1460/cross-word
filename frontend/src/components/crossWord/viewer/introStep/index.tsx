@@ -1,8 +1,8 @@
-import { CROSS_WORD_EDITOR_STEP } from '@/types';
+import { CrossWordEditorStep } from '@/consts/types';
 import { Dispatch, SetStateAction, useState } from 'react';
 
 interface Props {
-  setEditorStep: Dispatch<SetStateAction<CROSS_WORD_EDITOR_STEP>>;
+  setEditorStep: Dispatch<SetStateAction<CrossWordEditorStep>>;
   setNickname: Dispatch<SetStateAction<string>>;
 }
 function IntroStep({ setEditorStep, setNickname }: Props) {

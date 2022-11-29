@@ -2,14 +2,14 @@ import classNames from 'classnames/bind';
 import styles from './editor.module.scss';
 const cx = classNames.bind(styles);
 //
-import { CROSS_WORD_EDITOR_STEP } from '@/consts/types';
+import { CrossWordEditorStep } from '@/consts/types';
 import { useState } from 'react';
 import BodyStep from './bodyStep';
 import IntroStep from './introStep';
 import ResultStep from './resultStep';
 
 function CrossWordEditor() {
-  const [editorStep, setEditorStep] = useState<CROSS_WORD_EDITOR_STEP>('intro');
+  const [editorStep, setEditorStep] = useState<CrossWordEditorStep>('intro');
   const [nickname, setNickname] = useState('');
   const [wordList, setWordList] = useState<string[]>([]);
   const [hintList, setHintList] = useState<string[]>([]);

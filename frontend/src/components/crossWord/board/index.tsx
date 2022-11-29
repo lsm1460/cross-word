@@ -2,27 +2,17 @@ import classNames from 'classnames/bind';
 import styles from './board.module.scss';
 const cx = classNames.bind(styles);
 //
-import { WordItem, WordTableType } from '@/src/utils/CrossWord';
-import _ from 'lodash';
-import { useState } from 'react';
+import { Board, QNBoard } from '@/consts/types';
 
 interface Props {
   boardType: 'editor' | 'viewer';
-  board: string[][];
-  wordPos: WordTableType;
-  startPos: { x: number; y: number };
-  questionList: WordItem[];
+  board: Board;
+  numberBoard: QNBoard;
 }
-function WordBoard({ boardType, board, wordPos, startPos, questionList }: Props) {
-  const getQuestionNum = (_x, _y) => {
-    const _wordItem = _.find(wordPos, (_v) => _v.x1 === _x + startPos.x && _v.y1 === _y + startPos.y);
-
-    if (_wordItem) {
-      const _qItem = _.find(questionList, (_q) => _q.key === _wordItem.key);
-
-      return _qItem?.num;
-    }
-  };
+function WordBoard({ boardType, board, numberBoard }: Props) {
+  if (!(board && numberBoard)) {
+    return <p>loading..</p>;
+  }
 
   return (
     <div className={cx('board-wrap')}>
@@ -32,11 +22,11 @@ function WordBoard({ boardType, board, wordPos, startPos, questionList }: Props)
             <div
               key={`${_li}-${_ii}-${_item}`}
               style={{
-                backgroundColor: _item.trim() ? 'transparent' : '#333',
-                cursor: boardType === 'viewer' && _item.trim() ? 'pointer' : 'default',
+                backgroundColor: _item === null || _item.trim() ? 'transparent' : '#333',
+                cursor: boardType === 'viewer' && _item === null ? 'pointer' : 'default',
               }}
             >
-              <span className={cx('num')}>{getQuestionNum(_ii, _li)}</span>
+              <span className={cx('num')}>{numberBoard[_li][_ii] || ''}</span>
               <span className={cx('word')}>{_item}</span>
             </div>
           ))
