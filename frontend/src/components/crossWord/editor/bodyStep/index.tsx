@@ -41,7 +41,6 @@ interface Props {
 function BodyStep({ setEditorStep, setWordList, setHintList }: Props) {
   const [list, setList] = useState<[string, string][]>(initState);
   const [searchWord, setSearchWord] = useState('');
-  const [recommendDefinition, setRecommendDefinition] = useState([]);
   const [userDefinition, setUserDefinition] = useState('');
 
   const [wordDefinitionState] = useAsyncEffect<GetWordDefinitionReturn, Error, typeof getWordDefinition>(
@@ -49,6 +48,10 @@ function BodyStep({ setEditorStep, setWordList, setHintList }: Props) {
     [searchWord],
     [searchWord]
   );
+
+  useEffect(() => {
+    wordDefinitionState.error && console.log(wordDefinitionState.error);
+  }, [wordDefinitionState]);
 
   const canSubmit = useMemo(() => {
     if (list.length < 1) {
@@ -68,12 +71,6 @@ function BodyStep({ setEditorStep, setWordList, setHintList }: Props) {
 
     return can;
   }, [list]);
-
-  useEffect(() => {
-    if (searchWord && wordDefinitionState.success && wordDefinitionState.data) {
-      setRecommendDefinition(wordDefinitionState.data[0].definition);
-    }
-  }, [wordDefinitionState]);
 
   const setListValue = (_i: number, _t: number, _value: string) => {
     setList((_prev) => {
@@ -157,16 +154,18 @@ function BodyStep({ setEditorStep, setWordList, setHintList }: Props) {
       >
         <div className={cx('modal')}>
           {wordDefinitionState.loading && 'loading..'}
+          {wordDefinitionState.error && 'occur error..'}
           {wordDefinitionState.success && (
             <div>
               <p>추천 리스트</p>
-              {recommendDefinition.length < 1 && 'no recommend'}
-              {recommendDefinition.length > 0 && (
+              {wordDefinitionState.data.length < 1 && 'no recommend'}
+              {wordDefinitionState.data.length > 0 && (
                 <ol>
-                  {recommendDefinition.map((_def, _i) => (
+                  {wordDefinitionState.data.map((_def, _i) => (
                     <li key={_i}>
-                      {_def}
-                      <button onClick={() => setUserDefinition(_def)}>use</button>
+                      <span>{_def.pos}</span>
+                      {_def.definition}
+                      <button onClick={() => setUserDefinition(_def.definition)}>use</button>
                     </li>
                   ))}
                 </ol>
