@@ -1,0 +1,19 @@
+.answer-modal {
+  position: fixed;
+  opacity: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 20px;
+  background-color: #ffffff;
+  box-shadow: 3px 3px 8px rgba(0,0,0,.3);
+  padding: 15px;
+  transition: .3s bottom cubic-bezier(.47,1.64,.41,.8), .3s opacity;
+  pointer-events: none;
+  
+  &.active {
+    pointer-events: all;
+    opacity: 1;
+    bottom: 50px;
+  }
+}

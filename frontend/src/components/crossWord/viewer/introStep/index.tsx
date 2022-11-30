@@ -4,8 +4,9 @@ import { Dispatch, SetStateAction, useState } from 'react';
 interface Props {
   setEditorStep: Dispatch<SetStateAction<CrossWordEditorStep>>;
   setNickname: Dispatch<SetStateAction<string>>;
+  setStartTime: Dispatch<SetStateAction<number>>;
 }
-function IntroStep({ setEditorStep, setNickname }: Props) {
+function IntroStep({ setEditorStep, setNickname, setStartTime }: Props) {
   const [name, setName] = useState('');
 
   const handleStartEdit = () => {
@@ -13,6 +14,8 @@ function IntroStep({ setEditorStep, setNickname }: Props) {
       alert('Insert name.');
       return;
     }
+
+    setStartTime(new Date().getTime());
     setEditorStep('body');
   };
 

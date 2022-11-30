@@ -22,7 +22,7 @@ function ResultStep({ setEditorStep, wordList, hintList, nickname }: Props) {
   const [board, setBoard] = useState<Board>(null);
   const [numberBoard, setNumberBoard] = useState<QNBoard>(null);
   const [wordPos, setWordPos] = useState<WordTableType>(null);
-  const [startPos, setStartPos] = useState(null);
+  const [startPos, setStartPos] = useState<{ x: number; y: number }>(null);
   const [qList, setQList] = useState([]);
   const [hintGroup, setHintGroup] = useState<HintListType>(null);
 
@@ -111,7 +111,7 @@ function ResultStep({ setEditorStep, wordList, hintList, nickname }: Props) {
 
           return {
             ..._acc,
-            [_q.dir]: [..._acc[_q.dir], { question: hintList[_wi], num: _q.num }],
+            [_q.dir]: [..._acc[_q.dir], { question: hintList[_wi], num: _q.num, key: _q.key }],
           };
         },
         _.cloneDeep(initState)
@@ -127,8 +127,42 @@ function ResultStep({ setEditorStep, wordList, hintList, nickname }: Props) {
     console.log({
       board: board,
       qNBoard: numberBoard,
-      hintList: hintGroup,
-      wordPos: _.map(wordPos, (_item) => _.pickBy(_item, (_val, _key) => _key !== 'key')),
+      hintList: _.mapValues(hintGroup, (_dirGroup) =>
+        _.map(_dirGroup, (_item) => _.pickBy(_item, (_val, _key) => _key !== 'key'))
+      ),
+      wordPos: _.map(wordPos, (_item) => {
+        let num = 0;
+
+        for (let i = 0; i < hintGroup[_item.dir].length; i++) {
+          const _wordItem = hintGroup[_item.dir][i];
+
+          if (_wordItem.key === _item.key) {
+            num = _wordItem.num;
+            break;
+          }
+        }
+
+        const deletedKeyItem = _.pickBy(_item, (_val, _key) => _key !== 'key');
+
+        const positionFixedItem = _.mapValues(deletedKeyItem, (_val, _key) => {
+          switch (_key) {
+            case 'x1':
+            case 'x2':
+              return (_val as number) - startPos.x;
+            case 'y1':
+            case 'y2':
+              return (_val as number) - startPos.y;
+
+            default:
+              return _val;
+          }
+        });
+
+        return {
+          ...positionFixedItem,
+          num,
+        };
+      }),
     });
   };
 

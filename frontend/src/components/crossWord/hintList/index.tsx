@@ -1,3 +1,7 @@
+import classNames from 'classnames/bind';
+import styles from './hintList.module.scss';
+const cx = classNames.bind(styles);
+//
 import { HintList as HintListType } from '@/consts/types';
 
 interface Props {
@@ -9,7 +13,7 @@ function HintList({ hintGroup }: Props) {
   }
 
   return (
-    <div>
+    <div className={cx('hint-list')}>
       {Object.keys(hintGroup).map((_dirKey) => (
         <div key={_dirKey}>
           <p>{_dirKey}</p>

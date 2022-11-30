@@ -14,11 +14,17 @@ interface Props {
 function CrossWordViewer({ makerData }: Props) {
   const [editorStep, setEditorStep] = useState<CrossWordViewerStep>('intro');
   const [nickname, setNickname] = useState('');
+  const [startTime, setStartTime] = useState(0);
+  const [endTime, setEndTime] = useState(0);
 
   return (
     <div className={cx('editor-wrap')}>
-      {editorStep === 'intro' && <IntroStep setEditorStep={setEditorStep} setNickname={setNickname} />}
-      {editorStep === 'body' && <BodyStep setEditorStep={setEditorStep} makerData={makerData} />}
+      {editorStep === 'intro' && (
+        <IntroStep setEditorStep={setEditorStep} setNickname={setNickname} setStartTime={setStartTime} />
+      )}
+      {editorStep === 'body' && (
+        <BodyStep setEditorStep={setEditorStep} makerData={makerData} startTime={startTime} setEndTime={setEndTime} />
+      )}
       {editorStep === 'result' && <ResultStep />}
     </div>
   );

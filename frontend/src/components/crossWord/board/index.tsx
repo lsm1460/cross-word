@@ -8,11 +8,23 @@ interface Props {
   boardType: 'editor' | 'viewer';
   board: Board;
   numberBoard: QNBoard;
+  selectedPos?: { x: number[]; y: number[] };
+  onClickCell?: (_x: number, _y: number) => void;
 }
-function WordBoard({ boardType, board, numberBoard }: Props) {
+function WordBoard({ boardType, board, numberBoard, selectedPos = { x: [], y: [] }, onClickCell }: Props) {
   if (!(board && numberBoard)) {
     return <p>loading..</p>;
   }
+
+  const getCellColor = (_x, _y, _item) => {
+    if (selectedPos.x.includes(_x) && selectedPos.y.includes(_y)) {
+      return '#fde199';
+    } else if (_item === null || _item.trim()) {
+      return 'transparent';
+    } else {
+      return '#333333';
+    }
+  };
 
   return (
     <div className={cx('board-wrap')}>
@@ -22,8 +34,11 @@ function WordBoard({ boardType, board, numberBoard }: Props) {
             <div
               key={`${_li}-${_ii}-${_item}`}
               style={{
-                backgroundColor: _item === null || _item.trim() ? 'transparent' : '#333',
+                backgroundColor: getCellColor(_ii, _li, _item),
                 cursor: boardType === 'viewer' && _item === null ? 'pointer' : 'default',
+              }}
+              onClick={() => {
+                onClickCell && onClickCell(_ii, _li);
               }}
             >
               <span className={cx('num')}>{numberBoard[_li][_ii] || ''}</span>
