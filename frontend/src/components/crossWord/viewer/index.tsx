@@ -9,9 +9,10 @@ import IntroStep from './introStep';
 import ResultStep from './resultStep';
 
 interface Props {
+  title: string;
   makerData: MakerData;
 }
-function CrossWordViewer({ makerData }: Props) {
+function CrossWordViewer({ title, makerData }: Props) {
   const [editorStep, setEditorStep] = useState<CrossWordViewerStep>('intro');
   const [nickname, setNickname] = useState('');
   const [startTime, setStartTime] = useState(0);
@@ -20,7 +21,10 @@ function CrossWordViewer({ makerData }: Props) {
   return (
     <div className={cx('editor-wrap')}>
       {editorStep === 'intro' && (
-        <IntroStep setEditorStep={setEditorStep} setNickname={setNickname} setStartTime={setStartTime} />
+        <>
+          <p>{title}</p>
+          <IntroStep setEditorStep={setEditorStep} setNickname={setNickname} setStartTime={setStartTime} />
+        </>
       )}
       {editorStep === 'body' && (
         <BodyStep setEditorStep={setEditorStep} makerData={makerData} startTime={startTime} setEndTime={setEndTime} />

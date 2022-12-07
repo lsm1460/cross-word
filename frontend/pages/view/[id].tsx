@@ -1,32 +1,29 @@
 import { MakerData } from '@/consts/types';
 import CrossWordViewer from '@/src/components/crossWord/viewer';
 import { GetServerSideProps } from 'next';
+import { getGame } from '../../src/utils/api';
 
 interface Props {
+  title: string;
   makerData: MakerData;
 }
-function Viewer({ makerData }: Props) {
-  return <CrossWordViewer makerData={makerData} />;
+function Viewer({ title, makerData }: Props) {
+  return <CrossWordViewer title={title} makerData={makerData} />;
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  let makerData = null;
-
-  if (query.id === 'dummy') {
-    makerData = require('../../src/utils/dummyData.json');
-
-    makerData = {
-      ...makerData,
-      board: makerData.board.map((_line) => _line.map((_item) => (_item.trim() ? null : _item))),
+  try {
+    const templateDocument = await getGame(query.id as string);
+    return {
+      props: {
+        ...templateDocument,
+      },
     };
-  } else {
+  } catch (e) {
+    return {
+      notFound: true,
+    };
   }
-
-  return {
-    props: {
-      makerData,
-    },
-  };
 };
 
 export default Viewer;

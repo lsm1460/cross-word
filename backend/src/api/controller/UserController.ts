@@ -1,6 +1,6 @@
-import { AppDataSource } from "../../data-source";
-import { User } from "../entity/User";
-import { Request, Response } from "express";
+import { AppDataSource } from '../../data-source';
+import User from '../entity/User';
+import { Request, Response } from 'express';
 
 export default class UserController {
   addUser = async (req: Request, res: Response) => {

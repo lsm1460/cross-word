@@ -3,11 +3,13 @@ import styles from './resultStep.module.scss';
 const cx = classNames.bind(styles);
 //
 import { Board, CrossWordEditorStep, HintList as HintListType, QNBoard } from '@/consts/types';
-import CrossWord, { WordTableType } from '@/src/utils/CrossWord';
+import CrossWord, { WordItem, WordTableType } from '@/src/utils/CrossWord';
 import _ from 'lodash';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import WordBoard from '../../board';
 import HintList from '../../hintList';
+import { postGameData } from '@/src/utils/api';
+import { useRouter } from 'next/dist/client/router';
 
 const initState = { horizon: [], vertical: [] };
 
@@ -18,6 +20,8 @@ interface Props {
   nickname: string;
 }
 function ResultStep({ setEditorStep, wordList, hintList, nickname }: Props) {
+  const router = useRouter();
+
   const [isLoading, setIsLoading] = useState(true);
   const [board, setBoard] = useState<Board>(null);
   const [numberBoard, setNumberBoard] = useState<QNBoard>(null);
@@ -121,15 +125,12 @@ function ResultStep({ setEditorStep, wordList, hintList, nickname }: Props) {
     }
   }, [qList]);
 
-  const saveBoard = () => {
-    console.log('wordPos', wordPos);
-    console.log('nickname', nickname);
-    console.log({
-      board: board,
+  const saveBoard = async () => {
+    const _gameData = {
       qNBoard: numberBoard,
       hintList: _.mapValues(hintGroup, (_dirGroup) =>
         _.map(_dirGroup, (_item) => _.pickBy(_item, (_val, _key) => _key !== 'key'))
-      ),
+      ) as HintListType,
       wordPos: _.map(wordPos, (_item) => {
         let num = 0;
 
@@ -162,8 +163,16 @@ function ResultStep({ setEditorStep, wordList, hintList, nickname }: Props) {
           ...positionFixedItem,
           num,
         };
-      }),
-    });
+      }) as WordItem[],
+    };
+
+    try {
+      const _res = await postGameData(nickname, board, _gameData);
+
+      router.push('/');
+    } catch (e) {
+      alert('Fail to save..');
+    }
   };
 
   return (
