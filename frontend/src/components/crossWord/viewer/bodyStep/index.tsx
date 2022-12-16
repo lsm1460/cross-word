@@ -3,13 +3,14 @@ import styles from './bodyStep.module.scss';
 const cx = classNames.bind(styles);
 //
 import { CrossWordViewerStep, MakerData } from '@/consts/types';
-import { Dispatch, SetStateAction } from 'react';
+import { saveParticipation } from '@/src/utils/api';
+import _ from 'lodash';
+import { useRouter } from 'next/dist/client/router';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Board } from '../../../../../consts/types/index';
 import WordBoard from '../../board';
 import HintList from '../../hintList';
-import _ from 'lodash';
-import { useState, useEffect } from 'react';
 import AnswerModal from './answerModal';
-import { Board } from '../../../../../consts/types/index';
 
 export type SelectedPos = {
   dir: 'horizon' | 'vertical';
@@ -19,14 +20,37 @@ export type SelectedPos = {
 };
 
 interface Props {
+  playerNickname: string;
   setEditorStep: Dispatch<SetStateAction<CrossWordViewerStep>>;
   makerData: MakerData;
   startTime: number;
-  setEndTime: Dispatch<SetStateAction<number>>;
 }
-function BodyStep({ setEditorStep, makerData }: Props) {
+function BodyStep({ playerNickname, startTime, setEditorStep, makerData }: Props) {
+  const router = useRouter();
+
   const [board, setBoard] = useState<Board>(makerData.board);
   const [selectedPos, setSelectedPos] = useState<SelectedPos>(undefined);
+  const [isSave, setIsSave] = useState(false);
+
+  useEffect(() => {
+    if (isSave) {
+      saveParticipation(router.query.id as string, board, playerNickname, new Date().getTime() - startTime)
+        .then((_res) => {
+          if (_res) {
+            alert('clear..!');
+            setEditorStep('result');
+          } else {
+            alert('wrong answer..!');
+          }
+        })
+        .catch(() => {
+          alert('fail to save..!');
+        })
+        .finally(() => {
+          setIsSave(false);
+        });
+    }
+  }, [isSave]);
 
   const onClickCell = (_x: number, _y: number) => {
     for (let i = 0; i < makerData.wordPos.length; i++) {
@@ -105,7 +129,7 @@ function BodyStep({ setEditorStep, makerData }: Props) {
       }
     }
 
-    alert('todo:api submit..');
+    setIsSave(true);
   };
 
   return (

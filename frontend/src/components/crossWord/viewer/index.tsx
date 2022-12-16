@@ -16,7 +16,6 @@ function CrossWordViewer({ title, makerData }: Props) {
   const [editorStep, setEditorStep] = useState<CrossWordViewerStep>('intro');
   const [nickname, setNickname] = useState('');
   const [startTime, setStartTime] = useState(0);
-  const [endTime, setEndTime] = useState(0);
 
   return (
     <div className={cx('editor-wrap')}>
@@ -27,7 +26,7 @@ function CrossWordViewer({ title, makerData }: Props) {
         </>
       )}
       {editorStep === 'body' && (
-        <BodyStep setEditorStep={setEditorStep} makerData={makerData} startTime={startTime} setEndTime={setEndTime} />
+        <BodyStep setEditorStep={setEditorStep} makerData={makerData} startTime={startTime} playerNickname={nickname} />
       )}
       {editorStep === 'result' && <ResultStep />}
     </div>

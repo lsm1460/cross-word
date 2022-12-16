@@ -1,8 +1,9 @@
-import { AppDataSource } from '../../data-source';
 import { Request, Response } from 'express';
-import { request } from 'http';
-import Create from '../entity/Create';
+import { AppDataSource } from '../../data-source';
 import APIResponse from '../../utils/APIResponse';
+import Create from '../entity/Create';
+import Participation from '../entity/Participation';
+const _ = require('lodash');
 
 export default class CrossWordController {
   getWord = async (req: Request, res: Response) => {
@@ -105,9 +106,55 @@ export default class CrossWordController {
         throw 'no data';
       }
 
-      return res.status(200).json(makerData);
+      const hideBoardData = _.mapValues(makerData, (_val, _key) => {
+        if (_key === 'board') {
+          return JSON.stringify(
+            _.map(JSON.parse(_val), (_line) => _.map(_line, (_word) => (_word.trim() ? null : _word)))
+          );
+        }
+
+        return _val;
+      });
+
+      return res.status(200).json(hideBoardData);
     } catch (err) {
+      console.log(err);
       return res.status(400).json(new APIResponse(null, 'Fail to get game', 400, err));
+    }
+  };
+
+  saveParticipation = async (req: Request, res: Response) => {
+    const { id, playDuration, nickname, board } = req.body;
+
+    try {
+      const createRepo = AppDataSource.getRepository(Create);
+      const boardData = await createRepo
+        .createQueryBuilder('create')
+        .select(['create.board'])
+        .where('create.id = :id', { id })
+        .getOne();
+
+      const _check = _.isEqual(JSON.parse(boardData.board), board);
+
+      if (!_check) {
+        return res.status(200).json(0);
+      }
+
+      const info = {
+        nickname,
+        contentId: parseInt(id, 10),
+        playDuration,
+      };
+
+      const participationRepo = AppDataSource.getRepository(Participation);
+      const createData = participationRepo.create(info);
+
+      await participationRepo.save(createData);
+
+      return res.status(200).json(1);
+    } catch (err) {
+      console.log(err);
+      return res.status(400).json(new APIResponse(null, 'Fail to save participation data', 400, err));
     }
   };
 }

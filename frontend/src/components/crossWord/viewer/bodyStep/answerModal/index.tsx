@@ -4,7 +4,7 @@ const cx = classNames.bind(styles);
 //
 import { SelectedPos } from '..';
 import { HintList } from '@/consts/types';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface Props {
   isOpen: boolean;
@@ -14,7 +14,14 @@ interface Props {
   closeModal: () => void;
 }
 function AnswerModal({ isOpen, selectedPos, hintList, onSubmit, closeModal }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [answer, setAnswer] = useState('');
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [inputRef.current, selectedPos]);
 
   const question = useMemo(() => {
     if (!isOpen) {
@@ -67,6 +74,7 @@ function AnswerModal({ isOpen, selectedPos, hintList, onSubmit, closeModal }: Pr
       <p>{question}</p>
       <form onSubmit={handleOnSubmit}>
         <input
+          ref={inputRef}
           type="text"
           maxLength={inputMaxLength}
           onChange={(_event) => setAnswer(_event.target.value.trim())}

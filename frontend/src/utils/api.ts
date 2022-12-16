@@ -1,5 +1,5 @@
-import { GET_GAME_LIST, GET_WORD_DEFINITION, POST_SAVE_GAME, GET_GAME } from '@/consts/api';
-import { HintList, QNBoard } from '@/consts/types';
+import { GET_GAME_LIST, GET_WORD_DEFINITION, POST_SAVE_GAME, GET_GAME, POST_SAVE_PARTICIPATION } from '@/consts/api';
+import { Board, HintList, QNBoard } from '@/consts/types';
 import _ from 'lodash';
 import { WordItem } from './CrossWord';
 import { MakerData } from '../../consts/types/index';
@@ -96,6 +96,32 @@ export const getGame: GetGame = async (_id) => {
           wordPos: _gameData.wordPos,
         },
       };
+    } else {
+      throw new Error('fail');
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+
+type SaveParticipation = (_id: string, _board: Board, _nickname: string, _playDuration: number) => Promise<number>;
+export const saveParticipation: SaveParticipation = async (_id, _board, _nickname, _playDuration) => {
+  try {
+    const _res = await fetch(POST_SAVE_PARTICIPATION, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: _id,
+        board: _board,
+        nickname: _nickname,
+        playDuration: _playDuration,
+      }),
+    });
+
+    if (_res.status === 200) {
+      const commits = await _res.json();
+
+      return commits;
     } else {
       throw new Error('fail');
     }
