@@ -1,0 +1,54 @@
+@import "../viewer.module.scss";
+
+.fish-step-wrap {
+  padding-bottom: 250px;
+
+  .fish-bottom-wrap {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    padding-bottom: 20px;
+    background-color: #ffffff;
+
+    .fish-select {
+      width: 100%;
+      overflow: auto;
+      margin-bottom: 20px;
+  
+      ul {
+        display: flex;
+        
+        li {
+          width: 150px;
+          aspect-ratio: 1/1;
+          padding: 10px;
+    
+          input {
+            display: none;
+      
+            &:checked + label {
+              border: 1px solid #000
+            }
+          }
+      
+          label {
+            border: 1px solid #eee;
+            display: block;
+            border-radius: 20px;
+    
+            svg {
+              width: 100%;
+            }
+          }
+        }
+      }
+    }
+    button {
+      @include viewer-button;
+    }
+  }
+}

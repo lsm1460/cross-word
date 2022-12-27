@@ -1,0 +1,12 @@
+@import "../viewer.module.scss";
+
+.intro-wrap {
+  button {
+    @include viewer-button;
+
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

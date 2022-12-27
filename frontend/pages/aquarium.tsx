@@ -1,11 +1,7 @@
-import Sketchbook from '@/src/components/aquarium/sketchbook';
+import AquariumViewer from '@/src/components/aquarium/viewer';
 
 function Aquarium() {
-  return (
-    <div>
-      <Sketchbook />
-    </div>
-  );
+  return <AquariumViewer />;
 }
 
 export default Aquarium;

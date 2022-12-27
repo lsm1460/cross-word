@@ -1,0 +1,11 @@
+@mixin viewer-button {
+  max-width: 400px;
+  width: calc(100% - 100px);
+  height: 30px;
+  padding: 0;
+  border: none;
+  color: #fff;
+  background-color: #000;
+  border-radius: 15px;
+  cursor: pointer;
+}

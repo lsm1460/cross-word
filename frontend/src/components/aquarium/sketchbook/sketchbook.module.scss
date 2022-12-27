@@ -1,5 +1,6 @@
 .canvas-wrap {
   position: relative;
+  overflow: hidden;
 
   canvas:last-child {
     pointer-events: none;
@@ -8,5 +9,69 @@
     height: 100%;
     top: 0;
     left: 0;
+  }
+
+  .color-set {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    background-color: #eee;
+    padding: 10px;
+    border-radius: 15px 0 0 0;
+    box-shadow: 0 0 5px transparent;
+    transition: .3s all;
+
+    &.active {
+      box-shadow: 0 0 5px rgba(0,0,0,.3);
+      transform: translateY(100%);
+      bottom: 40px;
+
+      .color-set-toggle {
+        &::after {
+          transform: translateX(8px) rotate(225deg);
+        }
+      }
+    }
+
+    .color-set-toggle {
+      border: none;
+      background-color: transparent;
+      position: relative;
+      width: 25px;
+      aspect-ratio: 1/1;
+      cursor: pointer;
+
+      &::after {
+        content: '';
+
+        display: block;
+        width: 8px;
+        height: 8px;
+        border-top: 2px solid #000;
+        border-left: 2px solid #000;
+        transform: translateX(8px) rotate(45deg);
+      }
+    }
+    
+    ul {
+      margin-top: 8px;
+      li {
+        & + li {
+          margin-top: 8px;
+        }
+  
+        button {
+          display: block;
+          border: 1px solid transparent;
+          width: 25px;
+          aspect-ratio: 1/1;
+          border-radius: 50%;
+
+          &.active {
+            border: 1px solid #222
+          }
+        }
+      }
+    }
   }
 }
