@@ -16,6 +16,11 @@ function Home() {
             <a>aquarium</a>
           </Link>
         </li>
+        <li>
+          <Link href="/slide-puzzle">
+            <a>slide-puzzle</a>
+          </Link>
+        </li>
       </ul>
     </div>
   );
