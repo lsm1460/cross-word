@@ -44,7 +44,7 @@ function CurvedTextInput({
           then = now - (elapsed % fpsInterval);
 
           const activeCursor = Math.floor(_time / 500) % 2 === 0;
-          const cursorPos = Math.max(0, input.current.selectionStart - 1);
+          const cursorPos = Math.max(0, (input.current?.selectionStart || 0) - 1);
 
           context.clearRect(0, 0, 500, 500);
 

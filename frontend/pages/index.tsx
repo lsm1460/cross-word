@@ -21,6 +21,11 @@ function Home() {
             <a>slide-puzzle</a>
           </Link>
         </li>
+        <li>
+          <Link href="/shisen-sho">
+            <a>사천성</a>
+          </Link>
+        </li>
       </ul>
     </div>
   );
