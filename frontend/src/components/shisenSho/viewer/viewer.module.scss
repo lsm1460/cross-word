@@ -1,0 +1,33 @@
+.board-wrap {
+  text-align: center;
+
+  .board-position-wrap {
+    position: relative;
+    display: inline-block;
+  
+    .board {
+      display: grid;
+      justify-content: center;
+    
+      & > div {
+        height: 50px;
+        border: 1px solid #222;
+      }
+    }
+
+    .line-inner {
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      polyline {
+        fill: none;
+        stroke: black;
+        stroke-width: 3
+      }
+    }
+  }
+}
