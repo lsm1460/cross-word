@@ -2,9 +2,10 @@ import classNames from 'classnames/bind';
 import styles from './editor.module.scss';
 const cx = classNames.bind(styles);
 //
-import { Dispatch, SetStateAction, useState } from 'react';
+import react, { Dispatch, SetStateAction, useRef, useState } from 'react';
 import _ from 'lodash';
 import { Cell } from '@/pages/nonogram';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 const BOARD_MIN = 5;
 const BOARD_MAX = 15;
@@ -14,6 +15,7 @@ interface Props {
   setBoard: Dispatch<SetStateAction<Cell[][]>>;
 }
 function NonogramEditor({ setStep, setBoard }: Props) {
+  const dataRef = useRef<HTMLInputElement>(null);
   const [size, setSize] = useState(8);
   const [tempBoard, setTempBoard] = useState(null);
   const [color, setColor] = useState('black');
@@ -42,20 +44,39 @@ function NonogramEditor({ setStep, setBoard }: Props) {
     setStep('viewer');
   };
 
+  const handleSetCopiedData = () => {
+    try {
+      setBoard(JSON.parse(dataRef.current.value));
+
+      setStep('viewer');
+    } catch (e) {
+      alert('fail to set data..');
+    }
+  };
+
   return (
     <div>
       {!tempBoard && (
         <div>
-          <input
-            value={size}
-            onChange={(_event) => {
-              setSize(Math.min(Math.max(parseInt(_event.target.value, 10), BOARD_MIN), BOARD_MAX));
-            }}
-            max={BOARD_MAX}
-            min={BOARD_MIN}
-            type={'number'}
-          />
-          <button onClick={handleMakeBoard}>make board</button>
+          <p>
+            <input
+              value={size}
+              onChange={(_event) => {
+                setSize(Math.min(Math.max(parseInt(_event.target.value, 10), BOARD_MIN), BOARD_MAX));
+              }}
+              max={BOARD_MAX}
+              min={BOARD_MIN}
+              type={'number'}
+            />
+            <button onClick={handleMakeBoard}>make board</button>
+          </p>
+          <br />
+          <p>
+            or insert copied data..
+            <br />
+            <input type="text" ref={dataRef} />
+            <button onClick={handleSetCopiedData}>set and start</button>
+          </p>
         </div>
       )}
       {tempBoard && (
@@ -83,6 +104,15 @@ function NonogramEditor({ setStep, setBoard }: Props) {
           </p>
           <br />
           <button onClick={handleComplete}>완성</button>
+
+          <CopyToClipboard
+            text={JSON.stringify(tempBoard)}
+            onCopy={() => {
+              alert('복사되었습니다.');
+            }}
+          >
+            <button>copy</button>
+          </CopyToClipboard>
         </div>
       )}
     </div>
