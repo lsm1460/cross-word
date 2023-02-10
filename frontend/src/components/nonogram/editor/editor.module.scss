@@ -1,0 +1,17 @@
+.board {
+  display: grid;
+  justify-content: center;
+
+  & > div {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid black;
+
+    & * {
+      user-select: none;
+      pointer-events: none;
+    }
+  }
+}
