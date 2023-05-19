@@ -31,6 +31,11 @@ function Home() {
             <a>노노그램? 피크로스?</a>
           </Link>
         </li>
+        <li>
+          <Link href="/code-flow-lab">
+            <a>플로우랩</a>
+          </Link>
+        </li>
       </ul>
     </div>
   );

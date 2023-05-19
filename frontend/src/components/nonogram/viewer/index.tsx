@@ -14,9 +14,9 @@ function NonogramViewer({ setStep, board }: Props) {
   const [gameBoard, setGameBoard] = useState(board.map((_line) => _line.map((_cell) => ({ ..._cell, state: 0 }))));
   const [isClear, setIsClear] = useState(false);
 
-  const collectCheckBoard = useMemo(() => board.map((_line) => _line.map((_item) => !!_item.color)), [board]);
+  const collectCheckBoard = useMemo(() => board.map((_line) => _line.map((_item) => (_item.color ? 1 : 0))), [board]);
   const answerCheckBoard = useMemo(
-    () => gameBoard.map((_line) => _line.map((_item) => _item.state === 1)),
+    () => gameBoard.map((_line) => _line.map((_item) => (_item.state === 1 ? 1 : 0))),
     [gameBoard]
   );
 
@@ -69,6 +69,7 @@ function NonogramViewer({ setStep, board }: Props) {
   }, [board]);
 
   useEffect(() => {
+    console.log('collectCheckBoard', collectCheckBoard, answerCheckBoard);
     if (_.isEqual(collectCheckBoard, answerCheckBoard)) {
       alert('clear..!');
       setIsClear(true);
