@@ -6,3 +6,6 @@ export const FLOW_CHART_ITEMS_STYLE = {
     height: 100,
   },
 };
+
+export const CONNECT_POINT_SIZE = 8;
+export const CONNECT_POINT_GAP = 10;
