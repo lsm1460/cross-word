@@ -2,6 +2,7 @@ import { CSSProperties } from 'react';
 
 export enum ChartItemType {
   button = 'button',
+  style = 'style',
 }
 
 export enum ConnectionItems {
@@ -19,11 +20,12 @@ export interface ChartItem {
   elType: ChartItemType;
   pos: { left: number; top: number };
   zIndex: number;
-  connectionTypeList: ConnectionItems[];
   connectionIds: string[];
 }
 
-export interface ChartButtonItem extends ChartItem {}
+export interface ChartButtonItem extends ChartItem {
+  connectionTypeList: ConnectionItems[];
+}
 
 export interface ChartStyleItem extends ChartItem {
   styles: CSSProperties;
@@ -39,3 +41,5 @@ export interface CodeFlowChartDoc {
     [_sceneId: string]: FlowScene;
   };
 }
+
+export type PointPos = { id: string; left: number; top: number; index: number };

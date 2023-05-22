@@ -1,0 +1,28 @@
+.chart-item {
+  position: absolute;
+  background-color: #eee;
+  border-radius: 8px;
+  pointer-events: none;
+
+  ul {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+
+    li {
+      margin: 0;
+
+      &:first-child {
+        margin-top: 0 !important;
+      }
+
+      span {
+        display: block;
+        border-radius: 50%;
+        background-color: #222;
+        transform: translateY(-50%);
+      }
+    }
+  }
+}

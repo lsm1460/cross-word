@@ -2,22 +2,31 @@ import classNames from 'classnames/bind';
 import styles from './flowChart.module.scss';
 const cx = classNames.bind(styles);
 //
-import { CONNECT_POINT_GAP, CONNECT_POINT_SIZE, FLOW_CHART_ITEMS_STYLE } from '@/consts/codeFlowLab/items';
-import { ChartItem, ChartItemType, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
-import _ from 'lodash';
+import {
+  CONNECT_POINT_GAP,
+  CONNECT_POINT_SIZE,
+  CONNECT_POINT_START,
+  FLOW_CHART_ITEMS_STYLE,
+} from '@/consts/codeFlowLab/items';
+import { CodeFlowChartDoc, PointPos } from '@/consts/types/codeFlowLab';
 import { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
-import { MoveItems } from '..';
-
-type PointPos = { id: string; left: number; top: number };
+import { ConnectPoints, MoveItems } from '..';
+import ChartItem from './chartItem';
+import _ from 'lodash';
 
 interface Props {
   chartItems: CodeFlowChartDoc['items'];
   moveItems: MoveItems;
+  connectPoints: ConnectPoints;
 }
-function FlowChart({ chartItems, moveItems }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
+  const lineCanvasRef = useRef<HTMLCanvasElement>(null);
+  const connectedCanvasRef = useRef<HTMLCanvasElement>(null);
 
+  const [lineCanvasCtx, setLineCanvasCtx] = useState<CanvasRenderingContext2D>(null);
+  const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [selectedItemIds, setSelectedItemIds] = useState([]);
+  const [selectedConnectionPoint, setSelectedConnectionPoint] = useState<PointPos>(null);
 
   const orderedChartItems = useMemo(
     () => Object.values(chartItems).sort((_before, _after) => _after.zIndex - _before.zIndex),
@@ -32,67 +41,129 @@ function FlowChart({ chartItems, moveItems }: Props) {
         .fill(undefined)
         .map((__, i) => ({
           id: _item.id,
-          left: _item.pos.left + FLOW_CHART_ITEMS_STYLE[_item.elType].width,
+          left:
+            _item.pos.left +
+            (FLOW_CHART_ITEMS_STYLE[_item.elType].connectorPosition[1] === 'left'
+              ? 0
+              : FLOW_CHART_ITEMS_STYLE[_item.elType].width),
           top:
-            _item.pos.top +
-            FLOW_CHART_ITEMS_STYLE[_item.elType].height -
-            (CONNECT_POINT_GAP + CONNECT_POINT_SIZE) * (i + 1),
+            FLOW_CHART_ITEMS_STYLE[_item.elType].connectorPosition[0] === 'bottom'
+              ? _item.pos.top +
+                FLOW_CHART_ITEMS_STYLE[_item.elType].height -
+                CONNECT_POINT_START -
+                i * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP)
+              : _item.pos.top + CONNECT_POINT_START + i * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP),
+          index: i,
         }))
     );
   }, [orderedChartItems]);
 
-  const draw = (_ctx: CanvasRenderingContext2D, _item: ChartItem) => {
-    const _elType = _item.elType;
-
-    switch (_item.elType) {
-      case ChartItemType.button:
-        _ctx.save();
-        _ctx.strokeRect(
-          _item.pos.left,
-          _item.pos.top,
-          FLOW_CHART_ITEMS_STYLE[_elType].width,
-          FLOW_CHART_ITEMS_STYLE[_elType].height
-        );
-        _ctx.beginPath();
-
-        chartItemConnectPoints[_item.id].forEach((_cPoint) => {
-          _ctx.arc(_cPoint.left, _cPoint.top, CONNECT_POINT_SIZE, 0, 2 * Math.PI);
+  const connectedPointList: PointPos[][] = useMemo(() => {
+    return Object.values(chartItems)
+      .reduce((_acc, _cur) => {
+        const ids = _acc.map((_pointPoses) => {
+          return (_pointPoses || []).map((_pos) => _pos.id).join();
         });
-        _ctx.fillStyle = 'black';
-        _ctx.fill();
-        _ctx.stroke();
-        _ctx.restore();
 
-        break;
+        const c = chartItemConnectPoints[_cur.id].map((_point1, index) => {
+          if (_cur.connectionIds[index] && !ids.includes([_cur.id, _cur.connectionIds[index]].sort().join())) {
+            const _point2 =
+              chartItemConnectPoints[_cur.connectionIds[index]][
+                chartItems[_cur.connectionIds[index]].connectionIds.indexOf(_cur.id)
+              ];
 
-      default:
-        break;
-    }
-  };
+            return [_point1, _point2].sort((a, b) => {
+              if (a.id < b.id) {
+                return -1;
+              }
+              if (b.id < a.id) {
+                return 1;
+              }
+
+              return 0;
+            });
+          }
+        });
+
+        return [..._acc, ...c];
+      }, [] as PointPos[][])
+      .filter((_p) => !!_p);
+  }, [chartItems, chartItemConnectPoints]);
+
+  console.log('connectedPointList', connectedPointList);
 
   useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current;
+    if (lineCanvasRef.current && connectedCanvasRef.current) {
+      const lineCanvas = lineCanvasRef.current;
+      const connectedCanvas = connectedCanvasRef.current;
 
-      canvas.width = canvas.parentElement.clientWidth;
-      canvas.height = canvas.parentElement.clientHeight;
+      lineCanvas.width = lineCanvas.parentElement.clientWidth;
+      lineCanvas.height = lineCanvas.parentElement.clientHeight;
+      connectedCanvas.width = connectedCanvas.parentElement.clientWidth;
+      connectedCanvas.height = connectedCanvas.parentElement.clientHeight;
 
-      const ctx = canvas.getContext('2d');
+      const lineCtx = lineCanvas.getContext('2d');
+      const connectedCtx = lineCanvas.getContext('2d');
 
-      orderedChartItems.forEach((_it) => draw(ctx, _it));
+      setLineCanvasCtx(lineCtx);
+      setConnectedCanvasCtx(connectedCtx);
     }
-  }, [canvasRef, chartItems]);
+  }, [lineCanvasRef, connectedCanvasRef]);
 
-  const getItemIdByPos = (_x: number, _y: number) => {
-    const _filtered = orderedChartItems.filter(
-      (_item) =>
-        _item.pos.left <= _x &&
-        _x <= FLOW_CHART_ITEMS_STYLE[_item.elType].width + _item.pos.left &&
-        _item.pos.top <= _y &&
-        _y <= FLOW_CHART_ITEMS_STYLE[_item.elType].height + _item.pos.top
-    );
+  useEffect(() => {
+    if (lineCanvasCtx) {
+      lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
 
-    return _filtered[_filtered.length - 1];
+      if (selectedConnectionPoint) {
+        const originPoint = chartItemConnectPoints[selectedConnectionPoint.id][selectedConnectionPoint.index];
+
+        const _nextPoint = getConnectPoint(selectedConnectionPoint.left, selectedConnectionPoint.top);
+        drawConnectionPointLine(originPoint, _nextPoint);
+      }
+    }
+  }, [lineCanvasCtx, selectedConnectionPoint]);
+
+  const drawConnectionPointLine = (_origin: PointPos, _next: PointPos) => {
+    const GAP = 20;
+
+    lineCanvasCtx.beginPath();
+    lineCanvasCtx.moveTo(_origin.left, _origin.top);
+
+    if (_next && _next.id !== selectedConnectionPoint.id) {
+      let horDir: 'right' | 'left' = null;
+
+      if (_next.left - _origin.left > 0) {
+        // right
+        horDir = 'right';
+      } else if (_next.left - _origin.left < 0) {
+        // left
+        horDir = 'left';
+      } else {
+        // fixed x
+      }
+
+      const originHorConnectPos =
+        FLOW_CHART_ITEMS_STYLE[chartItems[selectedConnectionPoint.id].elType].connectorPosition[1];
+      const horConnectPos = FLOW_CHART_ITEMS_STYLE[chartItems[_next.id].elType].connectorPosition[1];
+
+      if (originHorConnectPos === 'right' && horDir === 'right' && horConnectPos === 'right') {
+        lineCanvasCtx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _origin.top);
+        lineCanvasCtx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _next.top);
+      } else if (originHorConnectPos === 'right' && horDir === 'right' && horConnectPos === 'left') {
+        lineCanvasCtx.lineTo(_origin.left + Math.max((_next.left - _origin.left) / 2, 0), _origin.top);
+        lineCanvasCtx.lineTo(_origin.left + Math.max((_next.left - _origin.left) / 2, 0), _next.top);
+      } else if (originHorConnectPos === 'right' && horDir === 'left' && horConnectPos === 'left') {
+        lineCanvasCtx.lineTo(_origin.left + GAP, _origin.top);
+        lineCanvasCtx.lineTo(_origin.left + GAP, Math.max((_next.top + _origin.top) / 2, 0));
+        lineCanvasCtx.lineTo(_next.left - GAP, Math.max((_next.top + _origin.top) / 2, 0));
+        lineCanvasCtx.lineTo(_next.left - GAP, _next.top);
+      }
+      lineCanvasCtx.lineTo(_next.left, _next.top);
+    } else {
+      lineCanvasCtx.lineTo(selectedConnectionPoint.left, selectedConnectionPoint.top);
+    }
+
+    lineCanvasCtx.stroke();
   };
 
   const getConnectPoint = (_x: number, _y: number): PointPos => {
@@ -121,42 +192,74 @@ function FlowChart({ chartItems, moveItems }: Props) {
     );
   };
 
-  const handleMouseDown: MouseEventHandler<HTMLCanvasElement> = (_event) => {
+  const getItemIdByPos = (_x: number, _y: number) => {
+    const _filtered = orderedChartItems.filter(
+      (_item) =>
+        _item.pos.left <= _x &&
+        _x <= FLOW_CHART_ITEMS_STYLE[_item.elType].width + _item.pos.left &&
+        _item.pos.top <= _y &&
+        _y <= FLOW_CHART_ITEMS_STYLE[_item.elType].height + _item.pos.top
+    );
+
+    return _filtered[_filtered.length - 1];
+  };
+
+  const handleMouseDown: MouseEventHandler<HTMLDivElement> = (_event) => {
     // TODO: consider zoom ...
     const selectedPoint = getConnectPoint(_event.clientX, _event.clientY);
     const selectedItem = getItemIdByPos(_event.clientX, _event.clientY);
 
-    if ((chartItems[selectedPoint?.id]?.zIndex || 0) > (selectedItem?.zIndex || 0)) {
-      // select point..
-      console.log('포인트 클릭');
-    } else if ((chartItems[selectedPoint?.id]?.zIndex || 0) < (selectedItem?.zIndex || 0)) {
+    if (chartItems[selectedPoint?.id]?.zIndex >= (selectedItem?.zIndex || 0)) {
+      setSelectedConnectionPoint(selectedPoint);
+    } else if (selectedItem) {
       // select item..
+      // TODO: z-index조정
       setSelectedItemIds([selectedItem.id]);
     } else {
       // multi select..
     }
   };
 
-  const handleMouseMove: MouseEventHandler<HTMLCanvasElement> = (_event) => {
+  const handleMouseMove: MouseEventHandler<HTMLDivElement> = (_event) => {
     // TODO: consider zoom ...
 
     if (selectedItemIds.length > 0) {
       moveItems(selectedItemIds, _event.movementX, _event.movementY);
     }
+
+    if (selectedConnectionPoint) {
+      setSelectedConnectionPoint((_prev) => ({
+        ..._prev,
+        left: _prev.left + _event.movementX,
+        top: _prev.top + _event.movementY,
+      }));
+    }
   };
 
-  const handleMouseUp: MouseEventHandler<HTMLCanvasElement> = (_event) => {
+  const handleMouseUp: MouseEventHandler<HTMLDivElement> = (_event) => {
     setSelectedItemIds([]);
+
+    if (selectedConnectionPoint) {
+      const _connected = getConnectPoint(selectedConnectionPoint.left, selectedConnectionPoint.top);
+      _connected && connectPoints(selectedConnectionPoint.id, _connected.id);
+      setSelectedConnectionPoint(null);
+    }
   };
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={cx('flow-chart')}
+    <div
+      className={cx('canvas-wrap')}
       onMouseMove={handleMouseMove}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-    />
+    >
+      <canvas ref={lineCanvasRef} className={cx('connection-flow-chart')} />
+      <canvas ref={connectedCanvasRef} className={cx('connection-flow-chart')} />
+
+      {orderedChartItems.map((_itemInfo) => (
+        <ChartItem key={_itemInfo.id} itemInfo={_itemInfo} setSelectedConnectionPoint={setSelectedConnectionPoint} />
+      ))}
+    </div>
   );
 }
 
