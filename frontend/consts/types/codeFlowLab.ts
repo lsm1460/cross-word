@@ -3,11 +3,8 @@ import { CSSProperties } from 'react';
 export enum ChartItemType {
   button = 'button',
   style = 'style',
-}
-
-export enum ConnectionItems {
-  style = 'style',
   trigger = 'trigger',
+  function = 'function',
 }
 
 interface FlowScene {
@@ -20,18 +17,26 @@ export interface ChartItem {
   elType: ChartItemType;
   pos: { left: number; top: number };
   zIndex: number;
-  connectionIds: string[];
+  connectionIds: {
+    left?: string[];
+    right?: string[];
+  };
 }
 
 export interface ChartButtonItem extends ChartItem {
-  connectionTypeList: ConnectionItems[];
+  elType: ChartItemType.button;
 }
 
 export interface ChartStyleItem extends ChartItem {
+  elType: ChartItemType.style;
   styles: CSSProperties;
 }
 
-export type ChartItems = ChartButtonItem | ChartStyleItem;
+export interface ChartTriggerItem extends ChartItem {
+  elType: ChartItemType.trigger;
+}
+
+export type ChartItems = ChartButtonItem | ChartStyleItem | ChartTriggerItem;
 
 export interface CodeFlowChartDoc {
   items: {
@@ -42,4 +47,4 @@ export interface CodeFlowChartDoc {
   };
 }
 
-export type PointPos = { id: string; left: number; top: number; index: number };
+export type PointPos = { id: string; left: number; top: number; index: number; connectType: 'right' | 'left' };

@@ -4,14 +4,36 @@ export const FLOW_CHART_ITEMS_STYLE = {
   [ChartItemType.button]: {
     width: 150,
     height: 70,
-    connectorPosition: ['bottom', 'right'],
+    connectorPosition: [['right', 'bottom']],
+    connectionTypeList: {
+      right: [ChartItemType.style, ChartItemType.trigger],
+    },
   },
   [ChartItemType.style]: {
     width: 150,
     height: 100,
-    connectorPosition: ['top', 'left'],
+    connectorPosition: [
+      ['left', 'top'],
+      ['right', 'bottom'],
+    ],
+    connectionTypeList: {
+      left: [ChartItemType.button],
+      right: [ChartItemType.style],
+    },
   },
-} as const;
+  [ChartItemType.trigger]: {
+    width: 150,
+    height: 100,
+    connectorPosition: [
+      ['left', 'top'],
+      ['right', 'bottom'],
+    ],
+    connectionTypeList: {
+      left: [ChartItemType.button],
+      right: [ChartItemType.function],
+    },
+  },
+};
 
 export const CONNECT_POINT_START = 15;
 export const CONNECT_POINT_SIZE = 9;

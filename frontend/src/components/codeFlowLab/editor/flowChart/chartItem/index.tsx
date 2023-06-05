@@ -8,14 +8,13 @@ import {
   CONNECT_POINT_START,
   FLOW_CHART_ITEMS_STYLE,
 } from '@/consts/codeFlowLab/items';
-import { ChartItems, PointPos } from '@/consts/types/codeFlowLab';
-import { Dispatch, SetStateAction } from 'react';
+import { ChartItems } from '@/consts/types/codeFlowLab';
+import { useMemo } from 'react';
 
 interface Props {
   itemInfo: ChartItems;
-  setSelectedConnectionPoint: Dispatch<SetStateAction<PointPos>>;
 }
-function ChartItem({ itemInfo, setSelectedConnectionPoint }: Props) {
+function ChartItem({ itemInfo }: Props) {
   return (
     <div
       className={cx('chart-item')}
@@ -25,39 +24,43 @@ function ChartItem({ itemInfo, setSelectedConnectionPoint }: Props) {
         minWidth: FLOW_CHART_ITEMS_STYLE[itemInfo.elType].width,
         minHeight:
           FLOW_CHART_ITEMS_STYLE[itemInfo.elType].height +
-          Math.max(itemInfo.connectionIds.length - 1, 0) * (CONNECT_POINT_GAP + CONNECT_POINT_SIZE),
+          Math.max(
+            (itemInfo.connectionIds?.right || []).length - 1,
+            Math.max((itemInfo.connectionIds?.left || []).length - 1, 0)
+          ) *
+            (CONNECT_POINT_GAP + CONNECT_POINT_SIZE),
         zIndex: itemInfo.zIndex,
       }}
     >
-      <ul
-        style={{
-          [FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectorPosition[0]]: CONNECT_POINT_START,
-          [FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectorPosition[1]]: 0,
-          transform:
-            FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectorPosition[1] === 'right'
-              ? 'translateX(50%)'
-              : 'translateX(-50%)',
-        }}
-      >
-        {Array(itemInfo.connectionIds.length + 1)
-          .fill(undefined)
-          .map((__, _i) => (
-            <li
-              key={_i}
-              style={{
-                height: 0,
-                marginTop: CONNECT_POINT_GAP + CONNECT_POINT_SIZE * _i,
-              }}
-            >
-              <span
+      {FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectorPosition.map(([_x, _y], _i) => (
+        <ul
+          key={_i}
+          style={{
+            [_y]: CONNECT_POINT_START,
+            [_x]: 0,
+            transform: _x === 'right' ? 'translateX(50%)' : 'translateX(-50%)',
+          }}
+        >
+          {Array(itemInfo.connectionIds[_x].length + 1)
+            .fill(undefined)
+            .map((__, _j) => (
+              <li
+                key={`${_i}-${_j}`}
                 style={{
-                  width: CONNECT_POINT_SIZE,
-                  height: CONNECT_POINT_SIZE,
+                  height: 0,
+                  marginTop: CONNECT_POINT_GAP + CONNECT_POINT_SIZE * _j,
                 }}
-              />
-            </li>
-          ))}
-      </ul>
+              >
+                <span
+                  style={{
+                    width: CONNECT_POINT_SIZE,
+                    height: CONNECT_POINT_SIZE,
+                  }}
+                />
+              </li>
+            ))}
+        </ul>
+      ))}
     </div>
   );
 }
