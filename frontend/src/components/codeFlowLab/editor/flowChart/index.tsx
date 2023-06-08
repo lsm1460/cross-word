@@ -62,14 +62,23 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
 
   const connectedPointList: PointPos[][] = useMemo(() => {
     const _points = Object.values(chartItemConnectPoints).flat();
-    const connectedPoints = [];
+    const connectedPointList = [];
+    let connectedPoints = {};
 
     while (_points.length > 0) {
+      connectedPoints = {
+        ...connectedPoints,
+        [_points[0].id]: [...(connectedPoints?.[_points[0].id] || [])],
+      };
+
       const _invertedConnectType = _points[0].connectType === 'left' ? 'right' : 'left';
 
       const connectedPointIndex = _.findIndex(
         _points,
-        (_p) => _p.connectType === _invertedConnectType && _points[0].connectionIds.includes(_p.id)
+        (_p) =>
+          _p.connectType === _invertedConnectType &&
+          _points[0].connectionIds.includes(_p.id) &&
+          !connectedPoints[_points[0].id].includes(_p.id)
       );
 
       if (connectedPointIndex < 0) {
@@ -77,14 +86,19 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
         _points.shift();
       } else {
         // 찾음
-        connectedPoints.push([_points[0], _points[connectedPointIndex]]);
+        connectedPointList.push([_points[0], _points[connectedPointIndex]]);
+
+        connectedPoints = {
+          ...connectedPoints,
+          [_points[0].id]: [...connectedPoints[_points[0].id], _points[connectedPointIndex].id],
+        };
 
         _points.shift();
         _points.splice(connectedPointIndex, 1);
       }
     }
 
-    return connectedPoints;
+    return connectedPointList;
   }, [chartItemConnectPoints]);
 
   useEffect(() => {
