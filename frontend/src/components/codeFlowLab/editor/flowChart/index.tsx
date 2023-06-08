@@ -37,58 +37,55 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
     const items = _.mapKeys(orderedChartItems, (_item) => _item.id);
 
     return _.mapValues(items, (_item) =>
-      Array(Object.values(_item.connectionIds).flat().length + 1)
-        .fill(undefined)
-        .map((__, i) => {
-          return FLOW_CHART_ITEMS_STYLE[_item.elType].connectorPosition.map(([_x, _y], j) => ({
-            id: _item.id,
-            left: _item.pos.left + (_x === 'left' ? 0 : FLOW_CHART_ITEMS_STYLE[_item.elType].width),
-            top:
-              _y === 'bottom'
-                ? _item.pos.top +
-                  FLOW_CHART_ITEMS_STYLE[_item.elType].height -
-                  CONNECT_POINT_START -
-                  i * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP)
-                : _item.pos.top + CONNECT_POINT_START + i * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP),
-            index: i,
-            connectType: _x as 'right' | 'left',
-          }));
+      FLOW_CHART_ITEMS_STYLE[_item.elType].connectorPosition
+        .map(([_x, _y]) => {
+          return Array(_item.connectionIds[_x].length + 1)
+            .fill(undefined)
+            .map((__, j) => ({
+              id: _item.id,
+              left: _item.pos.left + (_x === 'left' ? 0 : FLOW_CHART_ITEMS_STYLE[_item.elType].width),
+              top:
+                _y === 'bottom'
+                  ? _item.pos.top +
+                    FLOW_CHART_ITEMS_STYLE[_item.elType].height -
+                    CONNECT_POINT_START -
+                    j * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP)
+                  : _item.pos.top + CONNECT_POINT_START + j * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP),
+              index: j,
+              connectType: _x as 'right' | 'left',
+              connectionIds: _item.connectionIds?.[_x] || [],
+            }));
         })
         .flat()
     );
   }, [orderedChartItems]);
 
   const connectedPointList: PointPos[][] = useMemo(() => {
-    return [];
+    const _points = Object.values(chartItemConnectPoints).flat();
+    const connectedPoints = [];
 
-    return Object.values(chartItems)
-      .reduce((_acc, _cur) => {
-        const ids = _acc.map((_pointPoses) => {
-          return (_pointPoses || []).map((_pos) => _pos.id).join();
-        });
+    while (_points.length > 0) {
+      const _invertedConnectType = _points[0].connectType === 'left' ? 'right' : 'left';
 
-        const c = chartItemConnectPoints[_cur.id].map((_point1, index) => {
-          // if (_cur.connectionIds[index] && !ids.includes([_cur.id, _cur.connectionIds[index]].sort().join())) {
-          //   const _point2 =
-          //     chartItemConnectPoints[_cur.connectionIds[index]][
-          //       chartItems[_cur.connectionIds[index]].connectionIds.indexOf(_cur.id)
-          //     ];
-          //   return [_point1, _point2].sort((a, b) => {
-          //     if (a.id < b.id) {
-          //       return -1;
-          //     }
-          //     if (b.id < a.id) {
-          //       return 1;
-          //     }
-          //     return 0;
-          //   });
-          // }
-        });
+      const connectedPointIndex = _.findIndex(
+        _points,
+        (_p) => _p.connectType === _invertedConnectType && _points[0].connectionIds.includes(_p.id)
+      );
 
-        return [..._acc, ...c];
-      }, [] as PointPos[][])
-      .filter((_p) => !!_p);
-  }, [chartItems, chartItemConnectPoints]);
+      if (connectedPointIndex < 0) {
+        // 못찾음
+        _points.shift();
+      } else {
+        // 찾음
+        connectedPoints.push([_points[0], _points[connectedPointIndex]]);
+
+        _points.shift();
+        _points.splice(connectedPointIndex, 1);
+      }
+    }
+
+    return connectedPoints;
+  }, [chartItemConnectPoints]);
 
   useEffect(() => {
     if (lineCanvasRef.current && connectedCanvasRef.current) {
@@ -115,7 +112,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       if (selectedConnectionPoint) {
         const originPoint = chartItemConnectPoints[selectedConnectionPoint.id].filter(
           (_p) => _p.connectType === selectedConnectionPoint.connectType
-        )[0];
+        )[selectedConnectionPoint.index];
 
         const _nextPoint = getConnectPoint(
           selectedConnectionPoint.left,
@@ -199,6 +196,8 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
   };
 
   const getConnectPoint = (_x: number, _y: number, _connectType?: 'left' | 'right', _id?: string): PointPos => {
+    console.log('chartItemConnectPoints', chartItemConnectPoints, _x, _y);
+
     const _points = Object.values(chartItemConnectPoints)
       .flat()
       .filter((_pos) => {
@@ -294,7 +293,6 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
         selectedConnectionPoint.id
       );
 
-      console.log(selectedConnectionPoint.connectType, _connected.connectType);
       _connected && connectPoints(selectedConnectionPoint, _connected);
       setSelectedConnectionPoint(null);
     }

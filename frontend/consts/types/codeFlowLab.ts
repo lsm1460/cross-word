@@ -47,4 +47,11 @@ export interface CodeFlowChartDoc {
   };
 }
 
-export type PointPos = { id: string; left: number; top: number; index: number; connectType: 'right' | 'left' };
+export type PointPos = {
+  id: string;
+  left: number;
+  top: number;
+  index: number;
+  connectType: 'right' | 'left';
+  connectionIds: string[];
+};
