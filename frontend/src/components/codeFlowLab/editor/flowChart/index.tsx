@@ -114,7 +114,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       connectedCanvas.height = connectedCanvas.parentElement.clientHeight;
 
       const lineCtx = lineCanvas.getContext('2d');
-      const connectedCtx = lineCanvas.getContext('2d');
+      const connectedCtx = connectedCanvas.getContext('2d');
 
       setLineCanvasCtx(lineCtx);
       setConnectedCanvasCtx(connectedCtx);
@@ -137,7 +137,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
           selectedConnectionPoint.id
         );
 
-        drawConnectionPointLine(originPoint, _nextPoint);
+        drawConnectionPointLine(lineCanvasCtx, originPoint, _nextPoint);
       }
     }
   }, [lineCanvasCtx, selectedConnectionPoint]);
@@ -147,16 +147,16 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       connectedCanvasCtx.clearRect(0, 0, connectedCanvasRef.current.width, connectedCanvasRef.current.height);
 
       connectedPointList.forEach((_points) => {
-        drawConnectionPointLine(_points[0], _points[1]);
+        drawConnectionPointLine(connectedCanvasCtx, _points[0], _points[1]);
       });
     }
   }, [connectedCanvasCtx, connectedPointList]);
 
-  const drawConnectionPointLine = (_origin: PointPos, _next: PointPos) => {
+  const drawConnectionPointLine = (_ctx: CanvasRenderingContext2D, _origin: PointPos, _next: PointPos) => {
     const GAP = 20;
 
-    lineCanvasCtx.beginPath();
-    lineCanvasCtx.moveTo(_origin.left, _origin.top);
+    _ctx.beginPath();
+    _ctx.moveTo(_origin.left, _origin.top);
 
     if (_next && _next.id !== _origin.id) {
       let horDir: 'right' | 'left' = null;
@@ -175,8 +175,8 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       const horConnectPos = FLOW_CHART_ITEMS_STYLE[chartItems[_next.id].elType].connectorPosition[0][0];
 
       if (originHorConnectPos === 'right' && horDir === 'right' && horConnectPos === 'right') {
-        lineCanvasCtx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _origin.top);
-        lineCanvasCtx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _next.top);
+        _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _origin.top);
+        _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _next.top);
       } else if (
         (originHorConnectPos === 'right' && horDir === 'right' && horConnectPos === 'left') ||
         (originHorConnectPos === 'left' && horDir === 'left' && horConnectPos === 'right')
@@ -184,31 +184,31 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
-        lineCanvasCtx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0), _origin.top);
-        lineCanvasCtx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0), _next.top);
+        _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0), _origin.top);
+        _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0), _next.top);
       } else if (originHorConnectPos === 'right' && horDir === 'left' && horConnectPos === 'left') {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
-        lineCanvasCtx.lineTo(rightPos + GAP, _origin.top);
-        lineCanvasCtx.lineTo(rightPos + GAP, Math.max((_next.top + _origin.top) / 2, 0));
-        lineCanvasCtx.lineTo(leftPos - GAP, Math.max((_next.top + _origin.top) / 2, 0));
-        lineCanvasCtx.lineTo(leftPos - GAP, _next.top);
+        _ctx.lineTo(rightPos + GAP, _origin.top);
+        _ctx.lineTo(rightPos + GAP, Math.max((_next.top + _origin.top) / 2, 0));
+        _ctx.lineTo(leftPos - GAP, Math.max((_next.top + _origin.top) / 2, 0));
+        _ctx.lineTo(leftPos - GAP, _next.top);
       } else if (originHorConnectPos === 'left' && horDir === 'right' && horConnectPos === 'right') {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
-        lineCanvasCtx.lineTo(leftPos - GAP, _origin.top);
-        lineCanvasCtx.lineTo(leftPos - GAP, Math.max((_next.top + _origin.top) / 2, 0));
-        lineCanvasCtx.lineTo(rightPos + GAP, Math.max((_next.top + _origin.top) / 2, 0));
-        lineCanvasCtx.lineTo(rightPos + GAP, _next.top);
+        _ctx.lineTo(leftPos - GAP, _origin.top);
+        _ctx.lineTo(leftPos - GAP, Math.max((_next.top + _origin.top) / 2, 0));
+        _ctx.lineTo(rightPos + GAP, Math.max((_next.top + _origin.top) / 2, 0));
+        _ctx.lineTo(rightPos + GAP, _next.top);
       }
-      lineCanvasCtx.lineTo(_next.left, _next.top);
+      _ctx.lineTo(_next.left, _next.top);
     } else {
-      lineCanvasCtx.lineTo(selectedConnectionPoint.left, selectedConnectionPoint.top);
+      _ctx.lineTo(selectedConnectionPoint.left, selectedConnectionPoint.top);
     }
 
-    lineCanvasCtx.stroke();
+    _ctx.stroke();
   };
 
   const getConnectPoint = (_x: number, _y: number, _connectType?: 'left' | 'right', _id?: string): PointPos => {
