@@ -48,7 +48,7 @@ function ChartItem({ itemInfo }: Props) {
                 key={`${_i}-${_j}`}
                 style={{
                   height: 0,
-                  marginTop: CONNECT_POINT_GAP + CONNECT_POINT_SIZE * _j,
+                  marginTop: CONNECT_POINT_GAP + CONNECT_POINT_SIZE,
                 }}
               >
                 <span

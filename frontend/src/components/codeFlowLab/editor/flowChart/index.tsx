@@ -63,7 +63,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
   const connectedPointList: PointPos[][] = useMemo(() => {
     const _points = Object.values(chartItemConnectPoints).flat();
     const connectedPointList = [];
-    let connectedPoints = {};
+    let connectedPoints = {}; // 이미 연결된 노드 검증용 빈 객체
 
     while (_points.length > 0) {
       connectedPoints = {
@@ -86,20 +86,22 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
         _points.shift();
       } else {
         // 찾음
-        connectedPointList.push([_points[0], _points[connectedPointIndex]]);
+        connectedPointList.push([_points[0], { ..._points[connectedPointIndex] }]);
 
         connectedPoints = {
           ...connectedPoints,
           [_points[0].id]: [...connectedPoints[_points[0].id], _points[connectedPointIndex].id],
         };
 
-        _points.shift();
         _points.splice(connectedPointIndex, 1);
+        _points.shift();
       }
     }
 
     return connectedPointList;
   }, [chartItemConnectPoints]);
+
+  // console.log('chartItemConnectPoints', chartItemConnectPoints);
 
   useEffect(() => {
     if (lineCanvasRef.current && connectedCanvasRef.current) {
@@ -210,8 +212,6 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
   };
 
   const getConnectPoint = (_x: number, _y: number, _connectType?: 'left' | 'right', _id?: string): PointPos => {
-    console.log('chartItemConnectPoints', chartItemConnectPoints, _x, _y);
-
     const _points = Object.values(chartItemConnectPoints)
       .flat()
       .filter((_pos) => {
@@ -266,8 +266,6 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
     // TODO: consider zoom ...
     const selectedPoint = getConnectPoint(_event.clientX, _event.clientY);
     const selectedItem = getItemIdByPos(_event.clientX, _event.clientY);
-
-    console.log('selectedPoint', selectedPoint);
 
     if (chartItems[selectedPoint?.id]?.zIndex >= (selectedItem?.zIndex || 0)) {
       setSelectedConnectionPoint(selectedPoint);
