@@ -6,6 +6,7 @@ import { ChartItemType, CodeFlowChartDoc, PointPos } from '@/consts/types/codeFl
 import _ from 'lodash';
 import { useMemo, useState } from 'react';
 import FlowChart from './flowChart';
+import FlowChartViewer from '../viewer';
 
 export type MoveItems = (_itemIds: string[], _deltaX: number, _deltaY: number) => void;
 export type ConnectPoints = (_prev: PointPos, _next: PointPos) => void;
@@ -14,18 +15,25 @@ function CodeFlowLabEditor() {
   const [selectedSceneOrder, setSelectedSceneOrder] = useState(1);
   const [flowDoc, setFlowDoc] = useState<CodeFlowChartDoc>({
     items: {
+      root: {
+        id: 'root',
+        elType: ChartItemType.body,
+        pos: { left: 20, top: 20 },
+        zIndex: 1,
+        connectionIds: { right: ['test-id'] },
+      },
       'test-id': {
         id: 'test-id',
         elType: ChartItemType.button,
-        pos: { left: 20, top: 20 },
-        zIndex: 1,
-        connectionIds: { right: [] },
+        pos: { left: 120, top: 120 },
+        zIndex: 2,
+        connectionIds: { left: ['root'], right: [] },
       },
       'test-style': {
         id: 'test-style',
         elType: ChartItemType.style,
         pos: { left: 80, top: 200 },
-        zIndex: 2,
+        zIndex: 3,
         connectionIds: { left: [], right: [] },
         styles: {},
       },
@@ -33,13 +41,21 @@ function CodeFlowLabEditor() {
         id: 'test-trigger',
         elType: ChartItemType.trigger,
         pos: { left: 20, top: 300 },
-        zIndex: 3,
+        zIndex: 4,
+        connectionIds: { left: [], right: [] },
+        triggerType: 'click',
+      },
+      'test-function': {
+        id: 'test-function',
+        elType: ChartItemType.function,
+        pos: { left: 120, top: 500 },
+        zIndex: 5,
         connectionIds: { left: [], right: [] },
       },
     },
     scene: {
       'test-scene-01': {
-        itemIds: ['test-id', 'test-style', 'test-trigger'],
+        itemIds: ['root', 'test-id', 'test-style', 'test-trigger', 'test-function'],
         order: 1,
       },
     },
@@ -107,7 +123,10 @@ function CodeFlowLabEditor() {
 
   return (
     <div className={cx('editor-wrap')}>
-      <FlowChart chartItems={chartItems} moveItems={moveItems} connectPoints={connectPoints} />
+      <div className={cx('canvas-area')}>
+        <FlowChart chartItems={chartItems} moveItems={moveItems} connectPoints={connectPoints} />
+      </div>
+      <FlowChartViewer chartItems={chartItems} />
     </div>
   );
 }

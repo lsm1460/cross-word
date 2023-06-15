@@ -61,8 +61,10 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
   }, [orderedChartItems]);
 
   const connectedPointList: PointPos[][] = useMemo(() => {
+    //connectionIds 순서로 변경해야함
     const _points = Object.values(chartItemConnectPoints).flat();
-    const connectedPointList = [];
+
+    const _pointList = [];
     let connectedPoints = {}; // 이미 연결된 노드 검증용 빈 객체
 
     while (_points.length > 0) {
@@ -86,7 +88,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
         _points.shift();
       } else {
         // 찾음
-        connectedPointList.push([_points[0], { ..._points[connectedPointIndex] }]);
+        _pointList.push([_points[0], { ..._points[connectedPointIndex] }]);
 
         connectedPoints = {
           ...connectedPoints,
@@ -98,10 +100,8 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       }
     }
 
-    return connectedPointList;
+    return _pointList;
   }, [chartItemConnectPoints]);
-
-  // console.log('chartItemConnectPoints', chartItemConnectPoints);
 
   useEffect(() => {
     if (lineCanvasRef.current && connectedCanvasRef.current) {
@@ -137,6 +137,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
           selectedConnectionPoint.id
         );
 
+        console.log('음', _nextPoint, selectedConnectionPoint.connectType);
         drawConnectionPointLine(lineCanvasCtx, originPoint, _nextPoint);
       }
     }
@@ -171,22 +172,19 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
         // fixed x
       }
 
-      const originHorConnectPos = FLOW_CHART_ITEMS_STYLE[chartItems[_origin.id].elType].connectorPosition[0][0];
-      const horConnectPos = FLOW_CHART_ITEMS_STYLE[chartItems[_next.id].elType].connectorPosition[0][0];
-
-      if (originHorConnectPos === 'right' && horDir === 'right' && horConnectPos === 'right') {
+      if (_origin.connectType === 'right' && horDir === 'right' && _next.connectType === 'right') {
         _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _origin.top);
         _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _next.top);
       } else if (
-        (originHorConnectPos === 'right' && horDir === 'right' && horConnectPos === 'left') ||
-        (originHorConnectPos === 'left' && horDir === 'left' && horConnectPos === 'right')
+        (_origin.connectType === 'right' && horDir === 'right' && _next.connectType === 'left') ||
+        (_origin.connectType === 'left' && horDir === 'left' && _next.connectType === 'right')
       ) {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
         _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0), _origin.top);
         _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0), _next.top);
-      } else if (originHorConnectPos === 'right' && horDir === 'left' && horConnectPos === 'left') {
+      } else if (_origin.connectType === 'right' && horDir === 'left' && _next.connectType === 'left') {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
@@ -194,7 +192,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
         _ctx.lineTo(rightPos + GAP, Math.max((_next.top + _origin.top) / 2, 0));
         _ctx.lineTo(leftPos - GAP, Math.max((_next.top + _origin.top) / 2, 0));
         _ctx.lineTo(leftPos - GAP, _next.top);
-      } else if (originHorConnectPos === 'left' && horDir === 'right' && horConnectPos === 'right') {
+      } else if (_origin.connectType === 'left' && horDir === 'right' && _next.connectType === 'right') {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
@@ -221,6 +219,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
           const _invertedConnectType = _connectType === 'left' ? 'right' : 'left';
 
           if (_invertedConnectType === _pos.connectType) {
+            // console.log(chartItems[_pos.id].elType);
             connectionTypeList =
               FLOW_CHART_ITEMS_STYLE[chartItems[_pos.id].elType].connectionTypeList?.[_invertedConnectType] || [];
           }

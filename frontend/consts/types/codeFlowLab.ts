@@ -1,10 +1,12 @@
 import { CSSProperties } from 'react';
+import { TRIGGER_TYPE } from '../codeFlowLab/items';
 
 export enum ChartItemType {
   button = 'button',
   style = 'style',
   trigger = 'trigger',
   function = 'function',
+  body = 'body',
 }
 
 interface FlowScene {
@@ -23,6 +25,10 @@ export interface ChartItem {
   };
 }
 
+export interface ChartBodyItem extends ChartItem {
+  elType: ChartItemType.body;
+}
+
 export interface ChartButtonItem extends ChartItem {
   elType: ChartItemType.button;
 }
@@ -34,9 +40,14 @@ export interface ChartStyleItem extends ChartItem {
 
 export interface ChartTriggerItem extends ChartItem {
   elType: ChartItemType.trigger;
+  triggerType: (typeof TRIGGER_TYPE)[number];
 }
 
-export type ChartItems = ChartButtonItem | ChartStyleItem | ChartTriggerItem;
+export interface ChartFunctionItem extends ChartItem {
+  elType: ChartItemType.function;
+}
+
+export type ChartItems = ChartBodyItem | ChartButtonItem | ChartStyleItem | ChartTriggerItem | ChartFunctionItem;
 
 export interface CodeFlowChartDoc {
   items: {

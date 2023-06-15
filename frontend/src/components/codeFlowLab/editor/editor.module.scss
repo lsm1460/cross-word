@@ -1,4 +1,9 @@
 .editor-wrap {
   position: fixed;
   inset: 0;
+  display: flex;
+
+  .canvas-area {
+    width: calc(100% - 375px);
+  }
 }
