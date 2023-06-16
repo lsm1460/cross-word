@@ -13,7 +13,7 @@ import { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import { ConnectPoints, MoveItems } from '..';
 import ChartItem from './chartItem';
 import _ from 'lodash';
-import { getRectPoints, isOverlap } from './utils';
+import { getRectPoints, doPolygonsIntersect } from './utils';
 
 interface Props {
   chartItems: CodeFlowChartDoc['items'];
@@ -296,6 +296,15 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
 
       children.forEach((_el) => {
         const points = getRectPoints(_el as HTMLElement);
+
+        const selectBox = [
+          { x: multiSelectBoxStartPos[0], y: multiSelectBoxStartPos[1] },
+          { x: multiSelectBoxEndPos[0], y: multiSelectBoxStartPos[1] },
+          { x: multiSelectBoxEndPos[0], y: multiSelectBoxEndPos[1] },
+          { x: multiSelectBoxStartPos[0], y: multiSelectBoxEndPos[1] },
+        ];
+
+        const isOverlap = doPolygonsIntersect(points, selectBox);
       });
     }
   };
