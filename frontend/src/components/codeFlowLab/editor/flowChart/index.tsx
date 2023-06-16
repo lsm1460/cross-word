@@ -33,75 +33,84 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
     [chartItems]
   );
 
-  const chartItemConnectPoints: { [x: string]: PointPos[] } = useMemo(() => {
+  const chartItemConnectPointsByDir: {
+    [x: string]: { left?: PointPos[]; right?: PointPos[]; connectionIds: { left?: string[]; right?: string[] } };
+  } = useMemo(() => {
     const items = _.mapKeys(orderedChartItems, (_item) => _item.id);
 
-    return _.mapValues(items, (_item) =>
-      FLOW_CHART_ITEMS_STYLE[_item.elType].connectorPosition
-        .map(([_x, _y]) => {
-          return Array(_item.connectionIds[_x].length + 1)
-            .fill(undefined)
-            .map((__, j) => ({
+    return _.mapValues(items, (_item) => ({
+      connectionIds: _item.connectionIds,
+      ..._.mapValues(_item.connectionIds, (_ids: string, _dir) =>
+        Array((_item.connectionIds?.[_dir]?.length || 0) + 1)
+          .fill(undefined)
+          .map((__, j) => {
+            const [__x, _y] = FLOW_CHART_ITEMS_STYLE[_item.elType].connectorPosition.filter(
+              ([__x, _y]) => __x === _dir
+            )[0];
+
+            const itemHeight =
+              FLOW_CHART_ITEMS_STYLE[_item.elType].height +
+              Math.max(
+                (_item.connectionIds?.right || []).length,
+                Math.max((_item.connectionIds?.left || []).length, 0)
+              ) *
+                (CONNECT_POINT_GAP + CONNECT_POINT_SIZE);
+
+            return {
               id: _item.id,
-              left: _item.pos.left + (_x === 'left' ? 0 : FLOW_CHART_ITEMS_STYLE[_item.elType].width),
+              left: _item.pos.left + (_dir === 'left' ? 0 : FLOW_CHART_ITEMS_STYLE[_item.elType].width),
               top:
                 _y === 'bottom'
-                  ? _item.pos.top +
-                    FLOW_CHART_ITEMS_STYLE[_item.elType].height -
-                    CONNECT_POINT_START -
-                    j * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP)
+                  ? _item.pos.top + itemHeight - CONNECT_POINT_START - j * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP)
                   : _item.pos.top + CONNECT_POINT_START + j * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP),
               index: j,
-              connectType: _x as 'right' | 'left',
-              connectionIds: _item.connectionIds?.[_x] || [],
-            }));
-        })
-        .flat()
-    );
+              connectType: _dir as 'right' | 'left',
+              connectionIds: _item.connectionIds?.[_dir] || [],
+            };
+          })
+      ),
+    }));
   }, [orderedChartItems]);
 
-  const connectedPointList: PointPos[][] = useMemo(() => {
-    //connectionIds 순서로 변경해야함
-    const _points = Object.values(chartItemConnectPoints).flat();
+  const chartItemConnectPoints: { [x: string]: PointPos[] } = useMemo(
+    () =>
+      _.mapValues(chartItemConnectPointsByDir, (_item) =>
+        Object.values({ left: _item?.['left'] || [], right: _item?.['right'] || [] }).flat()
+      ),
+    [chartItemConnectPointsByDir]
+  );
 
-    const _pointList = [];
-    let connectedPoints = {}; // 이미 연결된 노드 검증용 빈 객체
+  const connectedPointList = useMemo(() => {
+    const result = [];
+    const idCheckList = [];
 
-    while (_points.length > 0) {
-      connectedPoints = {
-        ...connectedPoints,
-        [_points[0].id]: [...(connectedPoints?.[_points[0].id] || [])],
-      };
+    Object.keys(chartItemConnectPointsByDir).forEach((_key) => {
+      const _items = chartItemConnectPointsByDir[_key];
 
-      const _invertedConnectType = _points[0].connectType === 'left' ? 'right' : 'left';
+      for (let _dir in _items.connectionIds) {
+        const _idList = _items.connectionIds[_dir as 'right' | 'left'];
 
-      const connectedPointIndex = _.findIndex(
-        _points,
-        (_p) =>
-          _p.connectType === _invertedConnectType &&
-          _points[0].connectionIds.includes(_p.id) &&
-          !connectedPoints[_points[0].id].includes(_p.id)
-      );
+        _idList.forEach((_id, index) => {
+          const startPoint = _items[_dir as 'right' | 'left'][index];
+          const invertedDir = _dir === 'right' ? 'left' : 'right';
 
-      if (connectedPointIndex < 0) {
-        // 못찾음
-        _points.shift();
-      } else {
-        // 찾음
-        _pointList.push([_points[0], { ..._points[connectedPointIndex] }]);
+          const connectedIndex = chartItemConnectPointsByDir[_id].connectionIds[invertedDir].indexOf(_key);
 
-        connectedPoints = {
-          ...connectedPoints,
-          [_points[0].id]: [...connectedPoints[_points[0].id], _points[connectedPointIndex].id],
-        };
+          const connectedPoint = chartItemConnectPointsByDir[_id][invertedDir][connectedIndex];
 
-        _points.splice(connectedPointIndex, 1);
-        _points.shift();
+          const checkId = [startPoint.id, connectedPoint.id].sort().join('-');
+
+          if (!idCheckList.includes(checkId)) {
+            idCheckList.push(checkId);
+
+            result.push([startPoint, connectedPoint]);
+          }
+        });
       }
-    }
+    });
 
-    return _pointList;
-  }, [chartItemConnectPoints]);
+    return result;
+  }, [chartItemConnectPointsByDir]);
 
   useEffect(() => {
     if (lineCanvasRef.current && connectedCanvasRef.current) {
@@ -137,7 +146,6 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
           selectedConnectionPoint.id
         );
 
-        console.log('음', _nextPoint, selectedConnectionPoint.connectType);
         drawConnectionPointLine(lineCanvasCtx, originPoint, _nextPoint);
       }
     }
@@ -219,7 +227,6 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
           const _invertedConnectType = _connectType === 'left' ? 'right' : 'left';
 
           if (_invertedConnectType === _pos.connectType) {
-            // console.log(chartItems[_pos.id].elType);
             connectionTypeList =
               FLOW_CHART_ITEMS_STYLE[chartItems[_pos.id].elType].connectionTypeList?.[_invertedConnectType] || [];
           }
@@ -250,6 +257,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
   };
 
   const getItemIdByPos = (_x: number, _y: number) => {
+    // todo: item grap area를 ui상에서 고려해보자
     const _filtered = orderedChartItems.filter(
       (_item) =>
         _item.pos.left <= _x &&
