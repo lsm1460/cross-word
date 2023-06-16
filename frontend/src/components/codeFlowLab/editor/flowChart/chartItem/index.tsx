@@ -9,7 +9,6 @@ import {
   FLOW_CHART_ITEMS_STYLE,
 } from '@/consts/codeFlowLab/items';
 import { ChartItems } from '@/consts/types/codeFlowLab';
-import { useMemo } from 'react';
 
 interface Props {
   itemInfo: ChartItems;
@@ -18,6 +17,7 @@ function ChartItem({ itemInfo }: Props) {
   return (
     <div
       className={cx('chart-item')}
+      data-id={itemInfo.id}
       style={{
         left: itemInfo.pos.left,
         top: itemInfo.pos.top,

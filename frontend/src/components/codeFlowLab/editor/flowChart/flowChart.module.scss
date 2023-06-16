@@ -15,4 +15,8 @@
 
 .connection-flow-chart {
   pointer-events: none;
+
+  &.layer-top {
+    z-index: 99999;
+  }
 }

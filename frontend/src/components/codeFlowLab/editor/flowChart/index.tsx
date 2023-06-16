@@ -13,6 +13,7 @@ import { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import { ConnectPoints, MoveItems } from '..';
 import ChartItem from './chartItem';
 import _ from 'lodash';
+import { getRectPoints, isOverlap } from './utils';
 
 interface Props {
   chartItems: CodeFlowChartDoc['items'];
@@ -20,6 +21,7 @@ interface Props {
   connectPoints: ConnectPoints;
 }
 function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
+  const chartItemWrapRef = useRef<HTMLDivElement>(null);
   const lineCanvasRef = useRef<HTMLCanvasElement>(null);
   const connectedCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -27,6 +29,8 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
   const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [selectedItemIds, setSelectedItemIds] = useState([]);
   const [selectedConnectionPoint, setSelectedConnectionPoint] = useState<PointPos>(null);
+  const [multiSelectBoxStartPos, setMultiSelectBoxStartPos] = useState<[number, number]>(null);
+  const [multiSelectBoxEndPos, setMultiSelectBoxEndPos] = useState<[number, number]>(null);
 
   const orderedChartItems = useMemo(
     () => Object.values(chartItems).sort((_before, _after) => _after.zIndex - _before.zIndex),
@@ -161,6 +165,22 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
     }
   }, [connectedCanvasCtx, connectedPointList]);
 
+  useEffect(() => {
+    if (chartItemWrapRef.current && lineCanvasCtx) {
+      lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
+
+      if (multiSelectBoxStartPos && multiSelectBoxEndPos) {
+        getSelectedItemIds();
+
+        lineCanvasCtx.beginPath();
+
+        lineCanvasCtx.fillStyle = 'red';
+        lineCanvasCtx.globalAlpha = 0.2;
+        lineCanvasCtx.fillRect(...multiSelectBoxStartPos, ...multiSelectBoxEndPos);
+      }
+    }
+  }, [chartItemWrapRef, lineCanvasCtx, multiSelectBoxStartPos, multiSelectBoxEndPos, chartItems]);
+
   const drawConnectionPointLine = (_ctx: CanvasRenderingContext2D, _origin: PointPos, _next: PointPos) => {
     const GAP = 20;
 
@@ -234,6 +254,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
 
         return (
           (_id ? connectionTypeList.includes(chartItems[_id].elType) : true) &&
+          (_id ? !_pos.connectionIds.includes(_id) : true) &&
           _pos.left - CONNECT_POINT_SIZE / 2 <= _x &&
           _x <= CONNECT_POINT_SIZE + _pos.left &&
           _pos.top - CONNECT_POINT_SIZE / 2 <= _y &&
@@ -269,19 +290,38 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
     return _filtered[_filtered.length - 1];
   };
 
+  const getSelectedItemIds = () => {
+    if (chartItemWrapRef.current && multiSelectBoxStartPos && multiSelectBoxEndPos) {
+      const children = Array.from(chartItemWrapRef.current.children);
+
+      children.forEach((_el) => {
+        const points = getRectPoints(_el as HTMLElement);
+      });
+    }
+  };
+
   const handleMouseDown: MouseEventHandler<HTMLDivElement> = (_event) => {
     // TODO: consider zoom ...
     const selectedPoint = getConnectPoint(_event.clientX, _event.clientY);
     const selectedItem = getItemIdByPos(_event.clientX, _event.clientY);
 
     if (chartItems[selectedPoint?.id]?.zIndex >= (selectedItem?.zIndex || 0)) {
-      setSelectedConnectionPoint(selectedPoint);
+      const _hasId = chartItems[selectedPoint.id].connectionIds[selectedPoint.connectType][selectedPoint.index];
+
+      if (_hasId) {
+        // 이미 연결된 포인트를 분리시켜야 함
+      } else {
+        setSelectedConnectionPoint(selectedPoint);
+      }
     } else if (selectedItem) {
       // select item..
       // TODO: z-index조정
       setSelectedItemIds([selectedItem.id]);
     } else {
       // multi select..
+
+      setMultiSelectBoxStartPos([_event.clientX, _event.clientY]);
+      setMultiSelectBoxEndPos([0, 0]);
     }
   };
 
@@ -299,6 +339,10 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
         top: _prev.top + _event.movementY,
       }));
     }
+
+    if (multiSelectBoxStartPos) {
+      setMultiSelectBoxEndPos((_prev) => [_prev[0] + _event.movementX, _prev[1] + _event.movementY]);
+    }
   };
 
   const handleMouseUp: MouseEventHandler<HTMLDivElement> = (_event) => {
@@ -315,6 +359,11 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       _connected && connectPoints(selectedConnectionPoint, _connected);
       setSelectedConnectionPoint(null);
     }
+
+    if (multiSelectBoxStartPos) {
+      setMultiSelectBoxStartPos(null);
+      setMultiSelectBoxEndPos(null);
+    }
   };
 
   return (
@@ -324,12 +373,15 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
     >
-      <canvas ref={lineCanvasRef} className={cx('connection-flow-chart')} />
       <canvas ref={connectedCanvasRef} className={cx('connection-flow-chart')} />
 
-      {orderedChartItems.map((_itemInfo) => (
-        <ChartItem key={_itemInfo.id} itemInfo={_itemInfo} />
-      ))}
+      <div ref={chartItemWrapRef}>
+        {orderedChartItems.map((_itemInfo) => (
+          <ChartItem key={_itemInfo.id} itemInfo={_itemInfo} />
+        ))}
+      </div>
+
+      <canvas ref={lineCanvasRef} className={cx('connection-flow-chart', 'layer-top')} />
     </div>
   );
 }
