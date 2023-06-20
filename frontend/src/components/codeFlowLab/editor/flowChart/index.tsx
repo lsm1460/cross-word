@@ -27,8 +27,11 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
 
   const [lineCanvasCtx, setLineCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);
-  const [selectedItemIds, setSelectedItemIds] = useState([]);
+  const [selectedItemId, setSelectedItemId] = useState(null);
   const [selectedConnectionPoint, setSelectedConnectionPoint] = useState<PointPos>(null);
+
+  // multi select
+  const [multiSelectedIdList, setMultiSelectedIdList] = useState<string[]>([]);
   const [multiSelectBoxStartPos, setMultiSelectBoxStartPos] = useState<[number, number]>(null);
   const [multiSelectBoxEndPos, setMultiSelectBoxEndPos] = useState<[number, number]>(null);
 
@@ -170,13 +173,18 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
 
       if (multiSelectBoxStartPos && multiSelectBoxEndPos) {
-        getSelectedItemIds();
+        const selectedIds = getSelectedItemIds();
+
+        setMultiSelectedIdList(selectedIds);
 
         lineCanvasCtx.beginPath();
 
         lineCanvasCtx.fillStyle = 'red';
         lineCanvasCtx.globalAlpha = 0.2;
-        lineCanvasCtx.fillRect(...multiSelectBoxStartPos, ...multiSelectBoxEndPos);
+
+        const _endPos = multiSelectBoxEndPos.map((_p, _i) => _p - multiSelectBoxStartPos[_i]) as [number, number];
+
+        lineCanvasCtx.fillRect(...multiSelectBoxStartPos, ..._endPos);
       }
     }
   }, [chartItemWrapRef, lineCanvasCtx, multiSelectBoxStartPos, multiSelectBoxEndPos, chartItems]);
@@ -291,22 +299,31 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
   };
 
   const getSelectedItemIds = () => {
+    let _idList = [];
+
     if (chartItemWrapRef.current && multiSelectBoxStartPos && multiSelectBoxEndPos) {
       const children = Array.from(chartItemWrapRef.current.children);
 
-      children.forEach((_el) => {
-        const points = getRectPoints(_el as HTMLElement);
+      const selectBox = [
+        { x: multiSelectBoxStartPos[0], y: multiSelectBoxStartPos[1] },
+        { x: multiSelectBoxEndPos[0], y: multiSelectBoxStartPos[1] },
+        { x: multiSelectBoxEndPos[0], y: multiSelectBoxEndPos[1] },
+        { x: multiSelectBoxStartPos[0], y: multiSelectBoxEndPos[1] },
+      ];
 
-        const selectBox = [
-          { x: multiSelectBoxStartPos[0], y: multiSelectBoxStartPos[1] },
-          { x: multiSelectBoxEndPos[0], y: multiSelectBoxStartPos[1] },
-          { x: multiSelectBoxEndPos[0], y: multiSelectBoxEndPos[1] },
-          { x: multiSelectBoxStartPos[0], y: multiSelectBoxEndPos[1] },
-        ];
+      children.forEach((_el) => {
+        const _htmlEl = _el as HTMLElement;
+        const points = getRectPoints(_htmlEl);
 
         const isOverlap = doPolygonsIntersect(points, selectBox);
+
+        if (isOverlap) {
+          _idList.push(_htmlEl.dataset.id);
+        }
       });
     }
+
+    return _idList;
   };
 
   const handleMouseDown: MouseEventHandler<HTMLDivElement> = (_event) => {
@@ -325,20 +342,24 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
     } else if (selectedItem) {
       // select item..
       // TODO: z-index조정
-      setSelectedItemIds([selectedItem.id]);
+      setSelectedItemId(selectedItem.id);
     } else {
       // multi select..
 
       setMultiSelectBoxStartPos([_event.clientX, _event.clientY]);
-      setMultiSelectBoxEndPos([0, 0]);
+      setMultiSelectBoxEndPos([_event.clientX, _event.clientY]);
     }
   };
 
   const handleMouseMove: MouseEventHandler<HTMLDivElement> = (_event) => {
     // TODO: consider zoom ...
 
-    if (selectedItemIds.length > 0) {
-      moveItems(selectedItemIds, _event.movementX, _event.movementY);
+    if (selectedItemId) {
+      if (multiSelectedIdList.length > 0) {
+        moveItems(multiSelectedIdList, _event.movementX, _event.movementY);
+      } else {
+        moveItems([selectedItemId], _event.movementX, _event.movementY);
+      }
     }
 
     if (selectedConnectionPoint) {
@@ -355,7 +376,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
   };
 
   const handleMouseUp: MouseEventHandler<HTMLDivElement> = (_event) => {
-    setSelectedItemIds([]);
+    setSelectedItemId(null);
 
     if (selectedConnectionPoint) {
       const _connected = getConnectPoint(
@@ -386,7 +407,7 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
 
       <div ref={chartItemWrapRef}>
         {orderedChartItems.map((_itemInfo) => (
-          <ChartItem key={_itemInfo.id} itemInfo={_itemInfo} />
+          <ChartItem key={_itemInfo.id} itemInfo={_itemInfo} isSelected={multiSelectedIdList.includes(_itemInfo.id)} />
         ))}
       </div>
 

@@ -12,11 +12,12 @@ import { ChartItems } from '@/consts/types/codeFlowLab';
 
 interface Props {
   itemInfo: ChartItems;
+  isSelected: boolean;
 }
-function ChartItem({ itemInfo }: Props) {
+function ChartItem({ itemInfo, isSelected }: Props) {
   return (
     <div
-      className={cx('chart-item')}
+      className={cx('chart-item', { selected: isSelected })}
       data-id={itemInfo.id}
       style={{
         left: itemInfo.pos.left,
