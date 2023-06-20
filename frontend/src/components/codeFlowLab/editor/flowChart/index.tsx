@@ -342,19 +342,30 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
     } else if (selectedItem) {
       // select item..
       // TODO: z-index조정
-      setMultiSelectedIdList((_prev) => {
+      if (multiSelectedIdList.includes(selectedItem.id)) {
         if (_event.ctrlKey) {
-          if (_prev.includes(selectedItem.id)) {
-            return _prev.filter((_id) => _id !== selectedItem.id);
-          } else {
-            return [..._prev, selectedItem.id];
-          }
+          // 다중 선택이 있을 때 컨트롤 키가 눌러져 있다면 그 아이템을 선택취소한다.
+          setMultiSelectedIdList((_prev) => _prev.filter((_id) => _id !== selectedItem.id));
         } else {
-          return [selectedItem.id];
+          // 다중 선택일 때 컨트롤 키가 눌러져 있지 않다면 그 아이템을 기준으로 움직인다.
+          setSelectedItemId(selectedItem.id);
         }
-      });
+      } else {
+        // 다중 선택된 아이템이 없을 때
 
-      setSelectedItemId(selectedItem.id);
+        setMultiSelectedIdList((_prev) => {
+          if (_event.ctrlKey) {
+            // 컨트롤이 눌러져 있다면 아이템 추가
+            return [..._prev, selectedItem.id];
+          } else {
+            // 다중 선택된 아이템이 없고 컨트롤도 없다면 하나의 아이템 추가
+            return [selectedItem.id];
+          }
+        });
+
+        // 선택된 아이템을 기준으로 움직인다.
+        setSelectedItemId(selectedItem.id);
+      }
     } else {
       // multi select..
 
