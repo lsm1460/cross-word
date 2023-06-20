@@ -342,6 +342,18 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
     } else if (selectedItem) {
       // select item..
       // TODO: z-index조정
+      setMultiSelectedIdList((_prev) => {
+        if (_event.ctrlKey) {
+          if (_prev.includes(selectedItem.id)) {
+            return _prev.filter((_id) => _id !== selectedItem.id);
+          } else {
+            return [..._prev, selectedItem.id];
+          }
+        } else {
+          return [selectedItem.id];
+        }
+      });
+
       setSelectedItemId(selectedItem.id);
     } else {
       // multi select..
