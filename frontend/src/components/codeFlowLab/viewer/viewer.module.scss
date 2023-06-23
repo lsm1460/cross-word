@@ -1,3 +1,5 @@
+@import '../variables';
+
 .viewer-wrap {
-  width: 375px;
+  width: $viewer-width;
 }

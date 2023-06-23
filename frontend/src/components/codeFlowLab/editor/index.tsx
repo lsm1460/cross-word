@@ -7,6 +7,9 @@ import _ from 'lodash';
 import { useMemo, useState } from 'react';
 import FlowChart from './flowChart';
 import FlowChartViewer from '../viewer';
+import FlowToolbar from './flowToolbar';
+import FlowHeader from './flowHeader';
+import FlowZoom from './flowZoom';
 
 export type MoveItems = (_itemIds: string[], _deltaX: number, _deltaY: number) => void;
 export type ConnectPoints = (_prev: PointPos, _next: PointPos) => void;
@@ -122,12 +125,18 @@ function CodeFlowLabEditor() {
   };
 
   return (
-    <div className={cx('editor-wrap')}>
-      <div className={cx('canvas-area')}>
-        <FlowChart chartItems={chartItems} moveItems={moveItems} connectPoints={connectPoints} />
+    <>
+      <FlowHeader />
+      <div className={cx('editor-wrap')}>
+        <FlowToolbar />
+        <div className={cx('canvas-area')}>
+          <FlowZoom>
+            <FlowChart chartItems={chartItems} moveItems={moveItems} connectPoints={connectPoints} />
+          </FlowZoom>
+        </div>
+        <FlowChartViewer chartItems={chartItems} />
       </div>
-      <FlowChartViewer chartItems={chartItems} />
-    </div>
+    </>
   );
 }
 

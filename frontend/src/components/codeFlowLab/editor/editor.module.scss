@@ -1,9 +1,15 @@
+@import '../variables';
+
 .editor-wrap {
   position: fixed;
-  inset: 0;
+  top: $editor-header-height;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
 
   .canvas-area {
-    width: calc(100% - 375px);
+    width: calc(100% - $viewer-width - $editor-toolbar-width);
+    background-color: #1e1e1e;
   }
 }

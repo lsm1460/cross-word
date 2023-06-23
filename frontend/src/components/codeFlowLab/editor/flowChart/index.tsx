@@ -19,8 +19,10 @@ interface Props {
   chartItems: CodeFlowChartDoc['items'];
   moveItems: MoveItems;
   connectPoints: ConnectPoints;
+  scale?: number;
 }
-function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
+function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
+  const flowChartRef = useRef<HTMLDivElement>(null);
   const chartItemWrapRef = useRef<HTMLDivElement>(null);
   const lineCanvasRef = useRef<HTMLCanvasElement>(null);
   const connectedCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -128,6 +130,13 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       lineCanvas.height = lineCanvas.parentElement.clientHeight;
       connectedCanvas.width = connectedCanvas.parentElement.clientWidth;
       connectedCanvas.height = connectedCanvas.parentElement.clientHeight;
+    }
+  }, [lineCanvasRef, connectedCanvasRef, scale]);
+
+  useEffect(() => {
+    if (lineCanvasRef.current && connectedCanvasRef.current) {
+      const lineCanvas = lineCanvasRef.current;
+      const connectedCanvas = connectedCanvasRef.current;
 
       const lineCtx = lineCanvas.getContext('2d');
       const connectedCtx = connectedCanvas.getContext('2d');
@@ -188,6 +197,12 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
       }
     }
   }, [chartItemWrapRef, lineCanvasCtx, multiSelectBoxStartPos, multiSelectBoxEndPos, chartItems]);
+
+  const convertClientPosToLocalPos = (_clientPos: { x: number; y: number }) => {
+    const { left, top } = flowChartRef.current.getBoundingClientRect();
+
+    return { x: (_clientPos.x - left) / scale, y: (_clientPos.y - top) / scale };
+  };
 
   const drawConnectionPointLine = (_ctx: CanvasRenderingContext2D, _origin: PointPos, _next: PointPos) => {
     const GAP = 20;
@@ -313,10 +328,14 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
 
       children.forEach((_el) => {
         const _htmlEl = _el as HTMLElement;
-        const points = getRectPoints(_htmlEl);
+        let points = getRectPoints(_htmlEl);
+        points = points.map((_point) => convertClientPosToLocalPos(_point));
 
         const isOverlap = doPolygonsIntersect(points, selectBox);
 
+        if (_htmlEl.dataset.id === 'test-style') {
+          console.log('points', points);
+        }
         if (isOverlap) {
           _idList.push(_htmlEl.dataset.id);
         }
@@ -328,8 +347,10 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
 
   const handleMouseDown: MouseEventHandler<HTMLDivElement> = (_event) => {
     // TODO: consider zoom ...
-    const selectedPoint = getConnectPoint(_event.clientX, _event.clientY);
-    const selectedItem = getItemIdByPos(_event.clientX, _event.clientY);
+    const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
+
+    const selectedPoint = getConnectPoint(convertedX, convertedY);
+    const selectedItem = getItemIdByPos(convertedX, convertedY);
 
     if (chartItems[selectedPoint?.id]?.zIndex >= (selectedItem?.zIndex || 0)) {
       const _hasId = chartItems[selectedPoint.id].connectionIds[selectedPoint.connectType][selectedPoint.index];
@@ -369,8 +390,10 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
     } else {
       // multi select..
 
-      setMultiSelectBoxStartPos([_event.clientX, _event.clientY]);
-      setMultiSelectBoxEndPos([_event.clientX, _event.clientY]);
+      const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
+
+      setMultiSelectBoxStartPos([convertedX, convertedY]);
+      setMultiSelectBoxEndPos([convertedX, convertedY]);
     }
   };
 
@@ -379,22 +402,22 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
 
     if (selectedItemId) {
       if (multiSelectedIdList.length > 0) {
-        moveItems(multiSelectedIdList, _event.movementX, _event.movementY);
+        moveItems(multiSelectedIdList, _event.movementX / scale, _event.movementY / scale);
       } else {
-        moveItems([selectedItemId], _event.movementX, _event.movementY);
+        moveItems([selectedItemId], _event.movementX / scale, _event.movementY / scale);
       }
     }
 
     if (selectedConnectionPoint) {
       setSelectedConnectionPoint((_prev) => ({
         ..._prev,
-        left: _prev.left + _event.movementX,
-        top: _prev.top + _event.movementY,
+        left: _prev.left + _event.movementX / scale,
+        top: _prev.top + _event.movementY / scale,
       }));
     }
 
     if (multiSelectBoxStartPos) {
-      setMultiSelectBoxEndPos((_prev) => [_prev[0] + _event.movementX, _prev[1] + _event.movementY]);
+      setMultiSelectBoxEndPos((_prev) => [_prev[0] + _event.movementX / scale, _prev[1] + _event.movementY / scale]);
     }
   };
 
@@ -421,10 +444,15 @@ function FlowChart({ chartItems, moveItems, connectPoints }: Props) {
 
   return (
     <div
+      ref={flowChartRef}
       className={cx('canvas-wrap')}
       onMouseMove={handleMouseMove}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
+      style={{
+        width: `${100 / scale}%`,
+        height: `${100 / scale}%`,
+      }}
     >
       <canvas ref={connectedCanvasRef} className={cx('connection-flow-chart')} />
 
