@@ -130,7 +130,7 @@ function CodeFlowLabEditor() {
       <div className={cx('editor-wrap')}>
         <FlowToolbar />
         <div className={cx('canvas-area')}>
-          <FlowZoom>
+          <FlowZoom chartItems={chartItems}>
             <FlowChart chartItems={chartItems} moveItems={moveItems} connectPoints={connectPoints} />
           </FlowZoom>
         </div>

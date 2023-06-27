@@ -333,9 +333,6 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
 
         const isOverlap = doPolygonsIntersect(points, selectBox);
 
-        if (_htmlEl.dataset.id === 'test-style') {
-          console.log('points', points);
-        }
         if (isOverlap) {
           _idList.push(_htmlEl.dataset.id);
         }
