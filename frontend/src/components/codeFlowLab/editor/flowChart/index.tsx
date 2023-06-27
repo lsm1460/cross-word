@@ -27,15 +27,17 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
   const lineCanvasRef = useRef<HTMLCanvasElement>(null);
   const connectedCanvasRef = useRef<HTMLCanvasElement>(null);
 
+  const selectedItemId = useRef<string>(null);
+  const multiSelectedIdListClone = useRef<string[]>([]);
+  const selectedConnectionPoint = useRef<PointPos>(null);
+  const multiSelectBoxStartPos = useRef<[number, number]>(null);
+  const multiSelectBoxEndPos = useRef<[number, number]>(null);
+
   const [lineCanvasCtx, setLineCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);
-  const [selectedItemId, setSelectedItemId] = useState(null);
-  const [selectedConnectionPoint, setSelectedConnectionPoint] = useState<PointPos>(null);
 
   // multi select
   const [multiSelectedIdList, setMultiSelectedIdList] = useState<string[]>([]);
-  const [multiSelectBoxStartPos, setMultiSelectBoxStartPos] = useState<[number, number]>(null);
-  const [multiSelectBoxEndPos, setMultiSelectBoxEndPos] = useState<[number, number]>(null);
 
   const orderedChartItems = useMemo(
     () => Object.values(chartItems).sort((_before, _after) => _after.zIndex - _before.zIndex),
@@ -147,27 +149,6 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
   }, [lineCanvasRef, connectedCanvasRef]);
 
   useEffect(() => {
-    if (lineCanvasCtx) {
-      lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
-
-      if (selectedConnectionPoint) {
-        const originPoint = chartItemConnectPoints[selectedConnectionPoint.id].filter(
-          (_p) => _p.connectType === selectedConnectionPoint.connectType
-        )[selectedConnectionPoint.index];
-
-        const _nextPoint = getConnectPoint(
-          selectedConnectionPoint.left,
-          selectedConnectionPoint.top,
-          selectedConnectionPoint.connectType,
-          selectedConnectionPoint.id
-        );
-
-        drawConnectionPointLine(lineCanvasCtx, originPoint, _nextPoint);
-      }
-    }
-  }, [lineCanvasCtx, selectedConnectionPoint]);
-
-  useEffect(() => {
     if (connectedCanvasCtx) {
       connectedCanvasCtx.clearRect(0, 0, connectedCanvasRef.current.width, connectedCanvasRef.current.height);
 
@@ -178,25 +159,8 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
   }, [connectedCanvasCtx, connectedPointList]);
 
   useEffect(() => {
-    if (chartItemWrapRef.current && lineCanvasCtx) {
-      lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
-
-      if (multiSelectBoxStartPos && multiSelectBoxEndPos) {
-        const selectedIds = getSelectedItemIds();
-
-        setMultiSelectedIdList(selectedIds);
-
-        lineCanvasCtx.beginPath();
-
-        lineCanvasCtx.fillStyle = 'red';
-        lineCanvasCtx.globalAlpha = 0.2;
-
-        const _endPos = multiSelectBoxEndPos.map((_p, _i) => _p - multiSelectBoxStartPos[_i]) as [number, number];
-
-        lineCanvasCtx.fillRect(...multiSelectBoxStartPos, ..._endPos);
-      }
-    }
-  }, [chartItemWrapRef, lineCanvasCtx, multiSelectBoxStartPos, multiSelectBoxEndPos, chartItems]);
+    multiSelectedIdListClone.current = multiSelectedIdList;
+  }, [multiSelectedIdList]);
 
   const convertClientPosToLocalPos = (_clientPos: { x: number; y: number }) => {
     const { left, top } = flowChartRef.current.getBoundingClientRect();
@@ -254,9 +218,10 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
       }
       _ctx.lineTo(_next.left, _next.top);
     } else {
-      _ctx.lineTo(selectedConnectionPoint.left, selectedConnectionPoint.top);
+      _ctx.lineTo(selectedConnectionPoint.current.left, selectedConnectionPoint.current.top);
     }
 
+    _ctx.strokeStyle = '#ff0000';
     _ctx.stroke();
   };
 
@@ -316,14 +281,14 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
   const getSelectedItemIds = () => {
     let _idList = [];
 
-    if (chartItemWrapRef.current && multiSelectBoxStartPos && multiSelectBoxEndPos) {
+    if (chartItemWrapRef.current && multiSelectBoxStartPos.current && multiSelectBoxEndPos.current) {
       const children = Array.from(chartItemWrapRef.current.children);
 
       const selectBox = [
-        { x: multiSelectBoxStartPos[0], y: multiSelectBoxStartPos[1] },
-        { x: multiSelectBoxEndPos[0], y: multiSelectBoxStartPos[1] },
-        { x: multiSelectBoxEndPos[0], y: multiSelectBoxEndPos[1] },
-        { x: multiSelectBoxStartPos[0], y: multiSelectBoxEndPos[1] },
+        { x: multiSelectBoxStartPos.current[0], y: multiSelectBoxStartPos.current[1] },
+        { x: multiSelectBoxEndPos.current[0], y: multiSelectBoxStartPos.current[1] },
+        { x: multiSelectBoxEndPos.current[0], y: multiSelectBoxEndPos.current[1] },
+        { x: multiSelectBoxStartPos.current[0], y: multiSelectBoxEndPos.current[1] },
       ];
 
       children.forEach((_el) => {
@@ -355,7 +320,12 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
       if (_hasId) {
         // 이미 연결된 포인트를 분리시켜야 함
       } else {
-        setSelectedConnectionPoint(selectedPoint);
+        selectedConnectionPoint.current = selectedPoint;
+
+        document.addEventListener('mousemove', handleMouseMovePoint);
+        document.addEventListener('mouseup', handleMouseUpPoint);
+
+        return;
       }
     } else if (selectedItem) {
       // select item..
@@ -366,7 +336,7 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
           setMultiSelectedIdList((_prev) => _prev.filter((_id) => _id !== selectedItem.id));
         } else {
           // 다중 선택일 때 컨트롤 키가 눌러져 있지 않다면 그 아이템을 기준으로 움직인다.
-          setSelectedItemId(selectedItem.id);
+          selectedItemId.current = selectedItem.id;
         }
       } else {
         // 다중 선택된 아이템이 없을 때
@@ -382,70 +352,133 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
         });
 
         // 선택된 아이템을 기준으로 움직인다.
-        setSelectedItemId(selectedItem.id);
+        selectedItemId.current = selectedItem.id;
       }
+
+      document.addEventListener('mousemove', handleMouseMoveItems);
+      document.addEventListener('mouseup', handleMouseUpItems);
+
+      return;
     } else {
       // multi select..
 
       const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
 
-      setMultiSelectBoxStartPos([convertedX, convertedY]);
-      setMultiSelectBoxEndPos([convertedX, convertedY]);
+      multiSelectBoxStartPos.current = [convertedX, convertedY];
+      multiSelectBoxEndPos.current = [convertedX, convertedY];
+
+      document.addEventListener('mousemove', handleMouseMoveMultiSelect);
+      document.addEventListener('mouseup', handleMouseUpMultiSelect);
+
+      return;
     }
   };
 
-  const handleMouseMove: MouseEventHandler<HTMLDivElement> = (_event) => {
-    // TODO: consider zoom ...
-
-    if (selectedItemId) {
-      if (multiSelectedIdList.length > 0) {
-        moveItems(multiSelectedIdList, _event.movementX / scale, _event.movementY / scale);
+  const handleMouseMoveItems = (_event: MouseEvent) => {
+    if (selectedItemId.current) {
+      if (multiSelectedIdListClone.current.length > 0) {
+        moveItems(multiSelectedIdListClone.current, _event.movementX / scale, _event.movementY / scale);
       } else {
-        moveItems([selectedItemId], _event.movementX / scale, _event.movementY / scale);
+        moveItems([selectedItemId.current], _event.movementX / scale, _event.movementY / scale);
       }
     }
+  };
 
-    if (selectedConnectionPoint) {
-      setSelectedConnectionPoint((_prev) => ({
-        ..._prev,
-        left: _prev.left + _event.movementX / scale,
-        top: _prev.top + _event.movementY / scale,
-      }));
-    }
+  const handleMouseMovePoint = (_event: MouseEvent) => {
+    if (selectedConnectionPoint.current) {
+      const _targetPoint = {
+        ...selectedConnectionPoint.current,
+        left: selectedConnectionPoint.current.left + _event.movementX / scale,
+        top: selectedConnectionPoint.current.top + _event.movementY / scale,
+      };
 
-    if (multiSelectBoxStartPos) {
-      setMultiSelectBoxEndPos((_prev) => [_prev[0] + _event.movementX / scale, _prev[1] + _event.movementY / scale]);
+      selectedConnectionPoint.current = _targetPoint;
+
+      lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
+
+      const originPoint = chartItemConnectPoints[_targetPoint.id].filter(
+        (_p) => _p.connectType === _targetPoint.connectType
+      )[_targetPoint.index];
+
+      const _nextPoint = getConnectPoint(
+        _targetPoint.left,
+        _targetPoint.top,
+        _targetPoint.connectType,
+        _targetPoint.id
+      );
+
+      drawConnectionPointLine(lineCanvasCtx, originPoint, _nextPoint);
     }
   };
 
-  const handleMouseUp: MouseEventHandler<HTMLDivElement> = (_event) => {
-    setSelectedItemId(null);
+  const handleMouseMoveMultiSelect = (_event: MouseEvent) => {
+    if (multiSelectBoxStartPos) {
+      lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
 
-    if (selectedConnectionPoint) {
+      const _multiSelectEndPos = [
+        multiSelectBoxEndPos.current[0] + _event.movementX / scale,
+        multiSelectBoxEndPos.current[1] + _event.movementY / scale,
+      ] as [number, number];
+
+      multiSelectBoxEndPos.current = _multiSelectEndPos;
+
+      const selectedIds = getSelectedItemIds();
+      setMultiSelectedIdList(selectedIds);
+
+      lineCanvasCtx.beginPath();
+
+      lineCanvasCtx.fillStyle = 'red';
+      lineCanvasCtx.globalAlpha = 0.2;
+
+      const _endPos = _multiSelectEndPos.map((_p, _i) => _p - multiSelectBoxStartPos.current[_i]) as [number, number];
+
+      lineCanvasCtx.fillRect(...multiSelectBoxStartPos.current, ..._endPos);
+    }
+  };
+
+  const handleMouseUpItems = () => {
+    selectedItemId.current = null;
+
+    document.removeEventListener('mousemove', handleMouseMoveItems);
+    document.removeEventListener('mouseup', handleMouseUpItems);
+  };
+
+  const handleMouseUpPoint = () => {
+    lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
+
+    document.removeEventListener('mousemove', handleMouseMovePoint);
+    document.removeEventListener('mouseup', handleMouseUpPoint);
+
+    if (selectedConnectionPoint.current) {
       const _connected = getConnectPoint(
-        selectedConnectionPoint.left,
-        selectedConnectionPoint.top,
-        selectedConnectionPoint.connectType,
-        selectedConnectionPoint.id
+        selectedConnectionPoint.current.left,
+        selectedConnectionPoint.current.top,
+        selectedConnectionPoint.current.connectType,
+        selectedConnectionPoint.current.id
       );
 
-      _connected && connectPoints(selectedConnectionPoint, _connected);
-      setSelectedConnectionPoint(null);
+      _connected && connectPoints(selectedConnectionPoint.current, _connected);
+      selectedConnectionPoint.current = null;
     }
+  };
 
-    if (multiSelectBoxStartPos) {
-      setMultiSelectBoxStartPos(null);
-      setMultiSelectBoxEndPos(null);
-    }
+  const handleMouseUpMultiSelect = (_event: MouseEvent) => {
+    lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
+    const selectedIds = getSelectedItemIds();
+    setMultiSelectedIdList(selectedIds);
+
+    multiSelectBoxStartPos.current = null;
+    multiSelectBoxEndPos.current = null;
+
+    document.removeEventListener('mousemove', handleMouseMoveMultiSelect);
+    document.removeEventListener('mouseup', handleMouseUpMultiSelect);
   };
 
   return (
     <div
       ref={flowChartRef}
       className={cx('canvas-wrap')}
-      onMouseMove={handleMouseMove}
       onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
       style={{
         width: `${100 / scale}%`,
         height: `${100 / scale}%`,

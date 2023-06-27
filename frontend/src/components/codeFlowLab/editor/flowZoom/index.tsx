@@ -56,8 +56,6 @@ function FlowZoom({ chartItems, children }: Props) {
     return [scrollX, scrollY];
   }, [originSize, chartItems, scale]);
 
-  console.log('scrollArea', scrollArea);
-
   const handleZoom: MouseEventHandler<HTMLButtonElement> = (_event) => {
     const buttonEl = _event.nativeEvent.target as HTMLButtonElement;
 
