@@ -20,8 +20,9 @@ interface Props {
   moveItems: MoveItems;
   connectPoints: ConnectPoints;
   scale?: number;
+  transX?: number;
 }
-function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
+function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Props) {
   const flowChartRef = useRef<HTMLDivElement>(null);
   const chartItemWrapRef = useRef<HTMLDivElement>(null);
   const lineCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -360,17 +361,19 @@ function FlowChart({ chartItems, scale, moveItems, connectPoints }: Props) {
 
       return;
     } else {
-      // multi select..
+      if (_event.buttons === 1) {
+        // multi select.. only left click..
 
-      const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
+        const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
 
-      multiSelectBoxStartPos.current = [convertedX, convertedY];
-      multiSelectBoxEndPos.current = [convertedX, convertedY];
+        multiSelectBoxStartPos.current = [convertedX, convertedY];
+        multiSelectBoxEndPos.current = [convertedX, convertedY];
 
-      document.addEventListener('mousemove', handleMouseMoveMultiSelect);
-      document.addEventListener('mouseup', handleMouseUpMultiSelect);
+        document.addEventListener('mousemove', handleMouseMoveMultiSelect);
+        document.addEventListener('mouseup', handleMouseUpMultiSelect);
 
-      return;
+        return;
+      }
     }
   };
 
