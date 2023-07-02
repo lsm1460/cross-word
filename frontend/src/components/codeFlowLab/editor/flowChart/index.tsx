@@ -21,8 +21,9 @@ interface Props {
   connectPoints: ConnectPoints;
   scale?: number;
   transX?: number;
+  transY?: number;
 }
-function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Props) {
+function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints }: Props) {
   const flowChartRef = useRef<HTMLDivElement>(null);
   const chartItemWrapRef = useRef<HTMLDivElement>(null);
   const lineCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -42,7 +43,7 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
 
   const orderedChartItems = useMemo(
     () => Object.values(chartItems).sort((_before, _after) => _after.zIndex - _before.zIndex),
-    [chartItems]
+    [chartItems, scale]
   );
 
   const chartItemConnectPointsByDir: {
@@ -157,7 +158,7 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
         drawConnectionPointLine(connectedCanvasCtx, _points[0], _points[1]);
       });
     }
-  }, [connectedCanvasCtx, connectedPointList]);
+  }, [connectedCanvasCtx, connectedPointList, transX, transY]);
 
   useEffect(() => {
     multiSelectedIdListClone.current = multiSelectedIdList;
@@ -166,14 +167,14 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
   const convertClientPosToLocalPos = (_clientPos: { x: number; y: number }) => {
     const { left, top } = flowChartRef.current.getBoundingClientRect();
 
-    return { x: (_clientPos.x - left) / scale, y: (_clientPos.y - top) / scale };
+    return { x: (_clientPos.x - left) / scale + transX, y: (_clientPos.y - top) / scale + transY };
   };
 
   const drawConnectionPointLine = (_ctx: CanvasRenderingContext2D, _origin: PointPos, _next: PointPos) => {
     const GAP = 20;
 
     _ctx.beginPath();
-    _ctx.moveTo(_origin.left, _origin.top);
+    _ctx.moveTo(_origin.left + transX, _origin.top + transY);
 
     if (_next && _next.id !== _origin.id) {
       let horDir: 'right' | 'left' = null;
@@ -198,8 +199,8 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
-        _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0), _origin.top);
-        _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0), _next.top);
+        _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0) + transX, _origin.top + transY);
+        _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0) + transX, _next.top + transY);
       } else if (_origin.connectType === 'right' && horDir === 'left' && _next.connectType === 'left') {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
@@ -212,14 +213,14 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
-        _ctx.lineTo(leftPos - GAP, _origin.top);
-        _ctx.lineTo(leftPos - GAP, Math.max((_next.top + _origin.top) / 2, 0));
-        _ctx.lineTo(rightPos + GAP, Math.max((_next.top + _origin.top) / 2, 0));
-        _ctx.lineTo(rightPos + GAP, _next.top);
+        _ctx.lineTo(leftPos - GAP + transX, _origin.top + transY);
+        _ctx.lineTo(leftPos - GAP + transX, Math.max((_next.top + _origin.top) / 2, 0) + transY);
+        _ctx.lineTo(rightPos + GAP + transX, Math.max((_next.top + _origin.top) / 2, 0) + transY);
+        _ctx.lineTo(rightPos + GAP + transX, _next.top + transY);
       }
-      _ctx.lineTo(_next.left, _next.top);
+      _ctx.lineTo(_next.left + transX, _next.top + transY);
     } else {
-      _ctx.lineTo(selectedConnectionPoint.current.left, selectedConnectionPoint.current.top);
+      _ctx.lineTo(selectedConnectionPoint.current.left + transX, selectedConnectionPoint.current.top + transY);
     }
 
     _ctx.strokeStyle = '#ff0000';
@@ -244,10 +245,10 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
         return (
           (_id ? connectionTypeList.includes(chartItems[_id].elType) : true) &&
           (_id ? !_pos.connectionIds.includes(_id) : true) &&
-          _pos.left - CONNECT_POINT_SIZE / 2 <= _x &&
-          _x <= CONNECT_POINT_SIZE + _pos.left &&
-          _pos.top - CONNECT_POINT_SIZE / 2 <= _y &&
-          _y <= CONNECT_POINT_SIZE + _pos.top
+          _pos.left - CONNECT_POINT_SIZE / 2 + transX <= _x &&
+          _x <= CONNECT_POINT_SIZE + _pos.left + transX &&
+          _pos.top - CONNECT_POINT_SIZE / 2 + transY <= _y &&
+          _y <= CONNECT_POINT_SIZE + _pos.top + transY
         );
       });
 
@@ -270,10 +271,10 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
     // todo: item grap area를 ui상에서 고려해보자
     const _filtered = orderedChartItems.filter(
       (_item) =>
-        _item.pos.left <= _x &&
-        _x <= FLOW_CHART_ITEMS_STYLE[_item.elType].width + _item.pos.left &&
-        _item.pos.top <= _y &&
-        _y <= FLOW_CHART_ITEMS_STYLE[_item.elType].height + _item.pos.top
+        _item.pos.left + transX <= _x &&
+        _x <= FLOW_CHART_ITEMS_STYLE[_item.elType].width + _item.pos.left + transX &&
+        _item.pos.top + transY <= _y &&
+        _y <= FLOW_CHART_ITEMS_STYLE[_item.elType].height + _item.pos.top + transY
     );
 
     return _filtered[_filtered.length - 1];
@@ -404,8 +405,8 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
       )[_targetPoint.index];
 
       const _nextPoint = getConnectPoint(
-        _targetPoint.left,
-        _targetPoint.top,
+        _targetPoint.left + transX,
+        _targetPoint.top + transY,
         _targetPoint.connectType,
         _targetPoint.id
       );
@@ -454,8 +455,8 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
 
     if (selectedConnectionPoint.current) {
       const _connected = getConnectPoint(
-        selectedConnectionPoint.current.left,
-        selectedConnectionPoint.current.top,
+        selectedConnectionPoint.current.left + transX,
+        selectedConnectionPoint.current.top + transY,
         selectedConnectionPoint.current.connectType,
         selectedConnectionPoint.current.id
       );
@@ -487,7 +488,11 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
         height: `${100 / scale}%`,
       }}
     >
-      <canvas ref={connectedCanvasRef} className={cx('connection-flow-chart')} />
+      <canvas
+        ref={connectedCanvasRef}
+        className={cx('connection-flow-chart')}
+        style={{ left: transX * -1, top: transY * -1 }}
+      />
 
       <div ref={chartItemWrapRef}>
         {orderedChartItems.map((_itemInfo) => (
@@ -495,7 +500,11 @@ function FlowChart({ chartItems, scale, transX, moveItems, connectPoints }: Prop
         ))}
       </div>
 
-      <canvas ref={lineCanvasRef} className={cx('connection-flow-chart', 'layer-top')} />
+      <canvas
+        ref={lineCanvasRef}
+        className={cx('connection-flow-chart', 'layer-top')}
+        style={{ left: transX * -1, top: transY * -1 }}
+      />
     </div>
   );
 }

@@ -95,8 +95,6 @@ function FlowZoom({ chartItems, children }: Props) {
     setTransY(_transY);
   }, [scrollArea, verticalPos]);
 
-  console.log('transY', transY);
-
   const handleZoom: MouseEventHandler<HTMLButtonElement> = (_event) => {
     const buttonEl = _event.nativeEvent.target as HTMLButtonElement;
 
@@ -114,14 +112,22 @@ function FlowZoom({ chartItems, children }: Props) {
     _event.preventDefault();
 
     if (_event.ctrlKey) {
-      console.log('엄');
+      // todo: transform origin set..?
+      if (_event.deltaY < 1) {
+        setScale((_prev) => Math.min(_prev + 0.1, 2));
+      } else {
+        setScale((_prev) => Math.max(_prev - 0.1, 0.5));
+      }
+
+      return;
     }
 
     if (_event.shiftKey) {
-      console.log('horizon scroll');
+      updateHorizonScroll(_event.deltaX);
+      return;
+    } else {
+      updateVerticalScroll(_event.deltaY);
     }
-
-    // (scrollArea[0] * _percentage) - (scrollArea[0] / 2) translateX
   };
 
   const handleHorizonScroll: MouseEventHandler<HTMLDivElement> = (_event) => {
@@ -190,7 +196,7 @@ function FlowZoom({ chartItems, children }: Props) {
           transform: `scale(${scale}) translateX(${transX}px) translateY(${transY}px)`,
         }}
       >
-        {React.cloneElement(children, { scale, transX })}
+        {React.cloneElement(children, { scale, transX, transY })}
       </div>
 
       <div className={cx('horizon-scroll-box')}>
