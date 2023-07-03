@@ -167,7 +167,7 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
   const convertClientPosToLocalPos = (_clientPos: { x: number; y: number }) => {
     const { left, top } = flowChartRef.current.getBoundingClientRect();
 
-    return { x: (_clientPos.x - left) / scale + transX, y: (_clientPos.y - top) / scale + transY };
+    return { x: (_clientPos.x - left) / scale, y: (_clientPos.y - top) / scale };
   };
 
   const drawConnectionPointLine = (_ctx: CanvasRenderingContext2D, _origin: PointPos, _next: PointPos) => {
@@ -486,25 +486,25 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
       style={{
         width: `${100 / scale}%`,
         height: `${100 / scale}%`,
+        left: `calc(50% - ${transX}px)`,
+        top: `calc(50% - ${transY}px)`,
       }}
     >
-      <canvas
-        ref={connectedCanvasRef}
-        className={cx('connection-flow-chart')}
-        style={{ left: transX * -1, top: transY * -1 }}
-      />
+      <canvas ref={connectedCanvasRef} className={cx('connection-flow-chart')} />
 
-      <div ref={chartItemWrapRef}>
+      <div
+        ref={chartItemWrapRef}
+        style={{
+          left: transX,
+          top: transY,
+        }}
+      >
         {orderedChartItems.map((_itemInfo) => (
           <ChartItem key={_itemInfo.id} itemInfo={_itemInfo} isSelected={multiSelectedIdList.includes(_itemInfo.id)} />
         ))}
       </div>
 
-      <canvas
-        ref={lineCanvasRef}
-        className={cx('connection-flow-chart', 'layer-top')}
-        style={{ left: transX * -1, top: transY * -1 }}
-      />
+      <canvas ref={lineCanvasRef} className={cx('connection-flow-chart', 'layer-top')} />
     </div>
   );
 }
