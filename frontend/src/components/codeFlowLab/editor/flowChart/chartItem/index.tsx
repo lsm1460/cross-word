@@ -10,8 +10,8 @@ import {
   FLOW_CHART_ITEMS_STYLE,
 } from '@/consts/codeFlowLab/items';
 import { ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
-import _ from 'lodash';
 import { useMemo } from 'react';
+import { getConnectSizeByType, getElType } from '../utils';
 
 interface Props {
   chartItems: CodeFlowChartDoc['items'];
@@ -19,19 +19,10 @@ interface Props {
   isSelected: boolean;
 }
 function ChartItem({ chartItems, itemInfo, isSelected }: Props) {
-  const connectSizeByType = useMemo(() => {
-    return _.mapValues(itemInfo.connectionIds, (_ids) => {
-      const typeGroup = _.groupBy(_ids, (_id) => {
-        if (CHART_ELEMENT_ITEMS.includes(chartItems[_id].elType)) {
-          return ChartItemType.el;
-        } else {
-          return chartItems[_id].elType;
-        }
-      });
-
-      return _.mapValues(typeGroup, (_ids) => _ids.length);
-    });
-  }, [chartItems, itemInfo]);
+  const connectSizeByType = useMemo(
+    () => getConnectSizeByType(itemInfo.connectionIds, chartItems),
+    [chartItems, itemInfo]
+  );
 
   const connectPointList = () => {
     return FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectorPosition.map(([_x, _y], _i) => {
@@ -57,10 +48,7 @@ function ChartItem({ chartItems, itemInfo, isSelected }: Props) {
                   }}
                 >
                   <span
-                    className={cx(
-                      'dot',
-                      `${CHART_ELEMENT_ITEMS.includes(itemInfo.elType) ? ChartItemType.el : itemInfo.elType}-${_type}`
-                    )}
+                    className={cx('dot', `${getElType(itemInfo.elType)}-${_type}`)}
                     style={{
                       width: CONNECT_POINT_SIZE,
                       height: CONNECT_POINT_SIZE,

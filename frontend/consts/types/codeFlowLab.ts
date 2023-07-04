@@ -66,4 +66,5 @@ export type PointPos = {
   index: number;
   connectType: 'right' | 'left';
   connectionIds: string[];
+  connectElType: ChartItemType;
 };

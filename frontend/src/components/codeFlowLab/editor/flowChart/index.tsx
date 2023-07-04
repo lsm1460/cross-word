@@ -9,11 +9,11 @@ import {
   FLOW_CHART_ITEMS_STYLE,
 } from '@/consts/codeFlowLab/items';
 import { CodeFlowChartDoc, PointPos } from '@/consts/types/codeFlowLab';
+import _ from 'lodash';
 import { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import { ConnectPoints, MoveItems } from '..';
 import ChartItem from './chartItem';
-import _ from 'lodash';
-import { getRectPoints, doPolygonsIntersect } from './utils';
+import { doPolygonsIntersect, getConnectSizeByType, getElType, getRectPoints } from './utils';
 
 interface Props {
   chartItems: CodeFlowChartDoc['items'];
@@ -53,35 +53,60 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
 
     return _.mapValues(items, (_item) => ({
       connectionIds: _item.connectionIds,
-      ..._.mapValues(_item.connectionIds, (_ids: string, _dir) =>
-        Array((_item.connectionIds?.[_dir]?.length || 0) + 1)
-          .fill(undefined)
-          .map((__, j) => {
-            const [__x, _y] = FLOW_CHART_ITEMS_STYLE[_item.elType].connectorPosition.filter(
-              ([__x, _y]) => __x === _dir
-            )[0];
+      ..._.mapValues(_item.connectionIds, (_ids: string, _dir) => {
+        const connectSizeByType = getConnectSizeByType(_item.connectionIds, chartItems);
+        const connectSizeByDir = _.mapValues(connectSizeByType, (_sizeByType) =>
+          _.reduce(
+            _sizeByType,
+            (_acc, _cur) => {
+              return _acc + _cur;
+            },
+            0
+          )
+        );
 
-            const itemHeight =
-              FLOW_CHART_ITEMS_STYLE[_item.elType].height +
-              Math.max(
-                (_item.connectionIds?.right || []).length,
-                Math.max((_item.connectionIds?.left || []).length, 0)
-              ) *
-                (CONNECT_POINT_GAP + CONNECT_POINT_SIZE);
+        let _i = -1;
 
-            return {
-              id: _item.id,
-              left: _item.pos.left + (_dir === 'left' ? 0 : FLOW_CHART_ITEMS_STYLE[_item.elType].width),
-              top:
-                _y === 'bottom'
-                  ? _item.pos.top + itemHeight - CONNECT_POINT_START - j * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP)
-                  : _item.pos.top + CONNECT_POINT_START + j * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP),
-              index: j,
-              connectType: _dir as 'right' | 'left',
-              connectionIds: _item.connectionIds?.[_dir] || [],
-            };
+        return (FLOW_CHART_ITEMS_STYLE[_item.elType].connectionTypeList[_dir] || [])
+          .map((_type, _j, _jj) => {
+            const dirSize = _jj.length + connectSizeByDir[_dir];
+
+            return Array((connectSizeByType[_dir][_type] || 0) + 1)
+              .fill(undefined)
+              .map((__, _k, _kk) => {
+                _i++;
+
+                const [__x, _y] = FLOW_CHART_ITEMS_STYLE[_item.elType].connectorPosition.filter(
+                  ([__x, _y]) => __x === _dir
+                )[0];
+
+                const itemHeight =
+                  FLOW_CHART_ITEMS_STYLE[_item.elType].height +
+                  Math.max(
+                    (_item.connectionIds?.right || []).length,
+                    Math.max((_item.connectionIds?.left || []).length, 0)
+                  ) *
+                    (CONNECT_POINT_GAP + CONNECT_POINT_SIZE);
+
+                return {
+                  id: _item.id,
+                  left: _item.pos.left + (_dir === 'left' ? 0 : FLOW_CHART_ITEMS_STYLE[_item.elType].width),
+                  top:
+                    _y === 'bottom'
+                      ? _item.pos.top +
+                        itemHeight -
+                        CONNECT_POINT_START -
+                        (dirSize - _i - 1) * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP)
+                      : _item.pos.top + CONNECT_POINT_START + _i * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP),
+                  index: _i,
+                  connectType: _dir as 'right' | 'left',
+                  connectElType: _type,
+                  connectionIds: _item.connectionIds?.[_dir] || [],
+                };
+              });
           })
-      ),
+          .flat();
+      }),
     }));
   }, [orderedChartItems]);
 
@@ -104,10 +129,32 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
         const _idList = _items.connectionIds[_dir as 'right' | 'left'];
 
         _idList.forEach((_id, index) => {
+          // _id 출발
+          // _key 도착
+
           const startPoint = _items[_dir as 'right' | 'left'][index];
           const invertedDir = _dir === 'right' ? 'left' : 'right';
 
-          const connectedIndex = chartItemConnectPointsByDir[_id].connectionIds[invertedDir].indexOf(_key);
+          const connectedElType = getElType(chartItems[_key].elType);
+
+          const typeGroup = _.groupBy(chartItemConnectPointsByDir[_id].connectionIds[invertedDir], (_id) =>
+            getElType(chartItems[_id].elType)
+          );
+
+          let keyIndex = 0;
+
+          for (let _typeKey in typeGroup) {
+            if (typeGroup[_typeKey].indexOf(_key) > -1) {
+              keyIndex += typeGroup[_typeKey].indexOf(_key);
+              break;
+            } else {
+              keyIndex += typeGroup[_typeKey].length + 1;
+            }
+          }
+
+          const connectedIndex = _.findIndex(chartItemConnectPointsByDir[_id][invertedDir], (_item) => {
+            return _item.connectElType === connectedElType && keyIndex === _item.index;
+          });
 
           const connectedPoint = chartItemConnectPointsByDir[_id][invertedDir][connectedIndex];
 
@@ -170,7 +217,7 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
     return { x: (_clientPos.x - left) / scale, y: (_clientPos.y - top) / scale };
   };
 
-  const drawConnectionPointLine = (_ctx: CanvasRenderingContext2D, _origin: PointPos, _next: PointPos) => {
+  const drawConnectionPointLine = (_ctx: CanvasRenderingContext2D, _origin: PointPos, _next?: PointPos) => {
     const GAP = 20;
 
     _ctx.beginPath();
@@ -228,6 +275,12 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
   };
 
   const getConnectPoint = (_x: number, _y: number, _connectType?: 'left' | 'right', _id?: string): PointPos => {
+    let _elType;
+
+    if (_id) {
+      _elType = getElType(chartItems[_id].elType);
+    }
+
     const _points = Object.values(chartItemConnectPoints)
       .flat()
       .filter((_pos) => {
@@ -243,7 +296,7 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
         }
 
         return (
-          (_id ? connectionTypeList.includes(chartItems[_id].elType) : true) &&
+          (_id ? connectionTypeList.includes(_elType) : true) &&
           (_id ? !_pos.connectionIds.includes(_id) : true) &&
           _pos.left - CONNECT_POINT_SIZE / 2 + transX <= _x &&
           _x <= CONNECT_POINT_SIZE + _pos.left + transX &&
@@ -411,7 +464,18 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
         _targetPoint.id
       );
 
-      drawConnectionPointLine(lineCanvasCtx, originPoint, _nextPoint);
+      let connectedPoint;
+
+      if (_nextPoint) {
+        const originElType = getElType(chartItems[originPoint.id].elType);
+        const nextElType = getElType(chartItems[_nextPoint.id].elType);
+
+        if (_nextPoint.connectElType === originElType && originPoint.connectElType === nextElType) {
+          connectedPoint = _nextPoint;
+        }
+      }
+
+      drawConnectionPointLine(lineCanvasCtx, originPoint, connectedPoint);
     }
   };
 

@@ -1,3 +1,5 @@
+import { CHART_ELEMENT_ITEMS } from '@/consts/codeFlowLab/items';
+import { ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
 import _ from 'lodash';
 
 type IPolygon = { x: number; y: number }[];
@@ -93,3 +95,16 @@ export function getRectPoints(element: HTMLElement): IPoint[] {
     { x: x3, y: y3 },
   ];
 }
+
+export const getElType = (_elType) => (CHART_ELEMENT_ITEMS.includes(_elType) ? ChartItemType.el : _elType);
+
+export const getConnectSizeByType = (
+  _idsByDic: ChartItems['connectionIds'],
+  _chartItems: CodeFlowChartDoc['items']
+) => {
+  return _.mapValues(_idsByDic, (_ids) => {
+    const typeGroup = _.groupBy(_ids, (_id) => getElType(_chartItems[_id].elType));
+
+    return _.mapValues(typeGroup, (_ids) => _ids.length);
+  });
+};

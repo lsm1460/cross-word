@@ -23,7 +23,7 @@ function CodeFlowLabEditor() {
         elType: ChartItemType.body,
         pos: { left: 20, top: 20 },
         zIndex: 1,
-        connectionIds: { right: ['test-id'] },
+        connectionIds: { right: ['test-id', 'test-button'] },
       },
       'test-id': {
         id: 'test-id',
@@ -55,10 +55,17 @@ function CodeFlowLabEditor() {
         zIndex: 5,
         connectionIds: { left: [], right: [] },
       },
+      'test-button': {
+        id: 'test-button',
+        elType: ChartItemType.button,
+        pos: { left: 420, top: 220 },
+        zIndex: 6,
+        connectionIds: { left: ['root'], right: [] },
+      },
     },
     scene: {
       'test-scene-01': {
-        itemIds: ['root', 'test-id', 'test-style', 'test-trigger', 'test-function'],
+        itemIds: ['root', 'test-id', 'test-style', 'test-trigger', 'test-function', 'test-button'],
         order: 1,
       },
     },
