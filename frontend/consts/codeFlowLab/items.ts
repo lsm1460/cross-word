@@ -8,8 +8,9 @@ export const FLOW_CHART_ITEMS_STYLE = {
     height: 70,
     connectorPosition: [['right', 'bottom']],
     connectionTypeList: {
-      right: [...CHART_ELEMENT_ITEMS, ChartItemType.style, ChartItemType.trigger],
+      right: [ChartItemType.el, ChartItemType.style, ChartItemType.trigger],
     },
+    backgroundColor: '#c2cae8',
   },
   [ChartItemType.button]: {
     width: 150,
@@ -19,9 +20,10 @@ export const FLOW_CHART_ITEMS_STYLE = {
       ['right', 'bottom'],
     ],
     connectionTypeList: {
-      left: [],
+      left: [ChartItemType.el],
       right: [ChartItemType.style, ChartItemType.trigger],
     },
+    backgroundColor: '#c2cae8',
   },
   [ChartItemType.style]: {
     width: 150,
@@ -31,9 +33,10 @@ export const FLOW_CHART_ITEMS_STYLE = {
       ['right', 'bottom'],
     ],
     connectionTypeList: {
-      left: CHART_ELEMENT_ITEMS,
+      left: [ChartItemType.el],
       right: [ChartItemType.style],
     },
+    backgroundColor: '#c2e8d6',
   },
   [ChartItemType.trigger]: {
     width: 150,
@@ -43,9 +46,10 @@ export const FLOW_CHART_ITEMS_STYLE = {
       ['right', 'bottom'],
     ],
     connectionTypeList: {
-      left: CHART_ELEMENT_ITEMS,
+      left: [ChartItemType.el],
       right: [ChartItemType.function],
     },
+    backgroundColor: '#e8c2c2',
   },
   [ChartItemType.function]: {
     width: 150,
@@ -56,7 +60,9 @@ export const FLOW_CHART_ITEMS_STYLE = {
     ],
     connectionTypeList: {
       left: [ChartItemType.trigger],
+      right: [],
     },
+    backgroundColor: '#dadada',
   },
 };
 

@@ -3,18 +3,79 @@ import styles from './chartItem.module.scss';
 const cx = classNames.bind(styles);
 //
 import {
+  CHART_ELEMENT_ITEMS,
   CONNECT_POINT_GAP,
   CONNECT_POINT_SIZE,
   CONNECT_POINT_START,
   FLOW_CHART_ITEMS_STYLE,
 } from '@/consts/codeFlowLab/items';
-import { ChartItems } from '@/consts/types/codeFlowLab';
+import { ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
+import _ from 'lodash';
+import { useMemo } from 'react';
 
 interface Props {
+  chartItems: CodeFlowChartDoc['items'];
   itemInfo: ChartItems;
   isSelected: boolean;
 }
-function ChartItem({ itemInfo, isSelected }: Props) {
+function ChartItem({ chartItems, itemInfo, isSelected }: Props) {
+  const connectSizeByType = useMemo(() => {
+    return _.mapValues(itemInfo.connectionIds, (_ids) => {
+      const typeGroup = _.groupBy(_ids, (_id) => {
+        if (CHART_ELEMENT_ITEMS.includes(chartItems[_id].elType)) {
+          return ChartItemType.el;
+        } else {
+          return chartItems[_id].elType;
+        }
+      });
+
+      return _.mapValues(typeGroup, (_ids) => _ids.length);
+    });
+  }, [chartItems, itemInfo]);
+
+  const connectPointList = () => {
+    return FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectorPosition.map(([_x, _y], _i) => {
+      return (
+        <ul
+          key={_i}
+          style={{
+            [_y]: CONNECT_POINT_START,
+            [_x]: 0,
+            transform: _x === 'right' ? 'translateX(50%)' : 'translateX(-50%)',
+          }}
+        >
+          {(FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectionTypeList[_x] || []).map((_type, _j) => {
+            // console.log(connectSizeByType[_x][_type]);
+            return Array((connectSizeByType[_x][_type] || 0) + 1)
+              .fill(undefined)
+              .map((__, _k) => (
+                <li
+                  key={`${_i}-${_j}-${_k}`}
+                  style={{
+                    height: 0,
+                    marginTop: CONNECT_POINT_GAP + CONNECT_POINT_SIZE,
+                  }}
+                >
+                  <span
+                    className={cx(
+                      'dot',
+                      `${CHART_ELEMENT_ITEMS.includes(itemInfo.elType) ? ChartItemType.el : itemInfo.elType}-${_type}`
+                    )}
+                    style={{
+                      width: CONNECT_POINT_SIZE,
+                      height: CONNECT_POINT_SIZE,
+                    }}
+                  />
+                </li>
+              ));
+          })}
+        </ul>
+      );
+    });
+  };
+
+  // console.log('connectPointList',connectPointList)
+
   return (
     <div
       className={cx('chart-item', { selected: isSelected })}
@@ -22,6 +83,7 @@ function ChartItem({ itemInfo, isSelected }: Props) {
       style={{
         left: itemInfo.pos.left,
         top: itemInfo.pos.top,
+        backgroundColor: FLOW_CHART_ITEMS_STYLE[itemInfo.elType].backgroundColor,
         minWidth: FLOW_CHART_ITEMS_STYLE[itemInfo.elType].width,
         minHeight:
           FLOW_CHART_ITEMS_STYLE[itemInfo.elType].height +
@@ -34,35 +96,7 @@ function ChartItem({ itemInfo, isSelected }: Props) {
       }}
     >
       <p>{itemInfo.id}</p>
-      {FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectorPosition.map(([_x, _y], _i) => (
-        <ul
-          key={_i}
-          style={{
-            [_y]: CONNECT_POINT_START,
-            [_x]: 0,
-            transform: _x === 'right' ? 'translateX(50%)' : 'translateX(-50%)',
-          }}
-        >
-          {Array(itemInfo.connectionIds[_x].length + 1)
-            .fill(undefined)
-            .map((__, _j) => (
-              <li
-                key={`${_i}-${_j}`}
-                style={{
-                  height: 0,
-                  marginTop: CONNECT_POINT_GAP + CONNECT_POINT_SIZE,
-                }}
-              >
-                <span
-                  style={{
-                    width: CONNECT_POINT_SIZE,
-                    height: CONNECT_POINT_SIZE,
-                  }}
-                />
-              </li>
-            ))}
-        </ul>
-      ))}
+      {connectPointList()}
     </div>
   );
 }

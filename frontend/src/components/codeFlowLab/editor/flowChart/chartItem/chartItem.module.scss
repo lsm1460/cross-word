@@ -23,11 +23,26 @@
         margin-top: 0 !important;
       }
 
-      span {
+      .dot {
         display: block;
         border-radius: 50%;
         background-color: #222;
         transform: translateY(-50%);
+
+        &.element-element {
+          background-color: #7b7be8;
+        }
+
+        &.element-style,
+        &.style-element,
+        &.style-style {
+          background-color: #2ec438;
+        }
+
+        &.element-trigger,
+        &.trigger-element {
+          background-color: #e36775;
+        }
       }
     }
   }

@@ -500,7 +500,12 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
         }}
       >
         {orderedChartItems.map((_itemInfo) => (
-          <ChartItem key={_itemInfo.id} itemInfo={_itemInfo} isSelected={multiSelectedIdList.includes(_itemInfo.id)} />
+          <ChartItem
+            key={_itemInfo.id}
+            chartItems={chartItems}
+            itemInfo={_itemInfo}
+            isSelected={multiSelectedIdList.includes(_itemInfo.id)}
+          />
         ))}
       </div>
 

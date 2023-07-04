@@ -7,6 +7,7 @@ export enum ChartItemType {
   trigger = 'trigger',
   function = 'function',
   body = 'body',
+  el = 'element',
 }
 
 interface FlowScene {
