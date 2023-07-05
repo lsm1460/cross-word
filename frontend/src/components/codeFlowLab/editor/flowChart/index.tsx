@@ -3,12 +3,14 @@ import styles from './flowChart.module.scss';
 const cx = classNames.bind(styles);
 //
 import {
+  BLOCK_HEADER_SIZE,
   CONNECT_POINT_GAP,
   CONNECT_POINT_SIZE,
   CONNECT_POINT_START,
   FLOW_CHART_ITEMS_STYLE,
+  POINT_LIST_PADDING,
 } from '@/consts/codeFlowLab/items';
-import { CodeFlowChartDoc, PointPos } from '@/consts/types/codeFlowLab';
+import { ChartItems, CodeFlowChartDoc, PointPos } from '@/consts/types/codeFlowLab';
 import _ from 'lodash';
 import { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import { ConnectPoints, MoveItems } from '..';
@@ -76,10 +78,6 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
               .map((__, _k, _kk) => {
                 _i++;
 
-                const [__x, _y] = FLOW_CHART_ITEMS_STYLE[_item.elType].connectorPosition.filter(
-                  ([__x, _y]) => __x === _dir
-                )[0];
-
                 const itemHeight =
                   FLOW_CHART_ITEMS_STYLE[_item.elType].height +
                   Math.max(
@@ -92,12 +90,10 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
                   id: _item.id,
                   left: _item.pos.left + (_dir === 'left' ? 0 : FLOW_CHART_ITEMS_STYLE[_item.elType].width),
                   top:
-                    _y === 'bottom'
-                      ? _item.pos.top +
-                        itemHeight -
-                        CONNECT_POINT_START -
-                        (dirSize - _i - 1) * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP)
-                      : _item.pos.top + CONNECT_POINT_START + _i * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP),
+                    _item.pos.top +
+                    BLOCK_HEADER_SIZE +
+                    CONNECT_POINT_START +
+                    _i * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP),
                   index: _i,
                   connectType: _dir as 'right' | 'left',
                   connectElType: _type,
@@ -119,6 +115,28 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
   );
 
   const connectedPointList = useMemo(() => {
+    const findItemIndex = (_key, _id, _dir) => {
+      let typeGroup = _.mapKeys(FLOW_CHART_ITEMS_STYLE[chartItems[_id].elType].connectionTypeList[_dir]);
+      typeGroup = _.mapValues(typeGroup, (__, _typeKey) =>
+        chartItemConnectPointsByDir[_id].connectionIds[_dir].filter(
+          (_typeId) => getElType(chartItems[_typeId].elType) === _typeKey
+        )
+      );
+
+      let keyIndex = 0;
+
+      for (let _typeKey in typeGroup) {
+        if (typeGroup[_typeKey].indexOf(_key) > -1) {
+          keyIndex += typeGroup[_typeKey].indexOf(_key);
+          break;
+        } else {
+          keyIndex += typeGroup[_typeKey].length + 1;
+        }
+      }
+
+      return keyIndex;
+    };
+
     const result = [];
     const idCheckList = [];
 
@@ -128,33 +146,15 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
       for (let _dir in _items.connectionIds) {
         const _idList = _items.connectionIds[_dir as 'right' | 'left'];
 
-        _idList.forEach((_id, index) => {
+        _idList.forEach((_id) => {
           // _id 출발
           // _key 도착
+          const startIndex = findItemIndex(_id, _key, _dir);
 
-          const startPoint = _items[_dir as 'right' | 'left'][index];
+          const startPoint = _items[_dir as 'right' | 'left'][startIndex];
           const invertedDir = _dir === 'right' ? 'left' : 'right';
 
-          const connectedElType = getElType(chartItems[_key].elType);
-
-          const typeGroup = _.groupBy(chartItemConnectPointsByDir[_id].connectionIds[invertedDir], (_id) =>
-            getElType(chartItems[_id].elType)
-          );
-
-          let keyIndex = 0;
-
-          for (let _typeKey in typeGroup) {
-            if (typeGroup[_typeKey].indexOf(_key) > -1) {
-              keyIndex += typeGroup[_typeKey].indexOf(_key);
-              break;
-            } else {
-              keyIndex += typeGroup[_typeKey].length + 1;
-            }
-          }
-
-          const connectedIndex = _.findIndex(chartItemConnectPointsByDir[_id][invertedDir], (_item) => {
-            return _item.connectElType === connectedElType && keyIndex === _item.index;
-          });
+          const connectedIndex = findItemIndex(_key, _id, invertedDir);
 
           const connectedPoint = chartItemConnectPointsByDir[_id][invertedDir][connectedIndex];
 
@@ -298,8 +298,8 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
         return (
           (_id ? connectionTypeList.includes(_elType) : true) &&
           (_id ? !_pos.connectionIds.includes(_id) : true) &&
-          _pos.left - CONNECT_POINT_SIZE / 2 + transX <= _x &&
-          _x <= CONNECT_POINT_SIZE + _pos.left + transX &&
+          _pos.left - CONNECT_POINT_SIZE - POINT_LIST_PADDING + transX <= _x &&
+          _x <= CONNECT_POINT_SIZE + _pos.left + POINT_LIST_PADDING + transX &&
           _pos.top - CONNECT_POINT_SIZE / 2 + transY <= _y &&
           _y <= CONNECT_POINT_SIZE + _pos.top + transY
         );
@@ -362,14 +362,50 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
     return _idList;
   };
 
-  const handleMouseDown: MouseEventHandler<HTMLDivElement> = (_event) => {
-    // TODO: consider zoom ...
+  const handleItemMoveStart = (_event: MouseEvent, _selectedItem: ChartItems) => {
+    _event.stopPropagation();
+
+    // TODO: z-index조정
+    if (multiSelectedIdList.includes(_selectedItem.id)) {
+      if (_event.ctrlKey) {
+        // 다중 선택이 있을 때 컨트롤 키가 눌러져 있다면 그 아이템을 선택취소한다.
+        setMultiSelectedIdList((_prev) => _prev.filter((_id) => _id !== _selectedItem.id));
+      } else {
+        // 다중 선택일 때 컨트롤 키가 눌러져 있지 않다면 그 아이템을 기준으로 움직인다.
+        selectedItemId.current = _selectedItem.id;
+      }
+    } else {
+      // 다중 선택된 아이템이 없을 때
+
+      setMultiSelectedIdList((_prev) => {
+        if (_event.ctrlKey) {
+          // 컨트롤이 눌러져 있다면 아이템 추가
+          return [..._prev, _selectedItem.id];
+        } else {
+          // 다중 선택된 아이템이 없고 컨트롤도 없다면 하나의 아이템 추가
+          return [_selectedItem.id];
+        }
+      });
+
+      // 선택된 아이템을 기준으로 움직인다.
+      selectedItemId.current = _selectedItem.id;
+    }
+
+    document.addEventListener('mousemove', handleMouseMoveItems);
+    document.addEventListener('mouseup', handleMouseUpItems);
+  };
+
+  const handlePointConnectStart: MouseEventHandler<HTMLSpanElement> = (_event) => {
+    _event.stopPropagation();
+
+    selectedItemId.current = null;
+    setMultiSelectedIdList([]);
+
     const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
 
     const selectedPoint = getConnectPoint(convertedX, convertedY);
-    const selectedItem = getItemIdByPos(convertedX, convertedY);
 
-    if (chartItems[selectedPoint?.id]?.zIndex >= (selectedItem?.zIndex || 0)) {
+    if (selectedPoint) {
       const _hasId = chartItems[selectedPoint.id].connectionIds[selectedPoint.connectType][selectedPoint.index];
 
       if (_hasId) {
@@ -379,55 +415,23 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
 
         document.addEventListener('mousemove', handleMouseMovePoint);
         document.addEventListener('mouseup', handleMouseUpPoint);
-
-        return;
       }
-    } else if (selectedItem) {
-      // select item..
-      // TODO: z-index조정
-      if (multiSelectedIdList.includes(selectedItem.id)) {
-        if (_event.ctrlKey) {
-          // 다중 선택이 있을 때 컨트롤 키가 눌러져 있다면 그 아이템을 선택취소한다.
-          setMultiSelectedIdList((_prev) => _prev.filter((_id) => _id !== selectedItem.id));
-        } else {
-          // 다중 선택일 때 컨트롤 키가 눌러져 있지 않다면 그 아이템을 기준으로 움직인다.
-          selectedItemId.current = selectedItem.id;
-        }
-      } else {
-        // 다중 선택된 아이템이 없을 때
+    }
+  };
 
-        setMultiSelectedIdList((_prev) => {
-          if (_event.ctrlKey) {
-            // 컨트롤이 눌러져 있다면 아이템 추가
-            return [..._prev, selectedItem.id];
-          } else {
-            // 다중 선택된 아이템이 없고 컨트롤도 없다면 하나의 아이템 추가
-            return [selectedItem.id];
-          }
-        });
+  const handleMouseDown: MouseEventHandler<HTMLDivElement> = (_event) => {
+    if (_event.buttons === 1 && !selectedItemId.current && !selectedConnectionPoint.current) {
+      // multi select.. only left click..
 
-        // 선택된 아이템을 기준으로 움직인다.
-        selectedItemId.current = selectedItem.id;
-      }
+      const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
 
-      document.addEventListener('mousemove', handleMouseMoveItems);
-      document.addEventListener('mouseup', handleMouseUpItems);
+      multiSelectBoxStartPos.current = [convertedX, convertedY];
+      multiSelectBoxEndPos.current = [convertedX, convertedY];
+
+      document.addEventListener('mousemove', handleMouseMoveMultiSelect);
+      document.addEventListener('mouseup', handleMouseUpMultiSelect);
 
       return;
-    } else {
-      if (_event.buttons === 1) {
-        // multi select.. only left click..
-
-        const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
-
-        multiSelectBoxStartPos.current = [convertedX, convertedY];
-        multiSelectBoxEndPos.current = [convertedX, convertedY];
-
-        document.addEventListener('mousemove', handleMouseMoveMultiSelect);
-        document.addEventListener('mouseup', handleMouseUpMultiSelect);
-
-        return;
-      }
     }
   };
 
@@ -569,6 +573,8 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
             chartItems={chartItems}
             itemInfo={_itemInfo}
             isSelected={multiSelectedIdList.includes(_itemInfo.id)}
+            handleItemMoveStart={handleItemMoveStart}
+            handlePointConnectStart={handlePointConnectStart}
           />
         ))}
       </div>

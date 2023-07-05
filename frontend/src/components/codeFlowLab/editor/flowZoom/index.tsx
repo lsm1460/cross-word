@@ -123,7 +123,7 @@ function FlowZoom({ chartItems, children }: Props) {
     }
 
     if (_event.shiftKey) {
-      updateHorizonScroll(_event.deltaY);
+      updateHorizonScroll(_event.deltaY || _event.deltaX);
       return;
     } else {
       updateVerticalScroll(_event.deltaY);

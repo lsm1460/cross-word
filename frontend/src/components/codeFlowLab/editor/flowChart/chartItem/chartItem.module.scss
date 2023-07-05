@@ -1,47 +1,131 @@
+$element-point-color: #7b7be8;
+$style-point-color: #2ec438;
+$trigger-point-color: #e36775;
+$other-point-color: #dadada;
+
 .chart-item {
   position: absolute;
-  background-color: #eee;
-  border-radius: 8px;
-  pointer-events: none;
+  background-color: #3b3b3b;
+  border-radius: 5px 5px 3px 3px;
   user-select: none;
   border: 1px solid transparent;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+  transition: 0.3s transform, 0.3s border;
 
-  &.selected {
-    border: 1px solid red;
+  &:hover {
+    transform: translate(-2px, -2px);
   }
 
-  ul {
+  &.selected {
+    border: 1px solid $other-point-color;
+    transform: scale(1.2);
+
+    &.element {
+      border: 1px solid $element-point-color;
+    }
+
+    &.style {
+      border: 1px solid $style-point-color;
+    }
+
+    &.trigger {
+      border: 1px solid $trigger-point-color;
+    }
+  }
+
+  .item-point {
     position: absolute;
-    margin: 0;
-    padding: 0;
-    pointer-events: none;
+    width: 7px;
+    height: 7px;
+    left: 3px;
+    top: 3px;
+    border-radius: 50%;
+    display: block;
+  }
 
-    li {
-      margin: 0;
+  .item-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d8d8d8;
+    font-family: sans-serif;
+    font-size: 13px;
+  }
 
-      &:first-child {
-        margin-top: 0 !important;
+  .point-list-wrap {
+    display: flex;
+    padding-bottom: 15px;
+
+    .point-list {
+      &.right {
+        margin-left: auto;
       }
 
-      .dot {
-        display: block;
-        border-radius: 50%;
-        background-color: #222;
-        transform: translateY(-50%);
+      margin: 0;
 
-        &.element-element {
-          background-color: #7b7be8;
+      li {
+        margin: 0;
+        position: relative;
+
+        &:first-child {
+          margin-top: 0 !important;
         }
 
-        &.element-style,
-        &.style-element,
-        &.style-style {
-          background-color: #2ec438;
+        .label {
+          position: absolute;
+          top: 0;
+          transform: translateY(-50%);
+          white-space: nowrap;
+          font-size: 13px;
+          color: #a1a1a1;
+
+          &.left {
+            left: 18px;
+          }
+
+          &.right {
+            right: 18px;
+          }
         }
 
-        &.element-trigger,
-        &.trigger-element {
-          background-color: #e36775;
+        .dot {
+          position: relative;
+          display: block;
+          transform: translateY(-50%);
+
+          &::before {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transition: 0.3s width, 0.3s height;
+            pointer-events: none;
+            background-color: $other-point-color;
+          }
+
+          &:hover::before {
+            width: 10px;
+            height: 10px;
+          }
+
+          &.element-element::before {
+            background-color: $element-point-color;
+          }
+
+          &.element-style::before,
+          &.style-element::before,
+          &.style-style::before {
+            background-color: $style-point-color;
+          }
+
+          &.element-trigger::before,
+          &.trigger-element::before {
+            background-color: $trigger-point-color;
+          }
         }
       }
     }
