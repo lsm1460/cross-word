@@ -12,7 +12,7 @@ import {
 } from '@/consts/codeFlowLab/items';
 import { ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
 import _ from 'lodash';
-import { MouseEventHandler, useMemo } from 'react';
+import { MouseEventHandler, useCallback, useEffect, useMemo } from 'react';
 import { getConnectSizeByType, getElType } from '../utils';
 
 interface Props {
@@ -28,7 +28,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
     [chartItems, itemInfo]
   );
 
-  const connectPointList = () => {
+  const connectPointList = useMemo(() => {
     return Object.keys(FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectionTypeList).map((_x, _i) => {
       const typeGroup = _.groupBy(itemInfo.connectionIds[_x], (_id) => getElType(chartItems[_id].elType));
 
@@ -45,7 +45,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
                     marginTop: CONNECT_POINT_GAP + CONNECT_POINT_SIZE,
                   }}
                 >
-                  <span className={cx('label', _x)}>{typeGroup[_type]?.[_k]}</span>
+                  <span className={cx('label', _x)} title={typeGroup[_type]?.[_k]}>{typeGroup[_type]?.[_k]}</span>
                   <span
                     onMouseDown={handlePointConnectStart}
                     className={cx('dot', `${getElType(itemInfo.elType)}-${_type}`)}
@@ -60,7 +60,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
         </ul>
       );
     });
-  };
+  }, [connectSizeByType]);
 
   return (
     <div
@@ -104,7 +104,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
           paddingTop: CONNECT_POINT_START,
         }}
       >
-        {connectPointList()}
+        {connectPointList}
       </div>
     </div>
   );

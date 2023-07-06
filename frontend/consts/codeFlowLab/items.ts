@@ -4,7 +4,7 @@ export const CHART_ELEMENT_ITEMS = [ChartItemType.body, ChartItemType.button];
 
 export const FLOW_CHART_ITEMS_STYLE = {
   [ChartItemType.body]: {
-    width: 150,
+    width: 200,
     height: 70,
     connectionTypeList: {
       right: [ChartItemType.el, ChartItemType.style, ChartItemType.trigger],
@@ -12,7 +12,7 @@ export const FLOW_CHART_ITEMS_STYLE = {
     backgroundColor: '#7b7be8',
   },
   [ChartItemType.button]: {
-    width: 150,
+    width: 200,
     height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
@@ -21,7 +21,7 @@ export const FLOW_CHART_ITEMS_STYLE = {
     backgroundColor: '#7b7be8',
   },
   [ChartItemType.style]: {
-    width: 150,
+    width: 200,
     height: 100,
     connectionTypeList: {
       left: [ChartItemType.el],
@@ -30,7 +30,7 @@ export const FLOW_CHART_ITEMS_STYLE = {
     backgroundColor: '#2ec438',
   },
   [ChartItemType.trigger]: {
-    width: 150,
+    width: 200,
     height: 100,
     connectionTypeList: {
       left: [ChartItemType.el],
@@ -39,7 +39,7 @@ export const FLOW_CHART_ITEMS_STYLE = {
     backgroundColor: '#e36775',
   },
   [ChartItemType.function]: {
-    width: 150,
+    width: 200,
     height: 100,
     connectionTypeList: {
       left: [ChartItemType.trigger],

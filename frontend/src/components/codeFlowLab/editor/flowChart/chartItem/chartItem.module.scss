@@ -57,15 +57,28 @@ $other-point-color: #dadada;
     padding-bottom: 15px;
 
     .point-list {
+      margin: 0;
+      width: calc(50% - 20px);
+
       &.right {
         margin-left: auto;
-      }
+        align-items: flex-end;
 
-      margin: 0;
+        li {
+          justify-content: flex-end;
+
+          .label {
+            text-align: right;
+          }
+        }
+      }
 
       li {
         margin: 0;
         position: relative;
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
 
         &:first-child {
           margin-top: 0 !important;
@@ -73,11 +86,14 @@ $other-point-color: #dadada;
 
         .label {
           position: absolute;
+          width: 100%;
           top: 0;
           transform: translateY(-50%);
           white-space: nowrap;
           font-size: 13px;
           color: #a1a1a1;
+          overflow: hidden;
+          text-overflow: ellipsis;
 
           &.left {
             left: 18px;
