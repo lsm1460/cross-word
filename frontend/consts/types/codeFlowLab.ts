@@ -8,6 +8,7 @@ export enum ChartItemType {
   function = 'function',
   body = 'body',
   el = 'element',
+  note = 'note',
 }
 
 interface FlowScene {

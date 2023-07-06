@@ -551,7 +551,7 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
     // 관련 값 초기화
     selectedItemId.current = null;
     totalDelta.current = { x:0,y:0}
-    setMultiSelectedItemList({});
+    multiSelectedIdListClone.current = []
 
     document.removeEventListener('mousemove', handleMouseMoveItems);
     document.removeEventListener('mouseup', handleMouseUpItems);

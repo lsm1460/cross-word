@@ -1,7 +1,4 @@
-$element-point-color: #7b7be8;
-$style-point-color: #2ec438;
-$trigger-point-color: #e36775;
-$other-point-color: #dadada;
+@import '../../../variables';
 
 .chart-item {
   position: absolute;
@@ -9,7 +6,7 @@ $other-point-color: #dadada;
   border-radius: 5px 5px 3px 3px;
   user-select: none;
   border: 1px solid transparent;
-  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.3);
   transition: 0.3s transform, 0.3s border;
 
   &:hover {
@@ -33,14 +30,50 @@ $other-point-color: #dadada;
     }
   }
 
+  .delete-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 5px;
+    border: none;
+    transform: translate(8px, -8px) scale(0);
+    transition: .3s transform cubic-bezier(0.175, 1.885, 0.32, 1.275);
+    visibility: hidden;
+    gap: 10px;
+    background-color: transparent;
+    z-index: 3;
+
+    i {
+      cursor: pointer;
+      font-size: 10px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      color: #ffffff;
+      border: 1px solid #b8b8b8;
+      background-color: rgb(37,37,38);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+  
+  &:hover .delete-button,
+  &.selected .delete-button {
+    visibility: visible;
+    transition-delay: .3s;
+    transform: translate(8px, -8px) scale(1);
+  }
+
   .item-point {
     position: absolute;
-    width: 7px;
-    height: 7px;
+    height: 28px;
     left: 3px;
+    right: 3px;
     top: 3px;
-    border-radius: 50%;
+    border-radius: 3px;
     display: block;
+    opacity: .3;
   }
 
   .item-header {
@@ -50,6 +83,8 @@ $other-point-color: #dadada;
     color: #d8d8d8;
     font-family: sans-serif;
     font-size: 13px;
+    position: relative;
+    z-index: 1;
   }
 
   .point-list-wrap {

@@ -45,7 +45,9 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
                     marginTop: CONNECT_POINT_GAP + CONNECT_POINT_SIZE,
                   }}
                 >
-                  <span className={cx('label', _x)} title={typeGroup[_type]?.[_k]}>{typeGroup[_type]?.[_k]}</span>
+                  <span className={cx('label', _x)} title={typeGroup[_type]?.[_k]}>
+                    {typeGroup[_type]?.[_k]}
+                  </span>
                   <span
                     onMouseDown={handlePointConnectStart}
                     className={cx('dot', `${getElType(itemInfo.elType)}-${_type}`)}
@@ -62,6 +64,12 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
     });
   }, [connectSizeByType]);
 
+  const handleDeleteItem:MouseEventHandler<HTMLButtonElement> = (_event) => {
+    _event.stopPropagation();
+
+    alert('delete..');
+  };
+
   return (
     <div
       className={cx('chart-item', getElType(itemInfo.elType), { selected: isSelected })}
@@ -76,6 +84,9 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
       }}
       onMouseDown={(_event) => handleItemMoveStart(_event.nativeEvent, itemInfo)}
     >
+      <button className={cx('delete-button')} onClick={handleDeleteItem}>
+        <i className="material-icons">close</i>
+      </button>
       <span
         className={cx('item-point')}
         style={{

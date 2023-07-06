@@ -121,6 +121,7 @@ function CodeFlowLabEditor() {
           },
         }),
       }));
+
       return {
         ..._prev,
         items: {
@@ -131,11 +132,13 @@ function CodeFlowLabEditor() {
     });
   };
 
+  const makeItem = () => {};
+
   return (
     <>
       <FlowHeader />
       <div className={cx('editor-wrap')}>
-        <FlowToolbar />
+        <FlowToolbar makeItem={makeItem} />
         <div className={cx('canvas-area')}>
           <FlowZoom chartItems={chartItems}>
             <FlowChart chartItems={chartItems} moveItems={moveItems} connectPoints={connectPoints} />
