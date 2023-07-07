@@ -7,7 +7,8 @@
   user-select: none;
   border: 1px solid transparent;
   box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.3);
-  transition: 0.3s transform, 0.3s border;
+  opacity: 1;
+  transition: 0.3s transform, 0.3s border, 0.3s opacity;
 
   &:hover {
     transform: translate(-2px, -2px);
@@ -28,6 +29,12 @@
     &.trigger {
       border: 1px solid $trigger-point-color;
     }
+  }
+
+  &.delete {
+    transition-delay: 100ms;
+    opacity: 0;
+    transform: scale(0.1);
   }
 
   .delete-button {
@@ -89,6 +96,12 @@
     border: none;
     text-align: center;
     width: 100%;
+    pointer-events: none;
+    user-select: none;
+
+    &.active {
+      pointer-events: all;
+    }
   }
 
   .point-list-wrap {

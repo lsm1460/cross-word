@@ -10,13 +10,14 @@ import {
   FLOW_CHART_ITEMS_STYLE,
   POINT_LIST_PADDING,
 } from '@/consts/codeFlowLab/items';
-import { ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
-import _ from 'lodash';
-import { KeyboardEventHandler, MouseEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
-import { getConnectSizeByType, getElType } from '../utils';
-import { useDebounceSubmitText } from '@/src/utils/content';
-import { useDispatch } from 'react-redux';
+import { ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
+import { RootState } from '@/reducers';
 import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { getSceneId, useDebounceSubmitText } from '@/src/utils/content';
+import _ from 'lodash';
+import { KeyboardEventHandler, MouseEventHandler, useEffect, useMemo, useState } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { getConnectSizeByType, getElType } from '../utils';
 
 interface Props {
   chartItems: CodeFlowChartDoc['items'];
@@ -29,6 +30,15 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   const dispatch = useDispatch();
   const [debounceSubmitText] = useDebounceSubmitText(`items.${itemInfo.id}.name`);
 
+  const { selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
+    const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
+
+    return {
+      selectedSceneId,
+      sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
+    };
+  }, shallowEqual);
+
   const connectSizeByType = useMemo(
     () => getConnectSizeByType(itemInfo.connectionIds, chartItems),
     [chartItems, itemInfo]
@@ -36,6 +46,33 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
 
   const [itemName, setItemName] = useState(itemInfo.name);
   const [isTyping, setIsTyping] = useState(false);
+  const [onDelete, setOnDelete] = useState(false);
+
+  useEffect(() => {
+    if (onDelete) {
+      setTimeout(() => {
+        const ops = [];
+        let newChartItems = _.pickBy(chartItems, (_item) => _item.id !== itemInfo.id);
+        newChartItems = _.mapValues(newChartItems, (_item) => ({
+          ..._item,
+          connectionIds: {
+            ..._item.connectionIds,
+            left: [...(_item.connectionIds?.left || []).filter((_id) => _id !== itemInfo.id)],
+            right: [...(_item.connectionIds?.right || []).filter((_id) => _id !== itemInfo.id)],
+          },
+        }));
+        ops.push({
+          key: 'items',
+          value: newChartItems,
+        });
+        ops.push({
+          key: `scene.${selectedSceneId}.itemIds`,
+          value: sceneItemIds.filter((_id) => _id !== itemInfo.id),
+        });
+        dispatch(setDocumentValueAction(ops));
+      }, 200);
+    }
+  }, [onDelete, chartItems, selectedSceneId, sceneItemIds]);
 
   const selectName = (_isTyping, _originText, _insertedText) => {
     if (_isTyping) {
@@ -90,7 +127,6 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
 
   const handleCancelInsert: KeyboardEventHandler<HTMLInputElement> = (_event) => {
     if (_event.code === 'Escape') {
-      console.log('itemInfo.name', itemInfo.name);
       debounceSubmitText.cancel();
 
       setIsTyping(false);
@@ -104,11 +140,15 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   };
 
   const handleTitleInput = (_event) => {
+    if (_event.target.value.length < 1) {
+      alert('최소 한 글자 이상 입력해주세요.');
+      return;
+    }
+
     setIsTyping(true);
 
     setItemName(_event.target.value);
 
-    console.log('submit 1');
     debounceSubmitText(_event.target.value);
   };
 
@@ -116,7 +156,6 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
     debounceSubmitText.cancel();
 
     if (_text !== itemInfo.name) {
-      console.log('submit 2');
       dispatch(
         setDocumentValueAction({
           key: `items.${itemInfo.id}.name`,
@@ -129,12 +168,16 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   const handleDeleteItem: MouseEventHandler<HTMLButtonElement> = (_event) => {
     _event.stopPropagation();
 
-    alert('delete..');
+    if (itemInfo.elType === ChartItemType.body) {
+      return;
+    }
+
+    setOnDelete(true);
   };
 
   return (
     <div
-      className={cx('chart-item', getElType(itemInfo.elType), { selected: isSelected })}
+      className={cx('chart-item', getElType(itemInfo.elType), { selected: isSelected, delete: onDelete })}
       data-id={itemInfo.id}
       style={{
         left: itemInfo.pos.left,
@@ -146,9 +189,11 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
       }}
       onMouseDown={(_event) => handleItemMoveStart(_event.nativeEvent, itemInfo)}
     >
-      <button className={cx('delete-button')} onClick={handleDeleteItem}>
-        <i className="material-symbols-outlined">close</i>
-      </button>
+      {itemInfo.elType !== ChartItemType.body && (
+        <button className={cx('delete-button')} onClick={handleDeleteItem}>
+          <i className="material-symbols-outlined">close</i>
+        </button>
+      )}
       <span
         className={cx('item-point')}
         style={{
@@ -158,7 +203,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
 
       <input
         type="text"
-        className={cx('item-header')}
+        className={cx('item-header', { active: isSelected })}
         style={{
           height: BLOCK_HEADER_SIZE,
         }}

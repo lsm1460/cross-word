@@ -64,11 +64,11 @@ export const getDocumentValue = ({ document: _document, keys: _keys }) => {
   return _keys.reduce((acc, val) => (acc ? acc[val] : ''), _document);
 };
 
+export const getSceneId = (_flowScene: CodeFlowChartDoc['scene'], _sceneOrder: number) =>
+  Object.keys(_flowScene).filter((_sceneKey) => _flowScene[_sceneKey].order === _sceneOrder)?.[0] || '';
+
 export const getChartItem = ({ contentDocument: flowDoc, sceneOrder }: DocumentState) => {
-  const selectedSceneId: string =
-    Object.keys(flowDoc.scene).filter((_sceneKey) => {
-      return flowDoc.scene[_sceneKey].order === sceneOrder;
-    })?.[0] || '';
+  const selectedSceneId = getSceneId(flowDoc.scene, sceneOrder);
 
   return _.pickBy(flowDoc.items, (_item) => (flowDoc.scene[selectedSceneId]?.itemIds || []).includes(_item.id));
 };
@@ -79,7 +79,6 @@ export const useDebounceSubmitText = (_dispatchKey) => {
 
   const onChange = useCallback(
     _.debounce((_text) => {
-      console.log('쏩니다', _text);
       dispatch(
         setDocumentValueAction({
           key: dispatchKey,
