@@ -10,6 +10,7 @@ const initialState: DocumentState = {
     items: {
       root: {
         id: 'root',
+        name: 'root-name',
         elType: ChartItemType.body,
         pos: { left: 20, top: 20 },
         zIndex: 1,
@@ -17,6 +18,7 @@ const initialState: DocumentState = {
       },
       'test-id': {
         id: 'test-id',
+        name: 'test-id-name',
         elType: ChartItemType.button,
         pos: { left: 120, top: 120 },
         zIndex: 2,
@@ -24,6 +26,7 @@ const initialState: DocumentState = {
       },
       'test-style': {
         id: 'test-style',
+        name: 'test-style-name',
         elType: ChartItemType.style,
         pos: { left: 80, top: 200 },
         zIndex: 3,
@@ -32,6 +35,7 @@ const initialState: DocumentState = {
       },
       'test-trigger': {
         id: 'test-trigger',
+        name: 'test-trigger-name',
         elType: ChartItemType.trigger,
         pos: { left: 20, top: 300 },
         zIndex: 4,
@@ -40,6 +44,7 @@ const initialState: DocumentState = {
       },
       'test-function': {
         id: 'test-function',
+        name: 'test-function-name',
         elType: ChartItemType.function,
         pos: { left: 120, top: 500 },
         zIndex: 5,
@@ -47,6 +52,7 @@ const initialState: DocumentState = {
       },
       'test-button': {
         id: 'test-button',
+        name: 'test-button-name',
         elType: ChartItemType.button,
         pos: { left: 420, top: 220 },
         zIndex: 6,

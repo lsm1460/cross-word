@@ -38,7 +38,7 @@ function FlowHeader() {
 
   return (
     <header className={cx('header')}>
-      <span className={cx('logo')}>CODE_FLOW_LAB.</span>
+      <span className={cx('logo')}>CODE_FLOW_LAB。</span>
       <ul className={cx('history-buttons')}>
         <li className={historyNow < 0 ? cx('disable') : ''}>
           <button onClick={prev}>

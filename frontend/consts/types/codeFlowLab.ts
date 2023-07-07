@@ -18,6 +18,7 @@ interface FlowScene {
 
 export interface ChartItem {
   id: string;
+  name: string;
   elType: ChartItemType;
   pos: { left: number; top: number };
   zIndex: number;

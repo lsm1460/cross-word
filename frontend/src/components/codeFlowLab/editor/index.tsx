@@ -31,7 +31,7 @@ function CodeFlowLabEditor() {
   }, []);
 
   useEffect(() => {
-    if (moveItemInfo) {
+    if (moveItemInfo && (moveItemInfo.deltaX || moveItemInfo.deltaY)) {
       const targetItems = _.pickBy(chartItems, (_item) => moveItemInfo.ids.includes(_item.id));
 
       const operations: Operation[] = Object.values(targetItems).map((_item) => {

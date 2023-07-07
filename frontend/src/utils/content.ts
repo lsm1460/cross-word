@@ -79,6 +79,7 @@ export const useDebounceSubmitText = (_dispatchKey) => {
 
   const onChange = useCallback(
     _.debounce((_text) => {
+      console.log('쏩니다', _text);
       dispatch(
         setDocumentValueAction({
           key: dispatchKey,
