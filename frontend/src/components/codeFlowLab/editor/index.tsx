@@ -2,74 +2,28 @@ import classNames from 'classnames/bind';
 import styles from './editor.module.scss';
 const cx = classNames.bind(styles);
 //
-import { ChartItemType, CodeFlowChartDoc, PointPos } from '@/consts/types/codeFlowLab';
+import { CodeFlowChartDoc, PointPos } from '@/consts/types/codeFlowLab';
+import { RootState } from '@/reducers';
+import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import _ from 'lodash';
-import { useMemo, useState } from 'react';
-import FlowChart from './flowChart';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import FlowChartViewer from '../viewer';
-import FlowToolbar from './flowToolbar';
+import FlowChart from './flowChart';
 import FlowHeader from './flowHeader';
+import FlowToolbar from './flowToolbar';
 import FlowZoom from './flowZoom';
 
 export type MoveItems = (_itemIds: string[], _deltaX: number, _deltaY: number) => void;
 export type ConnectPoints = (_prev: PointPos, _next: PointPos) => void;
 
 function CodeFlowLabEditor() {
+  const dispatch = useDispatch();
+
   const [selectedSceneOrder, setSelectedSceneOrder] = useState(1);
-  const [flowDoc, setFlowDoc] = useState<CodeFlowChartDoc>({
-    items: {
-      root: {
-        id: 'root',
-        elType: ChartItemType.body,
-        pos: { left: 20, top: 20 },
-        zIndex: 1,
-        connectionIds: { right: ['test-id', 'test-button'] },
-      },
-      'test-id': {
-        id: 'test-id',
-        elType: ChartItemType.button,
-        pos: { left: 120, top: 120 },
-        zIndex: 2,
-        connectionIds: { left: ['root'], right: [] },
-      },
-      'test-style': {
-        id: 'test-style',
-        elType: ChartItemType.style,
-        pos: { left: 80, top: 200 },
-        zIndex: 3,
-        connectionIds: { left: [], right: [] },
-        styles: {},
-      },
-      'test-trigger': {
-        id: 'test-trigger',
-        elType: ChartItemType.trigger,
-        pos: { left: 20, top: 300 },
-        zIndex: 4,
-        connectionIds: { left: [], right: [] },
-        triggerType: 'click',
-      },
-      'test-function': {
-        id: 'test-function',
-        elType: ChartItemType.function,
-        pos: { left: 120, top: 500 },
-        zIndex: 5,
-        connectionIds: { left: [], right: [] },
-      },
-      'test-button': {
-        id: 'test-button',
-        elType: ChartItemType.button,
-        pos: { left: 420, top: 220 },
-        zIndex: 6,
-        connectionIds: { left: ['root'], right: [] },
-      },
-    },
-    scene: {
-      'test-scene-01': {
-        itemIds: ['root', 'test-id', 'test-style', 'test-trigger', 'test-function', 'test-button'],
-        order: 1,
-      },
-    },
-  });
+  const [moveItemInfo, setMoveItemInfo] = useState<{ ids: string[]; deltaX: number; deltaY: number }>(null);
+
+  const flowDoc = useSelector((state: RootState) => state.mainDocument.contentDocument);
 
   const selectedSceneId: string = useMemo(
     () =>
@@ -84,52 +38,51 @@ function CodeFlowLabEditor() {
     [flowDoc, selectedSceneId]
   );
 
-  const moveItems: MoveItems = (_itemIds, _deltaX, _deltaY) => {
-    setFlowDoc((_prev) => {
-      const targetItems = _.pickBy(_prev.items, (_item) => _itemIds.includes(_item.id));
-      const newPosItems = _.mapValues(targetItems, (_item) => ({
-        ..._item,
-        pos: { left: _item.pos.left + _deltaX, top: _item.pos.top + _deltaY },
-      }));
+  useEffect(() => {
+    if (moveItemInfo) {
+      const targetItems = _.pickBy(chartItems, (_item) => moveItemInfo.ids.includes(_item.id));
 
-      return {
-        ..._prev,
-        items: {
-          ..._prev.items,
-          ...newPosItems,
-        },
-      };
-    });
+      const operations: Operation[] = Object.values(targetItems).map((_item) => {
+        return {
+          key: `items.${_item.id}.pos`,
+          value: { left: _item.pos.left + moveItemInfo.deltaX, top: _item.pos.top + moveItemInfo.deltaY },
+        };
+      });
+
+      dispatch(setDocumentValueAction(operations));
+
+      setMoveItemInfo(null);
+    }
+  }, [moveItemInfo, chartItems]);
+
+  const moveItems: MoveItems = (_itemIds, _deltaX, _deltaY) => {
+    setMoveItemInfo({ ids: _itemIds, deltaX: _deltaX, deltaY: _deltaY });
   };
 
   const connectPoints: ConnectPoints = (_prevPos, _nextPos) => {
-    setFlowDoc((_prev) => {
-      const targetItems = _.pickBy(_prev.items, (_item) => [_prevPos.id, _nextPos.id].includes(_item.id));
-      const newTargetItems = _.mapValues(targetItems, (_item) => ({
-        ..._item,
-        ...(_item.id === _prevPos.id && {
-          connectionIds: {
-            ..._item.connectionIds,
-            [_prevPos.connectType]: [..._item.connectionIds[_prevPos.connectType], _nextPos.id],
-          },
-        }),
-
-        ...(_item.id === _nextPos.id && {
-          connectionIds: {
-            ..._item.connectionIds,
-            [_nextPos.connectType]: [..._item.connectionIds[_nextPos.connectType], _prevPos.id],
-          },
-        }),
-      }));
-
-      return {
-        ..._prev,
-        items: {
-          ..._prev.items,
-          ...newTargetItems,
+    const targetItems = _.pickBy(chartItems, (_item) => [_prevPos.id, _nextPos.id].includes(_item.id));
+    const newTargetItems = _.mapValues(targetItems, (_item) => ({
+      ..._item,
+      ...(_item.id === _prevPos.id && {
+        connectionIds: {
+          ..._item.connectionIds,
+          [_prevPos.connectType]: [..._item.connectionIds[_prevPos.connectType], _nextPos.id],
         },
-      };
-    });
+      }),
+      ...(_item.id === _nextPos.id && {
+        connectionIds: {
+          ..._item.connectionIds,
+          [_nextPos.connectType]: [..._item.connectionIds[_nextPos.connectType], _prevPos.id],
+        },
+      }),
+    }));
+
+    const operations: Operation[] = Object.values(newTargetItems).map((_item) => ({
+      key: `items.${_item.id}.connectionIds`,
+      value: _item.connectionIds,
+    }));
+
+    dispatch(setDocumentValueAction(operations));
   };
 
   const makeItem = () => {};

@@ -33,38 +33,37 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
 
   const selectedItemId = useRef<string>(null);
   const multiSelectedIdListClone = useRef<string[]>([]);
-  const totalDelta = useRef<{x: number, y: number}>({x: 0, y: 0});
+  const totalDelta = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const selectedConnectionPoint = useRef<PointPos>(null);
   const multiSelectBoxStartPos = useRef<[number, number]>(null);
   const multiSelectBoxEndPos = useRef<[number, number]>(null);
 
   const [lineCanvasCtx, setLineCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);
-  const [multiSelectedItemList, setMultiSelectedItemList] = useState<{[_itemId: string]: { x: number, y: number }}>({});
-  const [itemMoveDelta, setItemMoveDelta] = useState({x: 0, y: 0});
-
-  const orderedChartItems = useMemo(
-    () => {
-      const selectedIdList = Object.keys(multiSelectedItemList)
-      const adjustedMovePosItems = _.mapValues(chartItems, (_v, _kId) => {
-        if (selectedIdList.includes(_kId)) {
-          return {
-            ..._v,
-            pos: {
-              ..._v.pos,
-              left: multiSelectedItemList[_kId].x,
-              top: multiSelectedItemList[_kId].y,
-            }
-          }
-        } else {
-          return _v
-        }
-      });
-
-      return Object.values(adjustedMovePosItems).sort((_before, _after) => _after.zIndex - _before.zIndex)
-    },
-    [chartItems, scale, multiSelectedItemList]
+  const [multiSelectedItemList, setMultiSelectedItemList] = useState<{ [_itemId: string]: { x: number; y: number } }>(
+    {}
   );
+  const [itemMoveDelta, setItemMoveDelta] = useState({ x: 0, y: 0 });
+
+  const orderedChartItems = useMemo(() => {
+    const selectedIdList = Object.keys(multiSelectedItemList);
+    const adjustedMovePosItems = _.mapValues(chartItems, (_v, _kId) => {
+      if (selectedIdList.includes(_kId)) {
+        return {
+          ..._v,
+          pos: {
+            ..._v.pos,
+            left: multiSelectedItemList[_kId].x,
+            top: multiSelectedItemList[_kId].y,
+          },
+        };
+      } else {
+        return _v;
+      }
+    });
+
+    return Object.values(adjustedMovePosItems).sort((_before, _after) => _after.zIndex - _before.zIndex);
+  }, [chartItems, scale, multiSelectedItemList]);
 
   const chartItemConnectPointsByDir: {
     [x: string]: { left?: PointPos[]; right?: PointPos[]; connectionIds: { left?: string[]; right?: string[] } };
@@ -234,11 +233,13 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
       totalDelta.current = {
         x: totalDelta.current.x + itemMoveDelta.x,
         y: totalDelta.current.y + itemMoveDelta.y,
-      }
+      };
 
-      setMultiSelectedItemList((_prev) => _.mapValues(_prev, (_pos) => ({x: _pos.x + itemMoveDelta.x, y: _pos.y + itemMoveDelta.y})))
+      setMultiSelectedItemList((_prev) =>
+        _.mapValues(_prev, (_pos) => ({ x: _pos.x + itemMoveDelta.x, y: _pos.y + itemMoveDelta.y }))
+      );
     }
-  }, [itemMoveDelta, selectedItemId])
+  }, [itemMoveDelta, selectedItemId]);
 
   const convertClientPosToLocalPos = (_clientPos: { x: number; y: number }) => {
     const { left, top } = flowChartRef.current.getBoundingClientRect();
@@ -399,7 +400,7 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
       if (_event.ctrlKey) {
         // 다중 선택이 있을 때 컨트롤 키가 눌러져 있다면 그 아이템을 선택취소한다.
         setMultiSelectedItemList((_prev) => {
-          return _.pickBy(_prev, (_v, _itemId) => _itemId !== _selectedItem.id)
+          return _.pickBy(_prev, (_v, _itemId) => _itemId !== _selectedItem.id);
         });
       } else {
         // 다중 선택일 때 컨트롤 키가 눌러져 있지 않다면 그 아이템을 기준으로 움직인다.
@@ -412,11 +413,12 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
         if (_event.ctrlKey) {
           // 컨트롤이 눌러져 있다면 아이템 추가
           return {
-            ..._prev, 
-            [_selectedItem.id]: {x: _selectedItem.pos.left, y: _selectedItem.pos.top}};
+            ..._prev,
+            [_selectedItem.id]: { x: _selectedItem.pos.left, y: _selectedItem.pos.top },
+          };
         } else {
           // 다중 선택된 아이템이 없고 컨트롤도 없다면 하나의 아이템 추가
-          return {[_selectedItem.id]: {x: _selectedItem.pos.left, y: _selectedItem.pos.top}};
+          return { [_selectedItem.id]: { x: _selectedItem.pos.left, y: _selectedItem.pos.top } };
         }
       });
 
@@ -428,29 +430,32 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
     document.addEventListener('mouseup', handleMouseUpItems);
   }, []);
 
-  const handlePointConnectStart: MouseEventHandler<HTMLSpanElement> = useCallback((_event) => {
-    _event.stopPropagation();
+  const handlePointConnectStart: MouseEventHandler<HTMLSpanElement> = useCallback(
+    (_event) => {
+      _event.stopPropagation();
 
-    selectedItemId.current = null;
-    setMultiSelectedItemList({});
+      selectedItemId.current = null;
+      setMultiSelectedItemList({});
 
-    const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
+      const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: _event.clientX, y: _event.clientY });
 
-    const selectedPoint = getConnectPoint(convertedX, convertedY);
+      const selectedPoint = getConnectPoint(convertedX, convertedY);
 
-    if (selectedPoint) {
-      const _hasId = chartItems[selectedPoint.id].connectionIds[selectedPoint.connectType][selectedPoint.index];
+      if (selectedPoint) {
+        const _hasId = chartItems[selectedPoint.id].connectionIds[selectedPoint.connectType][selectedPoint.index];
 
-      if (_hasId) {
-        // 이미 연결된 포인트를 분리시켜야 함
-      } else {
-        selectedConnectionPoint.current = selectedPoint;
+        if (_hasId) {
+          // 이미 연결된 포인트를 분리시켜야 함
+        } else {
+          selectedConnectionPoint.current = selectedPoint;
 
-        document.addEventListener('mousemove', handleMouseMovePoint);
-        document.addEventListener('mouseup', handleMouseUpPoint);
+          document.addEventListener('mousemove', handleMouseMovePoint);
+          document.addEventListener('mouseup', handleMouseUpPoint);
+        }
       }
-    }
-  }, [lineCanvasCtx, chartItems]);
+    },
+    [lineCanvasCtx, chartItems]
+  );
 
   const handleMouseDown: MouseEventHandler<HTMLDivElement> = (_event) => {
     if (_event.buttons === 1 && !selectedItemId.current && !selectedConnectionPoint.current) {
@@ -470,7 +475,7 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
 
   const handleMouseMoveItems = (_event: MouseEvent) => {
     if (selectedItemId.current) {
-      setItemMoveDelta({x: _event.movementX / scale,y: _event.movementY / scale})
+      setItemMoveDelta({ x: _event.movementX / scale, y: _event.movementY / scale });
     }
   };
 
@@ -513,10 +518,10 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
   };
 
   const getSelectItemPos = (_itemIdList) => {
-    const _ids = _.mapKeys(_itemIdList, (_id) => _id)
+    const _ids = _.mapKeys(_itemIdList, (_id) => _id);
 
-    return _.mapValues(_ids, (__, _itemId) => ({x: chartItems[_itemId].pos.left, y: chartItems[_itemId].pos.top}))
-  }
+    return _.mapValues(_ids, (__, _itemId) => ({ x: chartItems[_itemId].pos.left, y: chartItems[_itemId].pos.top }));
+  };
 
   const handleMouseMoveMultiSelect = (_event: MouseEvent) => {
     if (multiSelectBoxStartPos) {
@@ -546,12 +551,12 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
   };
 
   const handleMouseUpItems = () => {
-    moveItems(multiSelectedIdListClone.current, totalDelta.current.x, totalDelta.current.y)
-    
+    moveItems(multiSelectedIdListClone.current, totalDelta.current.x, totalDelta.current.y);
+
     // 관련 값 초기화
     selectedItemId.current = null;
-    totalDelta.current = { x:0,y:0}
-    multiSelectedIdListClone.current = []
+    totalDelta.current = { x: 0, y: 0 };
+    multiSelectedIdListClone.current = [];
 
     document.removeEventListener('mousemove', handleMouseMoveItems);
     document.removeEventListener('mouseup', handleMouseUpItems);
