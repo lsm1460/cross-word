@@ -2,18 +2,18 @@ import classNames from 'classnames/bind';
 import styles from './flowZoom.module.scss';
 const cx = classNames.bind(styles);
 //
-
-import { CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
-import React, { MouseEventHandler, ReactElement, WheelEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import { FLOW_CHART_ITEMS_STYLE } from '@/consts/codeFlowLab/items';
+import { RootState } from '@/reducers';
+import { getChartItem } from '@/src/utils/content';
+import React, { MouseEventHandler, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
+import { shallowEqual, useSelector } from 'react-redux';
 
 const SCROLL_AREA_PADDING = 100;
 
 interface Props {
-  chartItems: CodeFlowChartDoc['items'];
   children: ReactElement<any | string>;
 }
-function FlowZoom({ chartItems, children }: Props) {
+function FlowZoom({ children }: Props) {
   const zoomRef = useRef<HTMLDivElement>(null);
   const isHorizonMove = useRef<boolean>(false);
   const isVerticalMove = useRef<boolean>(false);
@@ -24,6 +24,8 @@ function FlowZoom({ chartItems, children }: Props) {
   const [transY, setTransY] = useState(0);
   const [horizonPos, setHorizonPos] = useState<number>(50);
   const [verticalPos, setVerticalPos] = useState<number>(50);
+
+  const chartItems = useSelector((state: RootState) => getChartItem(state.mainDocument), shallowEqual);
 
   useEffect(() => {
     if (zoomRef.current) {

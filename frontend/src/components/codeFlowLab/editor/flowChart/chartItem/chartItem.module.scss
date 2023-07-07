@@ -15,7 +15,7 @@
 
   &.selected {
     border: 1px solid $other-point-color;
-    transform: scale(1.2);
+    transform: scale(1.1);
 
     &.element {
       border: 1px solid $element-point-color;
@@ -37,7 +37,7 @@
     padding: 5px;
     border: none;
     transform: translate(8px, -8px) scale(0);
-    transition: .3s transform cubic-bezier(0.175, 1.885, 0.32, 1.275);
+    transition: 0.3s transform cubic-bezier(0.175, 1.885, 0.32, 1.275);
     visibility: hidden;
     gap: 10px;
     background-color: transparent;
@@ -51,17 +51,17 @@
       border-radius: 50%;
       color: #ffffff;
       border: 1px solid #b8b8b8;
-      background-color: rgb(37,37,38);
+      background-color: rgb(37, 37, 38);
       display: flex;
       align-items: center;
       justify-content: center;
     }
   }
-  
+
   &:hover .delete-button,
   &.selected .delete-button {
     visibility: visible;
-    transition-delay: .3s;
+    transition-delay: 0.3s;
     transform: translate(8px, -8px) scale(1);
   }
 
@@ -73,7 +73,7 @@
     top: 3px;
     border-radius: 3px;
     display: block;
-    opacity: .3;
+    opacity: 0.3;
   }
 
   .item-header {

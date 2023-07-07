@@ -2,12 +2,13 @@ import classNames from 'classnames/bind';
 import styles from './editor.module.scss';
 const cx = classNames.bind(styles);
 //
-import { CodeFlowChartDoc, PointPos } from '@/consts/types/codeFlowLab';
+import { PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { getChartItem } from '@/src/utils/content';
 import _ from 'lodash';
-import { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import FlowChartViewer from '../viewer';
 import FlowChart from './flowChart';
 import FlowHeader from './flowHeader';
@@ -20,23 +21,9 @@ export type ConnectPoints = (_prev: PointPos, _next: PointPos) => void;
 function CodeFlowLabEditor() {
   const dispatch = useDispatch();
 
-  const [selectedSceneOrder, setSelectedSceneOrder] = useState(1);
   const [moveItemInfo, setMoveItemInfo] = useState<{ ids: string[]; deltaX: number; deltaY: number }>(null);
 
-  const flowDoc = useSelector((state: RootState) => state.mainDocument.contentDocument);
-
-  const selectedSceneId: string = useMemo(
-    () =>
-      Object.keys(flowDoc.scene).filter((_sceneKey) => {
-        return flowDoc.scene[_sceneKey].order === selectedSceneOrder;
-      })?.[0] || '',
-    [flowDoc, selectedSceneOrder]
-  );
-
-  const chartItems: CodeFlowChartDoc['items'] = useMemo(
-    () => _.pickBy(flowDoc.items, (_item) => (flowDoc.scene[selectedSceneId]?.itemIds || []).includes(_item.id)),
-    [flowDoc, selectedSceneId]
-  );
+  const chartItems = useSelector((state: RootState) => getChartItem(state.mainDocument), shallowEqual);
 
   useEffect(() => {
     if (moveItemInfo) {
@@ -93,11 +80,11 @@ function CodeFlowLabEditor() {
       <div className={cx('editor-wrap')}>
         <FlowToolbar makeItem={makeItem} />
         <div className={cx('canvas-area')}>
-          <FlowZoom chartItems={chartItems}>
-            <FlowChart chartItems={chartItems} moveItems={moveItems} connectPoints={connectPoints} />
+          <FlowZoom>
+            <FlowChart moveItems={moveItems} connectPoints={connectPoints} />
           </FlowZoom>
         </div>
-        <FlowChartViewer chartItems={chartItems} />
+        <FlowChartViewer />
       </div>
     </>
   );

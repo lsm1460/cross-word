@@ -60,6 +60,7 @@ const initialState: DocumentState = {
       },
     },
   },
+  sceneOrder: 1,
 };
 
 const documentReducer = createReducer<DocumentState, DocumentAction>(initialState, {

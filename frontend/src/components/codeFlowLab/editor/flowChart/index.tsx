@@ -10,22 +10,24 @@ import {
   FLOW_CHART_ITEMS_STYLE,
   POINT_LIST_PADDING,
 } from '@/consts/codeFlowLab/items';
-import { ChartItems, CodeFlowChartDoc, PointPos } from '@/consts/types/codeFlowLab';
+import { ChartItems, PointPos } from '@/consts/types/codeFlowLab';
+import { RootState } from '@/reducers';
+import { getChartItem } from '@/src/utils/content';
 import _ from 'lodash';
 import { MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { shallowEqual, useSelector } from 'react-redux';
 import { ConnectPoints, MoveItems } from '..';
 import ChartItem from './chartItem';
 import { doPolygonsIntersect, getConnectSizeByType, getElType, getRectPoints } from './utils';
 
 interface Props {
-  chartItems: CodeFlowChartDoc['items'];
   moveItems: MoveItems;
   connectPoints: ConnectPoints;
   scale?: number;
   transX?: number;
   transY?: number;
 }
-function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints }: Props) {
+function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const flowChartRef = useRef<HTMLDivElement>(null);
   const chartItemWrapRef = useRef<HTMLDivElement>(null);
   const lineCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -37,6 +39,8 @@ function FlowChart({ chartItems, scale, transX, transY, moveItems, connectPoints
   const selectedConnectionPoint = useRef<PointPos>(null);
   const multiSelectBoxStartPos = useRef<[number, number]>(null);
   const multiSelectBoxEndPos = useRef<[number, number]>(null);
+
+  const chartItems = useSelector((state: RootState) => getChartItem(state.mainDocument), shallowEqual);
 
   const [lineCanvasCtx, setLineCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);

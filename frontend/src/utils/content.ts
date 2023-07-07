@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { useCallback, useState } from 'react';
 
 import { CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
-import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { DocumentState, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { useDispatch } from 'react-redux';
 
 interface imageSize {
@@ -62,6 +62,15 @@ export const makeNewDocument: makeNewDocument = ({ document: _document, keys: _k
 
 export const getDocumentValue = ({ document: _document, keys: _keys }) => {
   return _keys.reduce((acc, val) => (acc ? acc[val] : ''), _document);
+};
+
+export const getChartItem = ({ contentDocument: flowDoc, sceneOrder }: DocumentState) => {
+  const selectedSceneId: string =
+    Object.keys(flowDoc.scene).filter((_sceneKey) => {
+      return flowDoc.scene[_sceneKey].order === sceneOrder;
+    })?.[0] || '';
+
+  return _.pickBy(flowDoc.items, (_item) => (flowDoc.scene[selectedSceneId]?.itemIds || []).includes(_item.id));
 };
 
 export const useDebounceSubmitText = (_dispatchKey) => {
