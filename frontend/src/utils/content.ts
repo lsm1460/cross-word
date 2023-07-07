@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
 import { DocumentState, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { nanoid } from 'nanoid';
 import { useDispatch } from 'react-redux';
 
 interface imageSize {
@@ -90,4 +91,8 @@ export const useDebounceSubmitText = (_dispatchKey) => {
   );
 
   return [onChange];
+};
+
+export const getRandomId = (_length = 8) => {
+  return nanoid(_length);
 };

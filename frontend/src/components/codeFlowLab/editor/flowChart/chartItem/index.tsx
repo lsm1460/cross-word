@@ -194,29 +194,31 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
           <i className="material-symbols-outlined">close</i>
         </button>
       )}
-      <span
+      {/* <span
         className={cx('item-point')}
         style={{
           backgroundColor: FLOW_CHART_ITEMS_STYLE[itemInfo.elType].backgroundColor,
         }}
-      />
+      /> */}
 
-      <input
-        type="text"
-        className={cx('item-header', { active: isSelected })}
-        style={{
-          height: BLOCK_HEADER_SIZE,
-        }}
-        onKeyDown={handleCancelInsert}
-        onChange={handleTitleInput}
-        onBlur={(_event) => {
-          setIsTyping(false);
+      <div className={cx('item-header', itemInfo.elType)}>
+        <input
+          type="text"
+          readOnly={!isSelected}
+          style={{
+            height: BLOCK_HEADER_SIZE,
+          }}
+          onKeyDown={handleCancelInsert}
+          onChange={handleTitleInput}
+          onBlur={(_event) => {
+            setIsTyping(false);
 
-          emitText(_event.target.value);
-        }}
-        value={selectedName}
-        maxLength={15}
-      />
+            emitText(_event.target.value);
+          }}
+          value={selectedName}
+          maxLength={15}
+        />
+      </div>
 
       <div
         className={cx('point-list-wrap')}

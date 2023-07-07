@@ -2,7 +2,7 @@ import classNames from 'classnames/bind';
 import styles from './flowZoom.module.scss';
 const cx = classNames.bind(styles);
 //
-import { FLOW_CHART_ITEMS_STYLE } from '@/consts/codeFlowLab/items';
+import { FLOW_CHART_ITEMS_STYLE, ZOOM_AREA_ELEMENT_ID } from '@/consts/codeFlowLab/items';
 import { RootState } from '@/reducers';
 import { getChartItem } from '@/src/utils/content';
 import React, { MouseEventHandler, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
@@ -194,10 +194,14 @@ function FlowZoom({ children }: Props) {
   return (
     <div className={cx('zoom-area-wrap')} ref={zoomRef}>
       <div
+        id={ZOOM_AREA_ELEMENT_ID}
         className={cx('zoom-area')}
         style={{
           transform: `scale(${scale}) translateX(${transX}px) translateY(${transY}px)`,
         }}
+        data-scale={scale}
+        data-transX={transX}
+        data-transY={transY}
       >
         {React.cloneElement(children, { scale, transX, transY })}
       </div>

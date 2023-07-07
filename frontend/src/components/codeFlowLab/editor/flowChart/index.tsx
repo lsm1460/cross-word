@@ -99,14 +99,6 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
               .map((__, _k, _kk) => {
                 _i++;
 
-                const itemHeight =
-                  FLOW_CHART_ITEMS_STYLE[_item.elType].height +
-                  Math.max(
-                    (_item.connectionIds?.right || []).length,
-                    Math.max((_item.connectionIds?.left || []).length, 0)
-                  ) *
-                    (CONNECT_POINT_GAP + CONNECT_POINT_SIZE);
-
                 return {
                   id: _item.id,
                   left: _item.pos.left + (_dir === 'left' ? 0 : FLOW_CHART_ITEMS_STYLE[_item.elType].width),
@@ -352,19 +344,6 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       },
       null
     );
-  };
-
-  const getItemIdByPos = (_x: number, _y: number) => {
-    // todo: item grap area를 ui상에서 고려해보자
-    const _filtered = orderedChartItems.filter(
-      (_item) =>
-        _item.pos.left + transX <= _x &&
-        _x <= FLOW_CHART_ITEMS_STYLE[_item.elType].width + _item.pos.left + transX &&
-        _item.pos.top + transY <= _y &&
-        _y <= FLOW_CHART_ITEMS_STYLE[_item.elType].height + _item.pos.top + transY
-    );
-
-    return _filtered[_filtered.length - 1];
   };
 
   const getSelectedItemIds = () => {

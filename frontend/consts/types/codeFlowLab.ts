@@ -3,6 +3,9 @@ import { TRIGGER_TYPE } from '../codeFlowLab/items';
 
 export enum ChartItemType {
   button = 'button',
+  div = 'div',
+  text = 'text',
+  image = 'image',
   style = 'style',
   trigger = 'trigger',
   function = 'function',

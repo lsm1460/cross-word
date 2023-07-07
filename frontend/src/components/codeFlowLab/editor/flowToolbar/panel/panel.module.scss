@@ -36,3 +36,11 @@
     opacity: 0.2;
   }
 }
+
+.panel-item-list {
+  padding: 15px 15px;
+
+  li + li {
+    margin-top: 15px;
+  }
+}

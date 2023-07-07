@@ -1,5 +1,7 @@
 import classNames from 'classnames/bind';
 import styles from './panel.module.scss';
+import ElementPanel from './elementPanel';
+import FunctionPanel from './functionPanel';
 const cx = classNames.bind(styles);
 //
 interface Props {
@@ -9,7 +11,9 @@ interface Props {
 function ToolbarPanel({ activePanel, handleClosePanel }: Props) {
   return (
     <>
-      <div className={cx('toolbar-panel-wrap', { active: activePanel })}></div>
+      <div className={cx('toolbar-panel-wrap', { active: activePanel })}>
+        {{ element: <ElementPanel />, function: <FunctionPanel /> }[activePanel]}
+      </div>
       <div className={cx('panel-dim', { active: activePanel })} onClick={handleClosePanel}></div>
     </>
   );
