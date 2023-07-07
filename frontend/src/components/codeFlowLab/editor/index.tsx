@@ -6,6 +6,7 @@ import { PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { getChartItem } from '@/src/utils/content';
+import { clearHistory } from '@/src/utils/history';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
@@ -24,6 +25,10 @@ function CodeFlowLabEditor() {
   const [moveItemInfo, setMoveItemInfo] = useState<{ ids: string[]; deltaX: number; deltaY: number }>(null);
 
   const chartItems = useSelector((state: RootState) => getChartItem(state.mainDocument), shallowEqual);
+
+  useEffect(() => {
+    clearHistory();
+  }, []);
 
   useEffect(() => {
     if (moveItemInfo) {

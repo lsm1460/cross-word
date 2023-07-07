@@ -50,7 +50,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const [itemMoveDelta, setItemMoveDelta] = useState({ x: 0, y: 0 });
 
   const orderedChartItems = useMemo(() => {
-    const selectedIdList = Object.keys(multiSelectedItemList);
+    const selectedIdList = selectedItemId.current ? Object.keys(multiSelectedItemList) : [];
     const adjustedMovePosItems = _.mapValues(chartItems, (_v, _kId) => {
       if (selectedIdList.includes(_kId)) {
         return {
@@ -67,7 +67,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     });
 
     return Object.values(adjustedMovePosItems).sort((_before, _after) => _after.zIndex - _before.zIndex);
-  }, [chartItems, scale, multiSelectedItemList]);
+  }, [chartItems, scale, multiSelectedItemList, selectedItemId]);
 
   const chartItemConnectPointsByDir: {
     [x: string]: { left?: PointPos[]; right?: PointPos[]; connectionIds: { left?: string[]; right?: string[] } };

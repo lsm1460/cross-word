@@ -224,12 +224,12 @@ function FlowZoom({ children }: Props) {
 
       <ul className={cx('zoom-btn-list')}>
         <li>
-          <button className="material-icons" onClick={handleZoom} data-zoom-type={'in'}>
+          <button className="material-symbols-outlined" onClick={handleZoom} data-zoom-type={'in'}>
             zoom_in
           </button>
         </li>
         <li>
-          <button className="material-icons" onClick={handleZoom} data-zoom-type={'out'}>
+          <button className="material-symbols-outlined" onClick={handleZoom} data-zoom-type={'out'}>
             zoom_out
           </button>
         </li>

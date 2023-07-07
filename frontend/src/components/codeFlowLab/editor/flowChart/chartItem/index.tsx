@@ -64,7 +64,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
     });
   }, [connectSizeByType]);
 
-  const handleDeleteItem:MouseEventHandler<HTMLButtonElement> = (_event) => {
+  const handleDeleteItem: MouseEventHandler<HTMLButtonElement> = (_event) => {
     _event.stopPropagation();
 
     alert('delete..');
@@ -85,7 +85,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
       onMouseDown={(_event) => handleItemMoveStart(_event.nativeEvent, itemInfo)}
     >
       <button className={cx('delete-button')} onClick={handleDeleteItem}>
-        <i className="material-icons">close</i>
+        <i className="material-symbols-outlined">close</i>
       </button>
       <span
         className={cx('item-point')}
