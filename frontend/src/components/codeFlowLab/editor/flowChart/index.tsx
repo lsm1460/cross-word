@@ -10,12 +10,13 @@ import {
   FLOW_CHART_ITEMS_STYLE,
   POINT_LIST_PADDING,
 } from '@/consts/codeFlowLab/items';
-import { ChartItems, PointPos } from '@/consts/types/codeFlowLab';
+import { ChartItemType, ChartItems, PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
-import { getChartItem } from '@/src/utils/content';
+import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { getChartItem, getSceneId } from '@/src/utils/content';
 import _ from 'lodash';
 import { MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { ConnectPoints, MoveItems } from '..';
 import ChartItem from './chartItem';
 import { doPolygonsIntersect, getConnectSizeByType, getElType, getRectPoints } from './utils';
@@ -28,10 +29,13 @@ interface Props {
   transY?: number;
 }
 function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
+  const dispatch = useDispatch();
+
   const flowChartRef = useRef<HTMLDivElement>(null);
   const chartItemWrapRef = useRef<HTMLDivElement>(null);
   const lineCanvasRef = useRef<HTMLCanvasElement>(null);
   const connectedCanvasRef = useRef<HTMLCanvasElement>(null);
+  const chartItemListRef = useRef([]);
 
   const selectedItemId = useRef<string>(null);
   const multiSelectedIdListClone = useRef<string[]>([]);
@@ -40,7 +44,15 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const multiSelectBoxStartPos = useRef<[number, number]>(null);
   const multiSelectBoxEndPos = useRef<[number, number]>(null);
 
-  const chartItems = useSelector((state: RootState) => getChartItem(state.mainDocument), shallowEqual);
+  const { chartItems, selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
+    const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
+
+    return {
+      chartItems: getChartItem(state.mainDocument),
+      selectedSceneId,
+      sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
+    };
+  }, shallowEqual);
 
   const [lineCanvasCtx, setLineCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);
@@ -222,20 +234,69 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   useEffect(() => {
     multiSelectedIdListClone.current = Object.keys(multiSelectedItemList);
+
+    window.addEventListener('keydown', deleteItems);
+
+    return () => {
+      window.removeEventListener('keydown', deleteItems);
+    };
   }, [multiSelectedItemList]);
 
   useEffect(() => {
     if (selectedItemId.current) {
       totalDelta.current = {
-        x: totalDelta.current.x + itemMoveDelta.x,
-        y: totalDelta.current.y + itemMoveDelta.y,
+        x: totalDelta.current.x + itemMoveDelta.x / scale,
+        y: totalDelta.current.y + itemMoveDelta.y / scale,
       };
 
       setMultiSelectedItemList((_prev) =>
-        _.mapValues(_prev, (_pos) => ({ x: _pos.x + itemMoveDelta.x, y: _pos.y + itemMoveDelta.y }))
+        _.mapValues(_prev, (_pos) => ({ x: _pos.x + itemMoveDelta.x / scale, y: _pos.y + itemMoveDelta.y / scale }))
       );
     }
-  }, [itemMoveDelta, selectedItemId]);
+  }, [itemMoveDelta, selectedItemId, scale]);
+
+  const deleteItems = (_event: KeyboardEvent) => {
+    if (_event.code === 'Delete') {
+      const deleteTargetIdList = Object.keys(multiSelectedItemList).filter(
+        (_itemId) => chartItems[_itemId].elType !== ChartItemType.body
+      );
+
+      if (deleteTargetIdList.length < 1) {
+        return;
+      }
+
+      chartItemListRef.current.forEach(({ id, ref }) => {
+        if (deleteTargetIdList.includes(id)) {
+          ref?.setMultiDeleteDelay((deleteTargetIdList.indexOf(id) + 1) * 100);
+        }
+      });
+
+      setTimeout(() => {
+        const ops = [];
+
+        let newChartItems = _.pickBy(chartItems, (_item) => !deleteTargetIdList.includes(_item.id));
+        newChartItems = _.mapValues(newChartItems, (_item) => ({
+          ..._item,
+          connectionIds: {
+            ..._item.connectionIds,
+            left: [...(_item.connectionIds?.left || []).filter((_id) => !deleteTargetIdList.includes(_id))],
+            right: [...(_item.connectionIds?.right || []).filter((_id) => !deleteTargetIdList.includes(_id))],
+          },
+        }));
+
+        ops.push({
+          key: 'items',
+          value: newChartItems,
+        });
+        ops.push({
+          key: `scene.${selectedSceneId}.itemIds`,
+          value: sceneItemIds.filter((_id) => !deleteTargetIdList.includes(_id)),
+        });
+
+        dispatch(setDocumentValueAction(ops));
+      }, (deleteTargetIdList.length + 1) * 100);
+    }
+  };
 
   const convertClientPosToLocalPos = (_clientPos: { x: number; y: number }) => {
     const { left, top } = flowChartRef.current.getBoundingClientRect();
@@ -458,7 +519,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   const handleMouseMoveItems = (_event: MouseEvent) => {
     if (selectedItemId.current) {
-      setItemMoveDelta({ x: _event.movementX / scale, y: _event.movementY / scale });
+      setItemMoveDelta({ x: _event.movementX, y: _event.movementY });
     }
   };
 
@@ -599,9 +660,10 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
           top: transY,
         }}
       >
-        {orderedChartItems.map((_itemInfo) => (
+        {orderedChartItems.map((_itemInfo, _i) => (
           <ChartItem
             key={_itemInfo.id}
+            ref={(el) => (chartItemListRef.current[_i] = { id: _itemInfo.id, ref: el })}
             chartItems={chartItems}
             itemInfo={_itemInfo}
             isSelected={Object.keys(multiSelectedItemList).includes(_itemInfo.id)}

@@ -3,6 +3,7 @@
 
 .chart-item {
   position: absolute;
+  user-select: none;
   @include flow-item-mixin;
 
   &.selected {
@@ -23,7 +24,6 @@
   }
 
   &.delete {
-    transition-delay: 100ms;
     opacity: 0;
     transform: scale(0.1);
   }
