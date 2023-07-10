@@ -26,6 +26,7 @@ import {
 } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { getConnectSizeByType, getElType } from '../utils';
+import PropertiesEditBlock from './propertiesEditBlock';
 
 interface Props {
   chartItems: CodeFlowChartDoc['items'];
@@ -247,6 +248,8 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
       >
         {connectPointList}
       </div>
+
+      <PropertiesEditBlock chartItem={itemInfo} />
     </div>
   );
 }
