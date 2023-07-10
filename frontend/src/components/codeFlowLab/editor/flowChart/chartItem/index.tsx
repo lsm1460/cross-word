@@ -15,7 +15,15 @@ import { RootState } from '@/reducers';
 import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { getSceneId, useDebounceSubmitText } from '@/src/utils/content';
 import _ from 'lodash';
-import { KeyboardEventHandler, MouseEventHandler, useEffect, useMemo, useState } from 'react';
+import {
+  KeyboardEventHandler,
+  MouseEventHandler,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { getConnectSizeByType, getElType } from '../utils';
 
@@ -26,7 +34,7 @@ interface Props {
   handleItemMoveStart: (_event: MouseEvent, _selectedItem: ChartItems) => void;
   handlePointConnectStart: MouseEventHandler<HTMLSpanElement>;
 }
-function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, handlePointConnectStart }: Props) {
+function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, handlePointConnectStart }: Props, ref) {
   const dispatch = useDispatch();
   const [debounceSubmitText] = useDebounceSubmitText(`items.${itemInfo.id}.name`);
 
@@ -47,6 +55,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   const [itemName, setItemName] = useState(itemInfo.name);
   const [isTyping, setIsTyping] = useState(false);
   const [onDelete, setOnDelete] = useState(false);
+  const [multiDeleteDelay, setMultiDeleteDelay] = useState(0);
 
   useEffect(() => {
     if (onDelete) {
@@ -175,9 +184,16 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
     setOnDelete(true);
   };
 
+  useImperativeHandle(ref, () => ({
+    setMultiDeleteDelay,
+  }));
+
   return (
     <div
-      className={cx('chart-item', getElType(itemInfo.elType), { selected: isSelected, delete: onDelete })}
+      className={cx('chart-item', getElType(itemInfo.elType), {
+        selected: isSelected,
+        delete: onDelete || multiDeleteDelay > 0,
+      })}
       data-id={itemInfo.id}
       style={{
         left: itemInfo.pos.left,
@@ -186,6 +202,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
         minWidth: FLOW_CHART_ITEMS_STYLE[itemInfo.elType].width,
 
         zIndex: itemInfo.zIndex,
+        transitionDelay: `${multiDeleteDelay || 100}ms`,
       }}
       onMouseDown={(_event) => handleItemMoveStart(_event.nativeEvent, itemInfo)}
     >
@@ -194,14 +211,8 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
           <i className="material-symbols-outlined">close</i>
         </button>
       )}
-      {/* <span
-        className={cx('item-point')}
-        style={{
-          backgroundColor: FLOW_CHART_ITEMS_STYLE[itemInfo.elType].backgroundColor,
-        }}
-      /> */}
 
-      <div className={cx('item-header', itemInfo.elType)}>
+      <div className={cx('item-header', getElType(itemInfo.elType))}>
         <input
           type="text"
           readOnly={!isSelected}
@@ -240,4 +251,8 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   );
 }
 
-export default ChartItem;
+type Ref = {
+  deleteItem: (_ids: string[]) => void;
+} | null;
+
+export default forwardRef<Ref, Props>(ChartItem);

@@ -200,8 +200,8 @@ function FlowZoom({ children }: Props) {
           transform: `scale(${scale}) translateX(${transX}px) translateY(${transY}px)`,
         }}
         data-scale={scale}
-        data-transX={transX}
-        data-transY={transY}
+        data-trans-x={transX}
+        data-trans-y={transY}
       >
         {React.cloneElement(children, { scale, transX, transY })}
       </div>

@@ -1,17 +1,15 @@
-import _ from 'lodash';
-import { put, select, takeEvery } from 'redux-saga/effects';
+import { put, select, takeLatest } from 'redux-saga/effects';
 import { EMIT_DOCUMENT_VALUE, SET_DOCUMENT_VALUE } from './actions';
-import { SagaOperationParam } from './types';
+import { Operation, SagaOperationParam } from './types';
 
 import { RootState } from '@/reducers';
-import { emitDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
-import { getDocumentValue } from '@/src/utils/content';
 import { addHistory } from '@/src/utils/history';
+import _ from 'lodash';
 
 function* handleSetDocumentValue({ payload }: SagaOperationParam) {
   const { mainDocument }: RootState = yield select();
 
-  let operations = [];
+  let operations: Operation[] = [];
 
   if (!_.isArray(payload)) {
     operations = [{ ...payload }];
@@ -22,10 +20,7 @@ function* handleSetDocumentValue({ payload }: SagaOperationParam) {
   }
 
   operations = _.map(operations, (op) => {
-    const beforeValue = getDocumentValue({
-      document: mainDocument.contentDocument,
-      keys: op.key.split('.'),
-    });
+    const beforeValue = op.key.split('.').reduce((acc, val) => (acc ? acc[val] : ''), mainDocument.contentDocument);
 
     return {
       ...op,
@@ -33,7 +28,7 @@ function* handleSetDocumentValue({ payload }: SagaOperationParam) {
     };
   });
 
-  yield put(emitDocumentValueAction(operations));
+  yield put({ type: EMIT_DOCUMENT_VALUE, payload: operations });
 }
 
 function* handleEmitValue({ payload }: SagaOperationParam) {
@@ -41,6 +36,6 @@ function* handleEmitValue({ payload }: SagaOperationParam) {
 }
 
 export function* documentSaga() {
-  yield takeEvery(SET_DOCUMENT_VALUE, handleSetDocumentValue);
-  yield takeEvery(EMIT_DOCUMENT_VALUE, handleEmitValue);
+  yield takeLatest(SET_DOCUMENT_VALUE, handleSetDocumentValue);
+  yield takeLatest(EMIT_DOCUMENT_VALUE, handleEmitValue);
 }

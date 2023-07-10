@@ -1,6 +1,7 @@
 @import '../../variables';
 
 .toolbar {
+  user-select: none;
   width: $editor-toolbar-width;
   position: relative;
 

@@ -2,19 +2,19 @@ import classNames from 'classnames/bind';
 import styles from './panelItem.module.scss';
 const cx = classNames.bind(styles);
 //
-import { ChartItemType } from '@/consts/types/codeFlowLab';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { getElType } from '../../../flowChart/utils';
 import {
   FLOW_CHART_ITEMS_STYLE,
   FLOW_ITEM_ADDITIONAL_INFO,
   FLOW_ITEM_DEFAULT_INFO,
   ZOOM_AREA_ELEMENT_ID,
 } from '@/consts/codeFlowLab/items';
+import { ChartItemType } from '@/consts/types/codeFlowLab';
+import { RootState } from '@/reducers';
+import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { getChartItem, getRandomId, getSceneId } from '@/src/utils/content';
 import _ from 'lodash';
-import { Operation, setDocumentAction, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
-import { RootState } from '@/reducers';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { getElType } from '@/src/components/codeFlowLab/editor/flowChart/utils';
 
 interface Props {
   itemType: ChartItemType;
@@ -22,11 +22,12 @@ interface Props {
 function PanelItem({ itemType }: Props) {
   const dispatch = useDispatch();
 
-  const { chartItems, selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
+  const { chartItems, selectedChartItems, selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
       chartItems: state.mainDocument.contentDocument.items,
+      selectedChartItems: getChartItem(state.mainDocument),
       selectedSceneId,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
@@ -44,20 +45,33 @@ function PanelItem({ itemType }: Props) {
 
     const { scale, transX, transY } = zoomArea.dataset;
 
-    const { width, height } = zoomArea.getBoundingClientRect();
+    const { width, height } = zoomArea.parentElement.getBoundingClientRect();
 
     const newItemId = getRandomId();
+
+    const itemList = Object.values(selectedChartItems);
+    const lastEl = itemList[itemList.length - 1];
+    const itemSize = _.filter(itemList, (_item) => _item.elType === itemType).length;
+
+    let pos = {
+      left: width / parseFloat(scale) / 2 - parseFloat(transX),
+      top: height / parseFloat(scale) / 2 - parseFloat(transY),
+    };
+
+    if (lastEl.pos.left === pos.left && lastEl.pos.top === pos.top) {
+      pos = {
+        left: pos.left + 10,
+        top: pos.top + 10,
+      };
+    }
 
     const newFlowItem = {
       ...FLOW_ITEM_DEFAULT_INFO,
       id: newItemId,
-      name: 'test',
+      name: `${itemType.replace(/\b[a-z]/g, (char) => char.toUpperCase())}-${itemSize + 1}`,
       elType: itemType,
-      pos: {
-        left: (width / 2 + parseFloat(transX)) / parseFloat(scale) || 0,
-        top: (height / 2 + parseFloat(transY)) / parseFloat(scale) || 0,
-      },
-      zIndex: 10,
+      pos,
+      zIndex: itemList.length + 1,
       connectionIds: _.mapValues(FLOW_CHART_ITEMS_STYLE[itemType].connectionTypeList, () => []),
       ...(FLOW_ITEM_ADDITIONAL_INFO[itemType] && FLOW_ITEM_ADDITIONAL_INFO[itemType]),
     };

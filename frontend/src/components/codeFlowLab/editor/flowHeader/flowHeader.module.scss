@@ -1,6 +1,7 @@
 @import '../../variables';
 
 .header {
+  user-select: none;
   height: $editor-header-height;
   position: fixed;
   top: 0;
