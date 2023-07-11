@@ -2,7 +2,7 @@ import classNames from 'classnames/bind';
 import styles from './flowZoom.module.scss';
 const cx = classNames.bind(styles);
 //
-import { FLOW_CHART_ITEMS_STYLE, ZOOM_AREA_ELEMENT_ID } from '@/consts/codeFlowLab/items';
+import { FLOW_CHART_ITEMS_STYLE, SELECTOR_CLASS_PREFIX, ZOOM_AREA_ELEMENT_ID } from '@/consts/codeFlowLab/items';
 import { RootState } from '@/reducers';
 import { getChartItem } from '@/src/utils/content';
 import React, { MouseEventHandler, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
@@ -111,9 +111,14 @@ function FlowZoom({ children }: Props) {
 
   const handleOnScroll = (_event: WheelEvent) => {
     _event.stopPropagation();
-    _event.preventDefault();
+
+    if ((_event.target as HTMLDivElement).className.includes(SELECTOR_CLASS_PREFIX)) {
+      return;
+    }
 
     if (_event.ctrlKey) {
+      _event.preventDefault();
+
       // todo: transform origin set..?
       if (_event.deltaY < 1) {
         setScale((_prev) => Math.min(_prev + 0.1, 2));
@@ -188,7 +193,9 @@ function FlowZoom({ children }: Props) {
     const height = scrollArea[1];
     const _vertical = (_deltaY / height) * 100;
 
-    setVerticalPos((_prev) => Math.min(100, Math.max(0, _prev + _vertical)));
+    setVerticalPos((_prev) => {
+      return Math.min(100, Math.max(0, _prev + _vertical));
+    });
   };
 
   return (

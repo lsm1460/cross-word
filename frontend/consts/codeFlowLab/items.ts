@@ -138,3 +138,4 @@ export const POINT_LIST_PADDING = 0;
 export const TRIGGER_TYPE = ['click', 'hover', 'mouseup', 'mousedown', 'mouseenter', 'mouseleave'];
 
 export const ZOOM_AREA_ELEMENT_ID = 'flowZoomArea';
+export const SELECTOR_CLASS_PREFIX = 'property-select';

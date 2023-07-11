@@ -31,7 +31,9 @@ const initialState: DocumentState = {
         pos: { left: 80, top: 200 },
         zIndex: 3,
         connectionIds: { left: [], right: [] },
-        styles: {},
+        styles: {
+          display: 'block',
+        },
       },
       'test-trigger': {
         id: 'test-trigger',
