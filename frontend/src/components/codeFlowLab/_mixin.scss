@@ -58,3 +58,36 @@
     background-color: $trigger-point-color;
   }
 }
+
+@mixin delete {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 5px;
+  border: none;
+  transform: translate(8px, -8px) scale(0);
+  gap: 10px;
+  background-color: transparent;
+  z-index: 3;
+
+  i {
+    cursor: pointer;
+    font-size: 10px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    color: #ffffff;
+    border: 1px solid #b8b8b8;
+    background-color: rgb(37, 37, 38);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@mixin delete-active {
+  transition: 0.3s transform cubic-bezier(0.175, 1.885, 0.32, 1.275);
+  visibility: visible;
+  transition-delay: 0.3s;
+  transform: translate(8px, -8px) scale(1);
+}

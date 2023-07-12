@@ -1,5 +1,11 @@
-import { CHART_ELEMENT_ITEMS } from '@/consts/codeFlowLab/items';
+import {
+  CHART_ELEMENT_ITEMS,
+  FLOW_CHART_ITEMS_STYLE,
+  FLOW_ITEM_ADDITIONAL_INFO,
+  FLOW_ITEM_DEFAULT_INFO,
+} from '@/consts/codeFlowLab/items';
 import { ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
+import { getRandomId } from '@/src/utils/content';
 import _ from 'lodash';
 
 type IPolygon = { x: number; y: number }[];
@@ -107,4 +113,45 @@ export const getConnectSizeByType = (
 
     return _.mapValues(typeGroup, (_ids) => _ids.length);
   });
+};
+
+export const makeNewItem = (
+  zoomArea: HTMLElement,
+  selectedChartItems: CodeFlowChartDoc['items'],
+  itemType: ChartItemType
+) => {
+  const { scale, transX, transY } = zoomArea.dataset;
+  const { width, height } = zoomArea.parentElement.getBoundingClientRect();
+
+  const newItemId = getRandomId();
+
+  const itemList = Object.values(selectedChartItems);
+  const lastEl = itemList[itemList.length - 1];
+  const itemSize = _.filter(itemList, (_item) => _item.elType === itemType).length;
+
+  let pos = {
+    left: width / parseFloat(scale) / 2 - parseFloat(transX),
+    top: height / parseFloat(scale) / 2 - parseFloat(transY),
+  };
+
+  if (lastEl.pos.left === pos.left && lastEl.pos.top === pos.top) {
+    pos = {
+      left: pos.left + 10,
+      top: pos.top + 10,
+    };
+  }
+
+  return [
+    {
+      ...FLOW_ITEM_DEFAULT_INFO,
+      id: newItemId,
+      name: `${itemType.replace(/\b[a-z]/g, (char) => char.toUpperCase())}-${itemSize + 1}`,
+      elType: itemType,
+      pos,
+      zIndex: itemList.length + 1,
+      connectionIds: _.mapValues(FLOW_CHART_ITEMS_STYLE[itemType].connectionTypeList, () => []),
+      ...(FLOW_ITEM_ADDITIONAL_INFO[itemType] && FLOW_ITEM_ADDITIONAL_INFO[itemType]),
+    },
+    newItemId,
+  ];
 };

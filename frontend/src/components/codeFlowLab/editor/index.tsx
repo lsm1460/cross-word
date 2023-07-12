@@ -77,13 +77,11 @@ function CodeFlowLabEditor() {
     dispatch(setDocumentValueAction(operations));
   };
 
-  const makeItem = () => {};
-
   return (
     <>
       <FlowHeader />
       <div className={cx('editor-wrap')}>
-        <FlowToolbar makeItem={makeItem} />
+        <FlowToolbar />
         <div className={cx('canvas-area')}>
           <FlowZoom>
             <FlowChart moveItems={moveItems} connectPoints={connectPoints} />

@@ -14,7 +14,7 @@ import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/main
 import { getChartItem, getRandomId, getSceneId } from '@/src/utils/content';
 import _ from 'lodash';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { getElType } from '@/src/components/codeFlowLab/editor/flowChart/utils';
+import { getElType, makeNewItem } from '@/src/components/codeFlowLab/editor/flowChart/utils';
 
 interface Props {
   itemType: ChartItemType;
@@ -43,38 +43,7 @@ function PanelItem({ itemType }: Props) {
   const handleMakeItem = () => {
     const zoomArea = document.getElementById(ZOOM_AREA_ELEMENT_ID);
 
-    const { scale, transX, transY } = zoomArea.dataset;
-
-    const { width, height } = zoomArea.parentElement.getBoundingClientRect();
-
-    const newItemId = getRandomId();
-
-    const itemList = Object.values(selectedChartItems);
-    const lastEl = itemList[itemList.length - 1];
-    const itemSize = _.filter(itemList, (_item) => _item.elType === itemType).length;
-
-    let pos = {
-      left: width / parseFloat(scale) / 2 - parseFloat(transX),
-      top: height / parseFloat(scale) / 2 - parseFloat(transY),
-    };
-
-    if (lastEl.pos.left === pos.left && lastEl.pos.top === pos.top) {
-      pos = {
-        left: pos.left + 10,
-        top: pos.top + 10,
-      };
-    }
-
-    const newFlowItem = {
-      ...FLOW_ITEM_DEFAULT_INFO,
-      id: newItemId,
-      name: `${itemType.replace(/\b[a-z]/g, (char) => char.toUpperCase())}-${itemSize + 1}`,
-      elType: itemType,
-      pos,
-      zIndex: itemList.length + 1,
-      connectionIds: _.mapValues(FLOW_CHART_ITEMS_STYLE[itemType].connectionTypeList, () => []),
-      ...(FLOW_ITEM_ADDITIONAL_INFO[itemType] && FLOW_ITEM_ADDITIONAL_INFO[itemType]),
-    };
+    const [newFlowItem, newItemId] = makeNewItem(zoomArea, selectedChartItems, itemType);
 
     const operations: Operation[] = [
       {

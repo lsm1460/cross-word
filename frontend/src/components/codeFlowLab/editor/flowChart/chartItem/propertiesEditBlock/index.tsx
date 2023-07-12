@@ -1,3 +1,7 @@
+import classNames from 'classnames/bind';
+import styles from './propertiesEditBlock.module.scss';
+const cx = classNames.bind(styles);
+//
 import { ChartItemType, ChartItems } from '@/consts/types/codeFlowLab';
 import StyleEditBlock from './styleEditBlock';
 import TriggerEditBlock from './triggerEditBlock';
@@ -18,7 +22,11 @@ function PropertiesEditBlock({ chartItem }: Props) {
     }
   };
 
-  return <div>{drawInnerBlock()}</div>;
+  return (
+    <div className={cx('property-block-wrap')}>
+      <div>{drawInnerBlock()}</div>
+    </div>
+  );
 }
 
 export default PropertiesEditBlock;

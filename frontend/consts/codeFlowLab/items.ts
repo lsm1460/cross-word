@@ -122,10 +122,12 @@ export const FLOW_ITEM_DEFAULT_INFO = {
 
 export const FLOW_ITEM_ADDITIONAL_INFO = {
   [ChartItemType.style]: {
-    styles: {},
+    styles: {
+      display: 'block',
+    },
   },
   [ChartItemType.trigger]: {
-    triggerType: '',
+    triggerType: 'click',
   },
 };
 
