@@ -50,6 +50,10 @@
     background-color: $element-point-color;
   }
 
+  &.span::before {
+    background-color: $span-point-color;
+  }
+
   &.style::before {
     background-color: $style-point-color;
   }

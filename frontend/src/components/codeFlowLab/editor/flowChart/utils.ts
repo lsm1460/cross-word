@@ -102,7 +102,13 @@ export function getRectPoints(element: HTMLElement): IPoint[] {
   ];
 }
 
-export const getElType = (_elType) => (CHART_ELEMENT_ITEMS.includes(_elType) ? ChartItemType.el : _elType);
+export const getElType = (_elType) => {
+  if (_elType === ChartItemType.span) {
+    return _elType;
+  }
+
+  return CHART_ELEMENT_ITEMS.includes(_elType) ? ChartItemType.el : _elType;
+};
 
 export const getConnectSizeByType = (
   _idsByDic: ChartItems['connectionIds'],

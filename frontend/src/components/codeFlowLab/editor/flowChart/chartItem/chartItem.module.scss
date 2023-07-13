@@ -133,13 +133,20 @@
             background-color: $element-point-color;
           }
 
+          &.span-element::before,
+          &.element-span::before {
+            background-color: $span-point-color;
+          }
+
           &.element-style::before,
           &.style-element::before,
-          &.style-style::before {
+          &.style-style::before,
+          &.span-style::before {
             background-color: $style-point-color;
           }
 
           &.element-trigger::before,
+          &.span-trigger::before,
           &.trigger-element::before {
             background-color: $trigger-point-color;
           }

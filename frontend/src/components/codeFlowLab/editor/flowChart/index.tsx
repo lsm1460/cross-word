@@ -94,22 +94,11 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       connectionIds: _item.connectionIds,
       ..._.mapValues(_item.connectionIds, (_ids: string, _dir) => {
         const connectSizeByType = getConnectSizeByType(_item.connectionIds, selectedChartItem);
-        const connectSizeByDir = _.mapValues(connectSizeByType, (_sizeByType) =>
-          _.reduce(
-            _sizeByType,
-            (_acc, _cur) => {
-              return _acc + _cur;
-            },
-            0
-          )
-        );
 
         let _i = -1;
 
         return (FLOW_CHART_ITEMS_STYLE[_item.elType].connectionTypeList[_dir] || [])
           .map((_type, _j, _jj) => {
-            const dirSize = _jj.length + connectSizeByDir[_dir];
-
             return Array((connectSizeByType[_dir][_type] || 0) + 1)
               .fill(undefined)
               .map((__, _k, _kk) => {
@@ -296,12 +285,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         const originElType = getElType(selectedChartItem[originPoint.id].elType);
         const nextElType = getElType(selectedChartItem[_nextPoint.id].elType);
 
-        if (
-          (_nextPoint.connectElType === originElType ||
-            _nextPoint.connectElType === selectedChartItem[originPoint.id].elType) &&
-          (originPoint.connectElType === nextElType ||
-            originPoint.connectElType === selectedChartItem[_nextPoint.id].elType)
-        ) {
+        if (_nextPoint.connectElType === originElType && originPoint.connectElType === nextElType) {
           connectedPoint = _nextPoint;
         }
       }
@@ -425,10 +409,9 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   };
 
   const getConnectPoint = (_x: number, _y: number, _connectType?: 'left' | 'right', _id?: string): PointPos => {
-    let _elType, _originElType;
+    let _elType;
 
     if (_id) {
-      _originElType = selectedChartItem[_id].elType;
       _elType = getElType(selectedChartItem[_id].elType);
     }
 
@@ -448,7 +431,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         }
 
         return (
-          (_id ? connectionTypeList.includes(_elType) || connectionTypeList.includes(_originElType) : true) &&
+          (_id ? connectionTypeList.includes(_elType) : true) &&
           (_id ? !_pos.connectionIds.includes(_id) : true) &&
           _pos.left - CONNECT_POINT_SIZE - POINT_LIST_PADDING + transX <= _x &&
           _x <= CONNECT_POINT_SIZE + _pos.left + POINT_LIST_PADDING + transX &&
