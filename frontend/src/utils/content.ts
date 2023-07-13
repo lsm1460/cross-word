@@ -68,10 +68,8 @@ export const getDocumentValue = ({ document: _document, keys: _keys }) => {
 export const getSceneId = (_flowScene: CodeFlowChartDoc['scene'], _sceneOrder: number) =>
   Object.keys(_flowScene).filter((_sceneKey) => _flowScene[_sceneKey].order === _sceneOrder)?.[0] || '';
 
-export const getChartItem = ({ contentDocument: flowDoc, sceneOrder }: DocumentState) => {
-  const selectedSceneId = getSceneId(flowDoc.scene, sceneOrder);
-
-  return _.pickBy(flowDoc.items, (_item) => (flowDoc.scene[selectedSceneId]?.itemIds || []).includes(_item.id));
+export const getChartItem = (sceneItemIdList: string[], chartItem: CodeFlowChartDoc['items']) => {
+  return _.pickBy(chartItem, (_item) => (sceneItemIdList || []).includes(_item.id));
 };
 
 export const useDebounceSubmitText = (_dispatchKey) => {

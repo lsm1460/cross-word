@@ -3,15 +3,24 @@ import styles from './viewer.module.scss';
 const cx = classNames.bind(styles);
 //
 import { RootState } from '@/reducers';
-import { getChartItem } from '@/src/utils/content';
+import { getChartItem, getSceneId } from '@/src/utils/content';
 import { useMemo } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 
 interface Props {}
 function FlowChartViewer({}: Props) {
-  const chartItems = useSelector((state: RootState) => getChartItem(state.mainDocument), shallowEqual);
+  const { chartItems, sceneItemIds } = useSelector((state: RootState) => {
+    const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
-  const templateDocument = useMemo(() => {}, [chartItems]);
+    return {
+      chartItems: state.mainDocument.contentDocument.items,
+      sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
+    };
+  }, shallowEqual);
+
+  const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
+
+  const templateDocument = useMemo(() => {}, [selectedChartItem]);
 
   return <div className={cx('viewer-wrap')}></div>;
 }

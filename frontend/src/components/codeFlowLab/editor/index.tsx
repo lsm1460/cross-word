@@ -5,10 +5,10 @@ const cx = classNames.bind(styles);
 import { PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
-import { getChartItem } from '@/src/utils/content';
+import { getChartItem, getSceneId } from '@/src/utils/content';
 import { clearHistory } from '@/src/utils/history';
 import _ from 'lodash';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import FlowChartViewer from '../viewer';
 import FlowChart from './flowChart';
@@ -24,7 +24,17 @@ function CodeFlowLabEditor() {
 
   const [moveItemInfo, setMoveItemInfo] = useState<{ ids: string[]; deltaX: number; deltaY: number }>(null);
 
-  const chartItems = useSelector((state: RootState) => getChartItem(state.mainDocument), shallowEqual);
+  const { chartItems, sceneItemIds } = useSelector((state: RootState) => {
+    const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
+
+    return {
+      chartItems: state.mainDocument.contentDocument.items,
+      selectedSceneId,
+      sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
+    };
+  }, shallowEqual);
+
+  const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
 
   useEffect(() => {
     clearHistory();
@@ -32,7 +42,7 @@ function CodeFlowLabEditor() {
 
   useEffect(() => {
     if (moveItemInfo && (moveItemInfo.deltaX || moveItemInfo.deltaY)) {
-      const targetItems = _.pickBy(chartItems, (_item) => moveItemInfo.ids.includes(_item.id));
+      const targetItems = _.pickBy(selectedChartItem, (_item) => moveItemInfo.ids.includes(_item.id));
 
       const operations: Operation[] = Object.values(targetItems).map((_item) => {
         return {
@@ -45,14 +55,14 @@ function CodeFlowLabEditor() {
 
       setMoveItemInfo(null);
     }
-  }, [moveItemInfo, chartItems]);
+  }, [moveItemInfo, selectedChartItem]);
 
   const moveItems: MoveItems = (_itemIds, _deltaX, _deltaY) => {
     setMoveItemInfo({ ids: _itemIds, deltaX: _deltaX, deltaY: _deltaY });
   };
 
   const connectPoints: ConnectPoints = (_prevPos, _nextPos) => {
-    const targetItems = _.pickBy(chartItems, (_item) => [_prevPos.id, _nextPos.id].includes(_item.id));
+    const targetItems = _.pickBy(selectedChartItem, (_item) => [_prevPos.id, _nextPos.id].includes(_item.id));
     const newTargetItems = _.mapValues(targetItems, (_item) => ({
       ..._item,
       ...(_item.id === _prevPos.id && {

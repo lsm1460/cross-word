@@ -4,7 +4,7 @@ const cx = classNames.bind(styles);
 //
 import { FLOW_CHART_ITEMS_STYLE, SELECTOR_CLASS_PREFIX, ZOOM_AREA_ELEMENT_ID } from '@/consts/codeFlowLab/items';
 import { RootState } from '@/reducers';
-import { getChartItem } from '@/src/utils/content';
+import { getChartItem, getSceneId } from '@/src/utils/content';
 import React, { MouseEventHandler, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 
@@ -25,7 +25,17 @@ function FlowZoom({ children }: Props) {
   const [horizonPos, setHorizonPos] = useState<number>(50);
   const [verticalPos, setVerticalPos] = useState<number>(50);
 
-  const chartItems = useSelector((state: RootState) => getChartItem(state.mainDocument), shallowEqual);
+  const { chartItems, sceneItemIds } = useSelector((state: RootState) => {
+    const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
+
+    return {
+      chartItems: state.mainDocument.contentDocument.items,
+      selectedSceneId,
+      sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
+    };
+  }, shallowEqual);
+
+  const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
 
   useEffect(() => {
     if (zoomRef.current) {
@@ -52,8 +62,8 @@ function FlowZoom({ children }: Props) {
     let maxX = 0;
     let maxY = 0;
 
-    for (let _id in chartItems) {
-      const _item = chartItems[_id];
+    for (let _id in selectedChartItem) {
+      const _item = selectedChartItem[_id];
 
       const _maxX = Math.max(
         Math.abs(_item.pos.left - xCenter),
@@ -72,7 +82,7 @@ function FlowZoom({ children }: Props) {
     const scrollY = Math.max(maxY * 2 - height / scale, 0);
 
     return [scrollX + SCROLL_AREA_PADDING, scrollY + SCROLL_AREA_PADDING];
-  }, [originSize, chartItems, scale]);
+  }, [originSize, selectedChartItem, scale]);
 
   const scrollBarX = useMemo(() => {
     const fullSize = scrollArea[0] + originSize[0];

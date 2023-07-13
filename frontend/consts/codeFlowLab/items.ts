@@ -3,7 +3,8 @@ import { ChartItemType } from '../types/codeFlowLab';
 export const CHART_ELEMENT_ITEMS = [
   ChartItemType.body,
   ChartItemType.div,
-  ChartItemType.text,
+  ChartItemType.paragraph,
+  ChartItemType.span,
   ChartItemType.button,
   ChartItemType.image,
 ];
@@ -32,7 +33,7 @@ export const FLOW_CHART_ITEMS_STYLE: {
     height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
-      right: [ChartItemType.style, ChartItemType.trigger],
+      right: [ChartItemType.span, ChartItemType.style, ChartItemType.trigger],
     },
     backgroundColor: '#7b7be8',
   },
@@ -41,11 +42,20 @@ export const FLOW_CHART_ITEMS_STYLE: {
     height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
-      right: [ChartItemType.style, ChartItemType.trigger],
+      right: [ChartItemType.el, ChartItemType.style, ChartItemType.trigger],
     },
     backgroundColor: '#7b7be8',
   },
-  [ChartItemType.text]: {
+  [ChartItemType.paragraph]: {
+    width: 200,
+    height: 70,
+    connectionTypeList: {
+      left: [ChartItemType.el],
+      right: [ChartItemType.span, ChartItemType.style, ChartItemType.trigger],
+    },
+    backgroundColor: '#7b7be8',
+  },
+  [ChartItemType.span]: {
     width: 200,
     height: 70,
     connectionTypeList: {

@@ -9,6 +9,7 @@
   &.selected {
     border: 1px solid $other-point-color;
     transform: scale(1.1);
+    z-index: 999 !important;
 
     &.element {
       border: 1px solid $element-point-color;

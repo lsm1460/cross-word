@@ -134,7 +134,7 @@ export const makeNewItem = (
     top: height / parseFloat(scale) / 2 - parseFloat(transY),
   };
 
-  if (lastEl.pos.left === pos.left && lastEl.pos.top === pos.top) {
+  if (lastEl && lastEl.pos.left === pos.left && lastEl.pos.top === pos.top) {
     pos = {
       left: pos.left + 10,
       top: pos.top + 10,

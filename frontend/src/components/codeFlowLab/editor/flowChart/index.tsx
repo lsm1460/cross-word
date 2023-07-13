@@ -48,11 +48,13 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
-      chartItems: getChartItem(state.mainDocument),
+      chartItems: state.mainDocument.contentDocument.items,
       selectedSceneId,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
   }, shallowEqual);
+
+  const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
 
   const [lineCanvasCtx, setLineCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);
@@ -60,10 +62,12 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     {}
   );
   const [itemMoveDelta, setItemMoveDelta] = useState({ x: 0, y: 0 });
+  const [pointMoveDelta, setPointMoveDelta] = useState({ x: 0, y: 0 });
+  const [isClearCanvasTrigger, setIsClearCanvasTrigger] = useState(false);
 
   const orderedChartItems = useMemo(() => {
     const selectedIdList = selectedItemId.current ? Object.keys(multiSelectedItemList) : [];
-    const adjustedMovePosItems = _.mapValues(chartItems, (_v, _kId) => {
+    const adjustedMovePosItems = _.mapValues(selectedChartItem, (_v, _kId) => {
       if (selectedIdList.includes(_kId)) {
         return {
           ..._v,
@@ -79,7 +83,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     });
 
     return Object.values(adjustedMovePosItems).sort((_before, _after) => _after.zIndex - _before.zIndex);
-  }, [chartItems, scale, multiSelectedItemList, selectedItemId]);
+  }, [selectedChartItem, scale, multiSelectedItemList, selectedItemId]);
 
   const chartItemConnectPointsByDir: {
     [x: string]: { left?: PointPos[]; right?: PointPos[]; connectionIds: { left?: string[]; right?: string[] } };
@@ -89,7 +93,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     return _.mapValues(items, (_item) => ({
       connectionIds: _item.connectionIds,
       ..._.mapValues(_item.connectionIds, (_ids: string, _dir) => {
-        const connectSizeByType = getConnectSizeByType(_item.connectionIds, chartItems);
+        const connectSizeByType = getConnectSizeByType(_item.connectionIds, selectedChartItem);
         const connectSizeByDir = _.mapValues(connectSizeByType, (_sizeByType) =>
           _.reduce(
             _sizeByType,
@@ -141,10 +145,10 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   const connectedPointList = useMemo(() => {
     const findItemIndex = (_key, _id, _dir) => {
-      let typeGroup = _.mapKeys(FLOW_CHART_ITEMS_STYLE[chartItems[_id].elType].connectionTypeList[_dir]);
+      let typeGroup = _.mapKeys(FLOW_CHART_ITEMS_STYLE[selectedChartItem[_id].elType].connectionTypeList[_dir]);
       typeGroup = _.mapValues(typeGroup, (__, _typeKey) =>
         chartItemConnectPointsByDir[_id].connectionIds[_dir].filter(
-          (_typeId) => getElType(chartItems[_typeId].elType) === _typeKey
+          (_typeId) => getElType(selectedChartItem[_typeId].elType) === _typeKey
         )
       );
 
@@ -223,6 +227,14 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   }, [lineCanvasRef, connectedCanvasRef]);
 
   useEffect(() => {
+    if (lineCanvasCtx && isClearCanvasTrigger) {
+      lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
+
+      setIsClearCanvasTrigger(false);
+    }
+  }, [lineCanvasCtx, isClearCanvasTrigger]);
+
+  useEffect(() => {
     if (connectedCanvasCtx) {
       connectedCanvasCtx.clearRect(0, 0, connectedCanvasRef.current.width, connectedCanvasRef.current.height);
 
@@ -255,10 +267,61 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     }
   }, [itemMoveDelta, selectedItemId, scale]);
 
+  useEffect(() => {
+    if (selectedConnectionPoint.current) {
+      const _targetPoint = {
+        ...selectedConnectionPoint.current,
+        left: selectedConnectionPoint.current.left + pointMoveDelta.x / scale,
+        top: selectedConnectionPoint.current.top + pointMoveDelta.y / scale,
+      };
+
+      selectedConnectionPoint.current = _targetPoint;
+
+      lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
+
+      const originPoint = chartItemConnectPoints[_targetPoint.id].filter(
+        (_p) => _p.connectType === _targetPoint.connectType
+      )[_targetPoint.index];
+
+      const _nextPoint = getConnectPoint(
+        _targetPoint.left + transX,
+        _targetPoint.top + transY,
+        _targetPoint.connectType,
+        _targetPoint.id
+      );
+
+      let connectedPoint;
+
+      if (_nextPoint) {
+        const originElType = getElType(selectedChartItem[originPoint.id].elType);
+        const nextElType = getElType(selectedChartItem[_nextPoint.id].elType);
+
+        if (
+          (_nextPoint.connectElType === originElType ||
+            _nextPoint.connectElType === selectedChartItem[originPoint.id].elType) &&
+          (originPoint.connectElType === nextElType ||
+            originPoint.connectElType === selectedChartItem[_nextPoint.id].elType)
+        ) {
+          connectedPoint = _nextPoint;
+        }
+      }
+
+      drawConnectionPointLine(lineCanvasCtx, originPoint, connectedPoint);
+    }
+  }, [
+    pointMoveDelta,
+    selectedConnectionPoint,
+    lineCanvasCtx,
+    lineCanvasRef,
+    chartItemConnectPoints,
+    selectedChartItem,
+    scale,
+  ]);
+
   const deleteItems = (_event: KeyboardEvent) => {
     if (_event.code === 'Delete') {
       const deleteTargetIdList = Object.keys(multiSelectedItemList).filter(
-        (_itemId) => chartItems[_itemId].elType !== ChartItemType.body
+        (_itemId) => selectedChartItem[_itemId].elType !== ChartItemType.body
       );
 
       if (deleteTargetIdList.length < 1) {
@@ -274,7 +337,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       setTimeout(() => {
         const ops = [];
 
-        let newChartItems = _.pickBy(chartItems, (_item) => !deleteTargetIdList.includes(_item.id));
+        let newChartItems = _.pickBy(selectedChartItem, (_item) => !deleteTargetIdList.includes(_item.id));
         newChartItems = _.mapValues(newChartItems, (_item) => ({
           ..._item,
           connectionIds: {
@@ -362,10 +425,11 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   };
 
   const getConnectPoint = (_x: number, _y: number, _connectType?: 'left' | 'right', _id?: string): PointPos => {
-    let _elType;
+    let _elType, _originElType;
 
     if (_id) {
-      _elType = getElType(chartItems[_id].elType);
+      _originElType = selectedChartItem[_id].elType;
+      _elType = getElType(selectedChartItem[_id].elType);
     }
 
     const _points = Object.values(chartItemConnectPoints)
@@ -378,12 +442,13 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
           if (_invertedConnectType === _pos.connectType) {
             connectionTypeList =
-              FLOW_CHART_ITEMS_STYLE[chartItems[_pos.id].elType].connectionTypeList?.[_invertedConnectType] || [];
+              FLOW_CHART_ITEMS_STYLE[selectedChartItem[_pos.id].elType].connectionTypeList?.[_invertedConnectType] ||
+              [];
           }
         }
 
         return (
-          (_id ? connectionTypeList.includes(_elType) : true) &&
+          (_id ? connectionTypeList.includes(_elType) || connectionTypeList.includes(_originElType) : true) &&
           (_id ? !_pos.connectionIds.includes(_id) : true) &&
           _pos.left - CONNECT_POINT_SIZE - POINT_LIST_PADDING + transX <= _x &&
           _x <= CONNECT_POINT_SIZE + _pos.left + POINT_LIST_PADDING + transX &&
@@ -395,7 +460,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     return _.reduce(
       _points,
       (_acc, _cur) => {
-        if ((_acc?.zIndex || 0) < chartItems[_cur.id].zIndex) {
+        if ((_acc?.zIndex || 0) < selectedChartItem[_cur.id].zIndex) {
           // _acc보다 z-index가 크다면
           return _cur;
         } else {
@@ -486,7 +551,8 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       const selectedPoint = getConnectPoint(convertedX, convertedY);
 
       if (selectedPoint) {
-        const _hasId = chartItems[selectedPoint.id].connectionIds[selectedPoint.connectType][selectedPoint.index];
+        const _hasId =
+          selectedChartItem[selectedPoint.id].connectionIds[selectedPoint.connectType][selectedPoint.index];
 
         if (_hasId) {
           // 이미 연결된 포인트를 분리시켜야 함
@@ -498,7 +564,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         }
       }
     },
-    [lineCanvasCtx, chartItems]
+    [lineCanvasCtx, selectedChartItem]
   );
 
   const handleMouseDown: MouseEventHandler<HTMLDivElement> = (_event) => {
@@ -525,46 +591,17 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   const handleMouseMovePoint = (_event: MouseEvent) => {
     if (selectedConnectionPoint.current) {
-      const _targetPoint = {
-        ...selectedConnectionPoint.current,
-        left: selectedConnectionPoint.current.left + _event.movementX / scale,
-        top: selectedConnectionPoint.current.top + _event.movementY / scale,
-      };
-
-      selectedConnectionPoint.current = _targetPoint;
-
-      lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
-
-      const originPoint = chartItemConnectPoints[_targetPoint.id].filter(
-        (_p) => _p.connectType === _targetPoint.connectType
-      )[_targetPoint.index];
-
-      const _nextPoint = getConnectPoint(
-        _targetPoint.left + transX,
-        _targetPoint.top + transY,
-        _targetPoint.connectType,
-        _targetPoint.id
-      );
-
-      let connectedPoint;
-
-      if (_nextPoint) {
-        const originElType = getElType(chartItems[originPoint.id].elType);
-        const nextElType = getElType(chartItems[_nextPoint.id].elType);
-
-        if (_nextPoint.connectElType === originElType && originPoint.connectElType === nextElType) {
-          connectedPoint = _nextPoint;
-        }
-      }
-
-      drawConnectionPointLine(lineCanvasCtx, originPoint, connectedPoint);
+      setPointMoveDelta({ x: _event.movementX, y: _event.movementY });
     }
   };
 
   const getSelectItemPos = (_itemIdList) => {
     const _ids = _.mapKeys(_itemIdList, (_id) => _id);
 
-    return _.mapValues(_ids, (__, _itemId) => ({ x: chartItems[_itemId].pos.left, y: chartItems[_itemId].pos.top }));
+    return _.mapValues(_ids, (__, _itemId) => ({
+      x: selectedChartItem[_itemId].pos.left,
+      y: selectedChartItem[_itemId].pos.top,
+    }));
   };
 
   const handleMouseMoveMultiSelect = (_event: MouseEvent) => {
@@ -607,7 +644,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   };
 
   const handleMouseUpPoint = () => {
-    lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
+    setIsClearCanvasTrigger(true);
 
     document.removeEventListener('mousemove', handleMouseMovePoint);
     document.removeEventListener('mouseup', handleMouseUpPoint);
@@ -664,7 +701,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
           <ChartItem
             key={_itemInfo.id}
             ref={(el) => (chartItemListRef.current[_i] = { id: _itemInfo.id, ref: el })}
-            chartItems={chartItems}
+            chartItems={selectedChartItem}
             itemInfo={_itemInfo}
             isSelected={Object.keys(multiSelectedItemList).includes(_itemInfo.id)}
             handleItemMoveStart={handleItemMoveStart}
