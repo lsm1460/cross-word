@@ -140,9 +140,12 @@
 
           &.element-style::before,
           &.style-element::before,
-          &.style-style::before,
           &.span-style::before {
             background-color: $style-point-color;
+          }
+
+          &.style-style::before {
+            background-color: $style-style-point-color;
           }
 
           &.element-trigger::before,

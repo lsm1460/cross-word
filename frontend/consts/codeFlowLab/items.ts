@@ -96,7 +96,7 @@ export const FLOW_CHART_ITEMS_STYLE: {
     width: 200,
     height: 100,
     connectionTypeList: {
-      left: [ChartItemType.el],
+      left: [ChartItemType.el, ChartItemType.style],
       right: [ChartItemType.style],
     },
     backgroundColor: '#2ec438',

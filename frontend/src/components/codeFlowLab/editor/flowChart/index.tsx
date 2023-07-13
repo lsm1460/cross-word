@@ -21,6 +21,8 @@ import { ConnectPoints, MoveItems } from '..';
 import ChartItem from './chartItem';
 import { doPolygonsIntersect, getConnectSizeByType, getElType, getRectPoints } from './utils';
 
+type PathInfo = { pos: string; prev: string; prevList: string[] };
+
 interface Props {
   moveItems: MoveItems;
   connectPoints: ConnectPoints;
@@ -62,7 +64,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     {}
   );
   const [itemMoveDelta, setItemMoveDelta] = useState({ x: 0, y: 0 });
-  const [pointMoveDelta, setPointMoveDelta] = useState({ x: 0, y: 0 });
+  const [pointMove, setPointMove] = useState(null);
   const [isClearCanvasTrigger, setIsClearCanvasTrigger] = useState(false);
 
   const orderedChartItems = useMemo(() => {
@@ -257,11 +259,13 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   }, [itemMoveDelta, selectedItemId, scale]);
 
   useEffect(() => {
-    if (selectedConnectionPoint.current) {
+    if (selectedConnectionPoint.current && pointMove) {
+      const { x: convertedX, y: convertedY } = convertClientPosToLocalPos(pointMove);
+
       const _targetPoint = {
         ...selectedConnectionPoint.current,
-        left: selectedConnectionPoint.current.left + pointMoveDelta.x / scale,
-        top: selectedConnectionPoint.current.top + pointMoveDelta.y / scale,
+        left: convertedX,
+        top: convertedY,
       };
 
       selectedConnectionPoint.current = _targetPoint;
@@ -293,7 +297,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       drawConnectionPointLine(lineCanvasCtx, originPoint, connectedPoint);
     }
   }, [
-    pointMoveDelta,
+    pointMove,
     selectedConnectionPoint,
     lineCanvasCtx,
     lineCanvasRef,
@@ -408,6 +412,43 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     _ctx.stroke();
   };
 
+  const checkLoopConnection = (_startId, _targetId) => {
+    const visitedList = [];
+    const visited: { [_pathKey: string]: PathInfo } = {};
+
+    let needVisit: PathInfo[] = [],
+      isSuccessFlag = false;
+
+    needVisit.push({ pos: _startId, prev: null, prevList: [] });
+
+    while (needVisit.length > 0) {
+      const path = needVisit.shift();
+      const _pathKey = path.pos;
+
+      if (_startId === _targetId) {
+        isSuccessFlag = true;
+        visited[_pathKey] = path;
+        break;
+      }
+
+      if (!visitedList.includes(_pathKey)) {
+        if (!needVisit.map((_need) => _need.pos).includes(_pathKey)) {
+          // 대기열에 남아있을 경우 탐색을 끝내지 않음 (같은 칸 이여도 탐색 히스토리가 다를 수 있음)
+          visited[_pathKey] = path;
+          visitedList.push(_pathKey);
+        }
+
+        const targetPos = Object.values(selectedChartItem[_pathKey].connectionIds)
+          .flat()
+          .map((_node) => ({ pos: _node, prev: _pathKey, prevList: [...path.prevList, path.pos] }));
+
+        needVisit = [...needVisit, ...targetPos];
+      }
+    }
+
+    return [isSuccessFlag, visited];
+  };
+
   const getConnectPoint = (_x: number, _y: number, _connectType?: 'left' | 'right', _id?: string): PointPos => {
     let _elType;
 
@@ -429,6 +470,11 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
               [];
           }
         }
+
+        // if (_id) {
+        //   const check = checkLoopConnection(_id, _pos.id);
+        //   console.log('check', check);
+        // }
 
         return (
           (_id ? connectionTypeList.includes(_elType) : true) &&
@@ -574,7 +620,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   const handleMouseMovePoint = (_event: MouseEvent) => {
     if (selectedConnectionPoint.current) {
-      setPointMoveDelta({ x: _event.movementX, y: _event.movementY });
+      setPointMove({ x: _event.clientX, y: _event.clientY });
     }
   };
 
@@ -628,6 +674,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   const handleMouseUpPoint = () => {
     setIsClearCanvasTrigger(true);
+    setPointMove(null);
 
     document.removeEventListener('mousemove', handleMouseMovePoint);
     document.removeEventListener('mouseup', handleMouseUpPoint);
