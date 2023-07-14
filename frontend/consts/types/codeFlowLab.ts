@@ -45,6 +45,11 @@ export interface ChartButtonItem extends ChartItem {
   elType: ChartItemType.button;
 }
 
+export interface ChartSpanItem extends ChartItem {
+  elType: ChartItemType.span;
+  text: string;
+}
+
 export interface ChartStyleItem extends ChartItem {
   elType: ChartItemType.style;
   styles: CSSProperties;
@@ -59,7 +64,13 @@ export interface ChartFunctionItem extends ChartItem {
   elType: ChartItemType.function;
 }
 
-export type ChartItems = ChartBodyItem | ChartButtonItem | ChartStyleItem | ChartTriggerItem | ChartFunctionItem;
+export type ChartItems =
+  | ChartBodyItem
+  | ChartButtonItem
+  | ChartStyleItem
+  | ChartTriggerItem
+  | ChartFunctionItem
+  | ChartSpanItem;
 
 export interface CodeFlowChartDoc {
   items: {
@@ -78,6 +89,7 @@ export type PointPos = {
   left: number;
   top: number;
   index: number;
+  typeIndex: number;
   connectType: 'right' | 'left';
   connectionIds: string[];
   connectElType: ChartItemType;

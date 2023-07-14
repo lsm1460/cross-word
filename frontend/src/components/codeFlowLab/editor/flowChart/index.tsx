@@ -57,13 +57,14 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     };
   }, shallowEqual);
 
-  const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
+  const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds, itemsPos]);
 
   const [lineCanvasCtx, setLineCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [multiSelectedItemList, setMultiSelectedItemList] = useState<{ [_itemId: string]: { x: number; y: number } }>(
     {}
   );
+
   const [itemMoveDelta, setItemMoveDelta] = useState({ x: 0, y: 0 });
   const [pointMove, setPointMove] = useState(null);
   const [isClearCanvasTrigger, setIsClearCanvasTrigger] = useState(false);
@@ -112,6 +113,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
                     CONNECT_POINT_START +
                     _i * (CONNECT_POINT_SIZE + CONNECT_POINT_GAP),
                   index: _i,
+                  typeIndex: _k,
                   connectType: _dir as 'right' | 'left',
                   connectElType: _type,
                   connectionIds: _item.connectionIds?.[_dir] || [],
@@ -335,6 +337,10 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         ops.push({
           key: 'items',
           value: newChartItems,
+        });
+        ops.push({
+          key: 'itemsPos',
+          value: _.pickBy(itemsPos, (_v, _itemId) => !deleteTargetIdList.includes(_itemId)),
         });
         ops.push({
           key: `scene.${selectedSceneId}.itemIds`,
@@ -580,8 +586,12 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       const selectedPoint = getConnectPoint(convertedX, convertedY);
 
       if (selectedPoint) {
-        const _hasId =
-          selectedChartItem[selectedPoint.id].connectionIds[selectedPoint.connectType][selectedPoint.index];
+        const hasIdGroup = _.groupBy(
+          selectedChartItem[selectedPoint.id].connectionIds[selectedPoint.connectType],
+          (_id) => getElType(selectedChartItem[_id].elType)
+        );
+
+        const _hasId = (hasIdGroup[selectedPoint.connectElType] || [])[selectedPoint.typeIndex];
 
         if (_hasId) {
           // 이미 연결된 포인트를 분리시켜야 함

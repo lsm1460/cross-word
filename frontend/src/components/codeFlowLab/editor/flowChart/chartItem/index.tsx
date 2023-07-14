@@ -39,11 +39,12 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   const dispatch = useDispatch();
   const [debounceSubmitText] = useDebounceSubmitText(`items.${itemInfo.id}.name`);
 
-  const { selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
+  const { selectedSceneId, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
       selectedSceneId,
+      itemsPos: state.mainDocument.contentDocument.itemsPos,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
   }, shallowEqual);
@@ -74,6 +75,10 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
         ops.push({
           key: 'items',
           value: newChartItems,
+        });
+        ops.push({
+          key: 'itemsPos',
+          value: _.pickBy(itemsPos, (_item, _itemId) => _itemId !== itemInfo.id),
         });
         ops.push({
           key: `scene.${selectedSceneId}.itemIds`,

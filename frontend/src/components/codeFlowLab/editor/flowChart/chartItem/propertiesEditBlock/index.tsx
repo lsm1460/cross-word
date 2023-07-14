@@ -5,6 +5,7 @@ const cx = classNames.bind(styles);
 import { ChartItemType, ChartItems } from '@/consts/types/codeFlowLab';
 import StyleEditBlock from './styleEditBlock';
 import TriggerEditBlock from './triggerEditBlock';
+import TextEditBlock from './textEditBlock';
 
 interface Props {
   chartItem: ChartItems;
@@ -16,6 +17,8 @@ function PropertiesEditBlock({ chartItem }: Props) {
         return <StyleEditBlock id={chartItem.id} styles={chartItem.styles} />;
       case ChartItemType.trigger:
         return <TriggerEditBlock id={chartItem.id} triggerType={chartItem.triggerType} />;
+      case ChartItemType.span:
+        return <TextEditBlock id={chartItem.id} text={chartItem.text} />;
 
       default:
         return <></>;

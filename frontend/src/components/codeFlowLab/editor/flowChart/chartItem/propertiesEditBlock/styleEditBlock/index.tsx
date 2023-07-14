@@ -100,8 +100,6 @@ function StyleEditBlock({ id, styles }: Props) {
   const onDelete = (_targetKey: string) => {
     let value = _.pickBy(styles, (_val, _key) => _key !== _targetKey);
 
-    console.log('value', value);
-
     const operation: Operation = { key: `items.${id}.styles`, value };
 
     dispatch(setDocumentValueAction(operation));

@@ -139,6 +139,9 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
   [ChartItemType.trigger]: {
     triggerType: 'click',
   },
+  [ChartItemType.span]: {
+    text: '',
+  },
 };
 
 export const CONNECT_POINT_START = 15;

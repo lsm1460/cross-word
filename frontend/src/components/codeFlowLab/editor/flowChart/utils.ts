@@ -4,7 +4,7 @@ import {
   FLOW_ITEM_ADDITIONAL_INFO,
   FLOW_ITEM_DEFAULT_INFO,
 } from '@/consts/codeFlowLab/items';
-import { ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
+import { ChartItemPos, ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
 import { getRandomId } from '@/src/utils/content';
 import _ from 'lodash';
 
@@ -124,8 +124,9 @@ export const getConnectSizeByType = (
 export const makeNewItem = (
   zoomArea: HTMLElement,
   selectedChartItems: CodeFlowChartDoc['items'],
+  itemsPos: CodeFlowChartDoc['itemsPos'],
   itemType: ChartItemType
-) => {
+): [ChartItems, ChartItemPos, string] => {
   const { scale, transX, transY } = zoomArea.dataset;
   const { width, height } = zoomArea.parentElement.getBoundingClientRect();
 
@@ -140,7 +141,7 @@ export const makeNewItem = (
     top: height / parseFloat(scale) / 2 - parseFloat(transY),
   };
 
-  if (lastEl && lastEl.pos.left === pos.left && lastEl.pos.top === pos.top) {
+  if (lastEl && itemsPos[lastEl.id].left === pos.left && itemsPos[lastEl.id].top === pos.top) {
     pos = {
       left: pos.left + 10,
       top: pos.top + 10,
@@ -153,11 +154,11 @@ export const makeNewItem = (
       id: newItemId,
       name: `${itemType.replace(/\b[a-z]/g, (char) => char.toUpperCase())}-${itemSize + 1}`,
       elType: itemType,
-      pos,
       zIndex: itemList.length + 1,
       connectionIds: _.mapValues(FLOW_CHART_ITEMS_STYLE[itemType].connectionTypeList, () => []),
       ...(FLOW_ITEM_ADDITIONAL_INFO[itemType] && FLOW_ITEM_ADDITIONAL_INFO[itemType]),
     },
+    pos,
     newItemId,
   ];
 };

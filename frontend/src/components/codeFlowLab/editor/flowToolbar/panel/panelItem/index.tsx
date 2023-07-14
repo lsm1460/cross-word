@@ -2,20 +2,14 @@ import classNames from 'classnames/bind';
 import styles from './panelItem.module.scss';
 const cx = classNames.bind(styles);
 //
-import {
-  FLOW_CHART_ITEMS_STYLE,
-  FLOW_ITEM_ADDITIONAL_INFO,
-  FLOW_ITEM_DEFAULT_INFO,
-  ZOOM_AREA_ELEMENT_ID,
-} from '@/consts/codeFlowLab/items';
+import { ZOOM_AREA_ELEMENT_ID } from '@/consts/codeFlowLab/items';
 import { ChartItemType } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
-import { getChartItem, getRandomId, getSceneId } from '@/src/utils/content';
-import _ from 'lodash';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { getElType, makeNewItem } from '@/src/components/codeFlowLab/editor/flowChart/utils';
+import { getChartItem, getSceneId } from '@/src/utils/content';
 import { useMemo } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 interface Props {
   itemType: ChartItemType;
@@ -23,11 +17,12 @@ interface Props {
 function PanelItem({ itemType }: Props) {
   const dispatch = useDispatch();
 
-  const { chartItems, selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
+  const { chartItems, itemsPos, selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
       chartItems: state.mainDocument.contentDocument.items,
+      itemsPos: state.mainDocument.contentDocument.itemsPos,
       selectedSceneId,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
@@ -46,7 +41,7 @@ function PanelItem({ itemType }: Props) {
   const handleMakeItem = () => {
     const zoomArea = document.getElementById(ZOOM_AREA_ELEMENT_ID);
 
-    const [newFlowItem, newItemId] = makeNewItem(zoomArea, selectedChartItem, itemType);
+    const [newFlowItem, pos, newItemId] = makeNewItem(zoomArea, selectedChartItem, itemsPos, itemType);
 
     const operations: Operation[] = [
       {
@@ -54,6 +49,13 @@ function PanelItem({ itemType }: Props) {
         value: {
           ...chartItems,
           [newItemId]: newFlowItem,
+        },
+      },
+      {
+        key: `itemsPos`,
+        value: {
+          ...itemsPos,
+          [newItemId]: pos,
         },
       },
       {

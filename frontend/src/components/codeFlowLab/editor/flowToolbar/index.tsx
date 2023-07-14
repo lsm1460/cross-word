@@ -15,11 +15,12 @@ import { getChartItem, getSceneId } from '@/src/utils/content';
 function FlowToolbar() {
   const dispatch = useDispatch();
 
-  const { chartItems, selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
+  const { chartItems, itemsPos, selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
       chartItems: state.mainDocument.contentDocument.items,
+      itemsPos: state.mainDocument.contentDocument.itemsPos,
       selectedSceneId,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
@@ -32,7 +33,7 @@ function FlowToolbar() {
   const makeItem = (_itemType: ChartItemType) => {
     const zoomArea = document.getElementById(ZOOM_AREA_ELEMENT_ID);
 
-    const [newFlowItem, newItemId] = makeNewItem(zoomArea, selectedChartItem, _itemType);
+    const [newFlowItem, pos, newItemId] = makeNewItem(zoomArea, selectedChartItem, itemsPos, _itemType);
 
     const operations: Operation[] = [
       {
@@ -40,6 +41,13 @@ function FlowToolbar() {
         value: {
           ...chartItems,
           [newItemId]: newFlowItem,
+        },
+      },
+      {
+        key: `itemsPos`,
+        value: {
+          ...itemsPos,
+          [newItemId]: pos,
         },
       },
       {
