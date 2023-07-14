@@ -24,12 +24,17 @@ export interface ChartItem {
   id: string;
   name: string;
   elType: ChartItemType;
-  pos: { left: number; top: number };
   zIndex: number;
+  pos?: { left: number; top: number };
   connectionIds: {
     left?: string[];
     right?: string[];
   };
+}
+
+export interface ChartItemPos {
+  left: number;
+  top: number;
 }
 
 export interface ChartBodyItem extends ChartItem {
@@ -59,6 +64,9 @@ export type ChartItems = ChartBodyItem | ChartButtonItem | ChartStyleItem | Char
 export interface CodeFlowChartDoc {
   items: {
     [_itemId: string]: ChartItems;
+  };
+  itemsPos: {
+    [_itemId: string]: ChartItemPos;
   };
   scene: {
     [_sceneId: string]: FlowScene;

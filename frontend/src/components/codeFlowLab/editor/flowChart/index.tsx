@@ -46,11 +46,12 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const multiSelectBoxStartPos = useRef<[number, number]>(null);
   const multiSelectBoxEndPos = useRef<[number, number]>(null);
 
-  const { chartItems, selectedSceneId, sceneItemIds } = useSelector((state: RootState) => {
+  const { chartItems, selectedSceneId, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
       chartItems: state.mainDocument.contentDocument.items,
+      itemsPos: state.mainDocument.contentDocument.itemsPos,
       selectedSceneId,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
@@ -69,23 +70,19 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   const orderedChartItems = useMemo(() => {
     const selectedIdList = selectedItemId.current ? Object.keys(multiSelectedItemList) : [];
-    const adjustedMovePosItems = _.mapValues(selectedChartItem, (_v, _kId) => {
-      if (selectedIdList.includes(_kId)) {
-        return {
-          ..._v,
-          pos: {
-            ..._v.pos,
-            left: multiSelectedItemList[_kId].x,
-            top: multiSelectedItemList[_kId].y,
-          },
-        };
-      } else {
-        return _v;
-      }
-    });
+    const adjustedMovePosItems = _.mapValues(selectedChartItem, (_v, _kId) => ({
+      ..._v,
+      pos: {
+        ...itemsPos[_v.id],
+        ...(selectedIdList.includes(_kId) && {
+          left: multiSelectedItemList[_kId].x,
+          top: multiSelectedItemList[_kId].y,
+        }),
+      },
+    }));
 
     return Object.values(adjustedMovePosItems).sort((_before, _after) => _after.zIndex - _before.zIndex);
-  }, [selectedChartItem, scale, multiSelectedItemList, selectedItemId]);
+  }, [selectedChartItem, scale, multiSelectedItemList, selectedItemId, itemsPos]);
 
   const chartItemConnectPointsByDir: {
     [x: string]: { left?: PointPos[]; right?: PointPos[]; connectionIds: { left?: string[]; right?: string[] } };
@@ -417,7 +414,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const visited: { [_pathKey: string]: PathInfo } = {};
 
     let needVisit: PathInfo[] = [],
-      isSuccessFlag = false;
+      isLoop = false;
 
     needVisit.push({ pos: _startId, prev: null, prevList: [] });
 
@@ -425,8 +422,8 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       const path = needVisit.shift();
       const _pathKey = path.pos;
 
-      if (_startId === _targetId) {
-        isSuccessFlag = true;
+      if (_startId === _targetId || _targetId === _pathKey) {
+        isLoop = true;
         visited[_pathKey] = path;
         break;
       }
@@ -446,19 +443,28 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       }
     }
 
-    return [isSuccessFlag, visited];
+    return isLoop;
   };
 
   const getConnectPoint = (_x: number, _y: number, _connectType?: 'left' | 'right', _id?: string): PointPos => {
-    let _elType;
+    let _points = Object.values(chartItemConnectPoints)
+      .flat()
+      .filter((_pos) => _pos.id !== _id)
+      .filter((_pos) => {
+        // 좌표 검증
+        return (
+          _pos.left - CONNECT_POINT_SIZE - POINT_LIST_PADDING + transX <= _x &&
+          _x <= CONNECT_POINT_SIZE + _pos.left + POINT_LIST_PADDING + transX &&
+          _pos.top - CONNECT_POINT_SIZE / 2 + transY <= _y &&
+          _y <= CONNECT_POINT_SIZE + _pos.top + transY
+        );
+      });
 
     if (_id) {
-      _elType = getElType(selectedChartItem[_id].elType);
-    }
+      const _elType = getElType(selectedChartItem[_id].elType);
 
-    const _points = Object.values(chartItemConnectPoints)
-      .flat()
-      .filter((_pos) => {
+      _points = _points.filter((_pos) => {
+        // 연결 가능 여부 검증
         let connectionTypeList = [];
 
         if (_connectType) {
@@ -471,20 +477,14 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
           }
         }
 
-        // if (_id) {
-        //   const check = checkLoopConnection(_id, _pos.id);
-        //   console.log('check', check);
-        // }
+        let _isLoop = false;
+        if (selectedChartItem[_pos.id].elType === selectedChartItem[_id].elType) {
+          _isLoop = checkLoopConnection(_pos.id, _id);
+        }
 
-        return (
-          (_id ? connectionTypeList.includes(_elType) : true) &&
-          (_id ? !_pos.connectionIds.includes(_id) : true) &&
-          _pos.left - CONNECT_POINT_SIZE - POINT_LIST_PADDING + transX <= _x &&
-          _x <= CONNECT_POINT_SIZE + _pos.left + POINT_LIST_PADDING + transX &&
-          _pos.top - CONNECT_POINT_SIZE / 2 + transY <= _y &&
-          _y <= CONNECT_POINT_SIZE + _pos.top + transY
-        );
+        return connectionTypeList.includes(_elType) && !_isLoop;
       });
+    }
 
     return _.reduce(
       _points,
@@ -628,8 +628,8 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const _ids = _.mapKeys(_itemIdList, (_id) => _id);
 
     return _.mapValues(_ids, (__, _itemId) => ({
-      x: selectedChartItem[_itemId].pos.left,
-      y: selectedChartItem[_itemId].pos.top,
+      x: itemsPos[_itemId].left,
+      y: itemsPos[_itemId].top,
     }));
   };
 

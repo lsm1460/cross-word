@@ -25,11 +25,12 @@ function FlowZoom({ children }: Props) {
   const [horizonPos, setHorizonPos] = useState<number>(50);
   const [verticalPos, setVerticalPos] = useState<number>(50);
 
-  const { chartItems, sceneItemIds } = useSelector((state: RootState) => {
+  const { chartItems, itemsPos, sceneItemIds } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
       chartItems: state.mainDocument.contentDocument.items,
+      itemsPos: state.mainDocument.contentDocument.itemsPos,
       selectedSceneId,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
@@ -66,12 +67,12 @@ function FlowZoom({ children }: Props) {
       const _item = selectedChartItem[_id];
 
       const _maxX = Math.max(
-        Math.abs(_item.pos.left - xCenter),
-        FLOW_CHART_ITEMS_STYLE[_item.elType].width + _item.pos.left - xCenter
+        Math.abs(itemsPos[_item.id].left - xCenter),
+        FLOW_CHART_ITEMS_STYLE[_item.elType].width + itemsPos[_item.id].left - xCenter
       );
       const _maxY = Math.max(
-        Math.abs(_item.pos.top - yCenter),
-        FLOW_CHART_ITEMS_STYLE[_item.elType].height + _item.pos.top - yCenter
+        Math.abs(itemsPos[_item.id].top - yCenter),
+        FLOW_CHART_ITEMS_STYLE[_item.elType].height + itemsPos[_item.id].top - yCenter
       );
 
       maxX = maxX > _maxX ? maxX : _maxX;

@@ -24,11 +24,12 @@ function CodeFlowLabEditor() {
 
   const [moveItemInfo, setMoveItemInfo] = useState<{ ids: string[]; deltaX: number; deltaY: number }>(null);
 
-  const { chartItems, sceneItemIds } = useSelector((state: RootState) => {
+  const { chartItems, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
       chartItems: state.mainDocument.contentDocument.items,
+      itemsPos: state.mainDocument.contentDocument.itemsPos,
       selectedSceneId,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
@@ -46,8 +47,11 @@ function CodeFlowLabEditor() {
 
       const operations: Operation[] = Object.values(targetItems).map((_item) => {
         return {
-          key: `items.${_item.id}.pos`,
-          value: { left: _item.pos.left + moveItemInfo.deltaX, top: _item.pos.top + moveItemInfo.deltaY },
+          key: `itemsPos.${_item.id}`,
+          value: {
+            left: itemsPos[_item.id].left + moveItemInfo.deltaX,
+            top: itemsPos[_item.id].top + moveItemInfo.deltaY,
+          },
         };
       });
 

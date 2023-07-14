@@ -1,3 +1,4 @@
+import { ROOT_BLOCK_ID } from '@/consts/codeFlowLab/items';
 import { ChartItemType } from '@/consts/types/codeFlowLab';
 import { makeNewDocument } from '@/src/utils/content';
 import _ from 'lodash';
@@ -9,10 +10,9 @@ const initialState: DocumentState = {
   contentDocument: {
     items: {
       root: {
-        id: 'root',
+        id: ROOT_BLOCK_ID,
         name: 'root-name',
         elType: ChartItemType.body,
-        pos: { left: 20, top: 20 },
         zIndex: 1,
         connectionIds: { right: ['test-id', 'test-button'] },
       },
@@ -20,15 +20,13 @@ const initialState: DocumentState = {
         id: 'test-id',
         name: 'test-id-name',
         elType: ChartItemType.button,
-        pos: { left: 120, top: 120 },
         zIndex: 2,
-        connectionIds: { left: ['root'], right: [] },
+        connectionIds: { left: [ROOT_BLOCK_ID], right: [] },
       },
       'test-style': {
         id: 'test-style',
         name: 'test-style-name',
         elType: ChartItemType.style,
-        pos: { left: 80, top: 200 },
         zIndex: 3,
         connectionIds: { left: [], right: [] },
         styles: {
@@ -39,7 +37,6 @@ const initialState: DocumentState = {
         id: 'test-trigger',
         name: 'test-trigger-name',
         elType: ChartItemType.trigger,
-        pos: { left: 20, top: 300 },
         zIndex: 4,
         connectionIds: { left: [], right: [] },
         triggerType: 'click',
@@ -48,7 +45,6 @@ const initialState: DocumentState = {
         id: 'test-function',
         name: 'test-function-name',
         elType: ChartItemType.function,
-        pos: { left: 120, top: 500 },
         zIndex: 5,
         connectionIds: { left: [], right: [] },
       },
@@ -56,14 +52,21 @@ const initialState: DocumentState = {
         id: 'test-button',
         name: 'test-button-name',
         elType: ChartItemType.button,
-        pos: { left: 420, top: 220 },
         zIndex: 6,
-        connectionIds: { left: ['root'], right: [] },
+        connectionIds: { left: [ROOT_BLOCK_ID], right: [] },
       },
+    },
+    itemsPos: {
+      root: { left: 20, top: 20 },
+      'test-id': { left: 120, top: 120 },
+      'test-style': { left: 80, top: 200 },
+      'test-trigger': { left: 20, top: 300 },
+      'test-function': { left: 120, top: 500 },
+      'test-button': { left: 420, top: 220 },
     },
     scene: {
       'test-scene-01': {
-        itemIds: ['root', 'test-id', 'test-style', 'test-trigger', 'test-function', 'test-button'],
+        itemIds: [ROOT_BLOCK_ID, 'test-id', 'test-style', 'test-trigger', 'test-function', 'test-button'],
         order: 1,
       },
     },

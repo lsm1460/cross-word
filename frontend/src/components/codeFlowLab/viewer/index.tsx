@@ -2,9 +2,11 @@ import classNames from 'classnames/bind';
 import styles from './viewer.module.scss';
 const cx = classNames.bind(styles);
 //
+import { ROOT_BLOCK_ID } from '@/consts/codeFlowLab/items';
+import { ChartItem } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { getChartItem, getSceneId } from '@/src/utils/content';
-import { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 
 interface Props {}
@@ -20,9 +22,16 @@ function FlowChartViewer({}: Props) {
 
   const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
 
-  const templateDocument = useMemo(() => {}, [selectedChartItem]);
+  const makeViewerDocument = (_chartItem: ChartItem) => {
+    return {
+      ..._chartItem,
+      children: _chartItem.connectionIds.right.map((_id) => makeViewerDocument(selectedChartItem[_id])),
+    };
+  };
+
+  const templateDocument = useMemo(() => makeViewerDocument(selectedChartItem[ROOT_BLOCK_ID]), [selectedChartItem]);
 
   return <div className={cx('viewer-wrap')}></div>;
 }
 
-export default FlowChartViewer;
+export default React.memo(FlowChartViewer);
