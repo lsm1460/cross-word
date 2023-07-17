@@ -38,6 +38,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const lineCanvasRef = useRef<HTMLCanvasElement>(null);
   const connectedCanvasRef = useRef<HTMLCanvasElement>(null);
   const chartItemListRef = useRef([]);
+  const scrollTransRef = useRef({ x: 0, y: 0 });
 
   const selectedItemId = useRef<string>(null);
   const multiSelectedIdListClone = useRef<string[]>([]);
@@ -192,6 +193,13 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   }, [chartItemConnectPointsByDir]);
 
   useEffect(() => {
+    scrollTransRef.current = {
+      x: transX,
+      y: transY,
+    };
+  }, [transX, transY]);
+
+  useEffect(() => {
     if (lineCanvasRef.current && connectedCanvasRef.current) {
       const lineCanvas = lineCanvasRef.current;
       const connectedCanvas = connectedCanvasRef.current;
@@ -259,12 +267,14 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   useEffect(() => {
     if (selectedConnectionPoint.current && pointMove) {
+      const { x: _transX, y: _transY } = scrollTransRef.current;
+
       const { x: convertedX, y: convertedY } = convertClientPosToLocalPos(pointMove);
 
       const _targetPoint = {
         ...selectedConnectionPoint.current,
-        left: convertedX,
-        top: convertedY,
+        left: convertedX - _transX,
+        top: convertedY - _transY,
       };
 
       selectedConnectionPoint.current = _targetPoint;
@@ -276,8 +286,8 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       )[_targetPoint.index];
 
       const _nextPoint = getConnectPoint(
-        _targetPoint.left + transX,
-        _targetPoint.top + transY,
+        _targetPoint.left + _transX,
+        _targetPoint.top + _transY,
         _targetPoint.connectType,
         _targetPoint.id
       );
@@ -453,16 +463,18 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   };
 
   const getConnectPoint = (_x: number, _y: number, _connectType?: 'left' | 'right', _id?: string): PointPos => {
+    const { x: _transX, y: _transY } = scrollTransRef.current;
+
     let _points = Object.values(chartItemConnectPoints)
       .flat()
       .filter((_pos) => _pos.id !== _id)
       .filter((_pos) => {
         // 좌표 검증
         return (
-          _pos.left - CONNECT_POINT_SIZE - POINT_LIST_PADDING + transX <= _x &&
-          _x <= CONNECT_POINT_SIZE + _pos.left + POINT_LIST_PADDING + transX &&
-          _pos.top - CONNECT_POINT_SIZE / 2 + transY <= _y &&
-          _y <= CONNECT_POINT_SIZE + _pos.top + transY
+          _pos.left - CONNECT_POINT_SIZE - POINT_LIST_PADDING + _transX <= _x &&
+          _x <= CONNECT_POINT_SIZE + _pos.left + POINT_LIST_PADDING + _transX &&
+          _pos.top - CONNECT_POINT_SIZE / 2 + _transY <= _y &&
+          _y <= CONNECT_POINT_SIZE + _pos.top + _transY
         );
       });
 
@@ -690,9 +702,11 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     document.removeEventListener('mouseup', handleMouseUpPoint);
 
     if (selectedConnectionPoint.current) {
+      const { x: _transX, y: _transY } = scrollTransRef.current;
+
       const _connected = getConnectPoint(
-        selectedConnectionPoint.current.left + transX,
-        selectedConnectionPoint.current.top + transY,
+        selectedConnectionPoint.current.left + _transX,
+        selectedConnectionPoint.current.top + _transY,
         selectedConnectionPoint.current.connectType,
         selectedConnectionPoint.current.id
       );
