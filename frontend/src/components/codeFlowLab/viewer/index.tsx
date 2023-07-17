@@ -3,12 +3,13 @@ import styles from './viewer.module.scss';
 const cx = classNames.bind(styles);
 //
 import { ROOT_BLOCK_ID } from '@/consts/codeFlowLab/items';
-import { ChartItem, ChartItemType, ChartStyleItem } from '@/consts/types/codeFlowLab';
+import { ChartItem, ChartItemType, ChartStyleItem, ViewerItem } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { getChartItem, getSceneId } from '@/src/utils/content';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import { getElType } from '../editor/flowChart/utils';
+import ViewerElBlock from './viewerElBlock';
 
 interface Props {}
 function FlowChartViewer({}: Props) {
@@ -45,11 +46,18 @@ function FlowChartViewer({}: Props) {
     };
   };
 
-  const templateDocument = useMemo(() => makeViewerDocument(selectedChartItem[ROOT_BLOCK_ID]), [selectedChartItem]);
+  const templateDocument: ViewerItem = useMemo(
+    () => makeViewerDocument(selectedChartItem[ROOT_BLOCK_ID]),
+    [selectedChartItem]
+  );
 
-  console.log('templateDocument', templateDocument);
-
-  return <div className={cx('viewer-wrap')}></div>;
+  return (
+    <div className={cx('viewer-wrap')} style={templateDocument.styles}>
+      {templateDocument.children.map((_item) => (
+        <ViewerElBlock key={_item.id} viewerItem={_item} />
+      ))}
+    </div>
+  );
 }
 
 export default React.memo(FlowChartViewer);

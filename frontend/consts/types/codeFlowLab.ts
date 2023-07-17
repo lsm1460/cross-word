@@ -94,3 +94,8 @@ export type PointPos = {
   connectionIds: string[];
   connectElType: ChartItemType;
 };
+
+export interface ViewerItem extends ChartItem {
+  children: ViewerItem[];
+  styles: React.CSSProperties;
+}

@@ -10,6 +10,7 @@ import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/main
 
 const CSS_PROPERTIES = {
   display: ['block', 'inline', 'inline-block', 'flex'],
+  color: '',
   fontSize: 10,
   textAlign: ['left', 'center', 'right'],
   padding: 0,
@@ -22,6 +23,8 @@ const CSS_PROPERTIES = {
   marginTop: 0,
   marginRight: 0,
   marginBottom: 0,
+  background: '',
+  backgroundColor: '',
 };
 interface Props {
   id: string;
