@@ -3,7 +3,14 @@ import { ChartItemType } from '@/consts/types/codeFlowLab';
 import { makeNewDocument } from '@/src/utils/content';
 import _ from 'lodash';
 import { createReducer } from 'typesafe-actions';
-import { EMIT_DOCUMENT_VALUE, RESET_DOCUMENT_VALUE, SET_DOCUMENT, SET_DOCUMENT_VALUE } from './actions';
+import {
+  EMIT_DOCUMENT_VALUE,
+  RESET_DOCUMENT_VALUE,
+  SET_DELETE_ANIMATION_ID_LIST,
+  SET_DELETE_TARGET_ID_LIST,
+  SET_DOCUMENT,
+  SET_DOCUMENT_VALUE,
+} from './actions';
 import { DocumentAction, DocumentState, Operation } from './types';
 
 const initialState: DocumentState = {
@@ -72,6 +79,7 @@ const initialState: DocumentState = {
     },
   },
   sceneOrder: 1,
+  deleteTargetIdList: [],
 };
 
 const documentReducer = createReducer<DocumentState, DocumentAction>(initialState, {
@@ -102,6 +110,8 @@ const documentReducer = createReducer<DocumentState, DocumentAction>(initialStat
     };
   },
   [RESET_DOCUMENT_VALUE]: (state) => initialState,
+  [SET_DELETE_TARGET_ID_LIST]: (state) => state,
+  [SET_DELETE_ANIMATION_ID_LIST]: (state, { payload }) => ({ ...state, deleteTargetIdList: payload }),
 });
 
 export default documentReducer;

@@ -7,6 +7,7 @@ export type DocumentAction = ActionType<typeof actions>;
 export type DocumentState = {
   contentDocument: CodeFlowChartDoc;
   sceneOrder: number;
+  deleteTargetIdList: string[];
 };
 
 export interface Operation {

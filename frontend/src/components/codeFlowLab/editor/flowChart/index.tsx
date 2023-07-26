@@ -12,7 +12,7 @@ import {
 } from '@/consts/codeFlowLab/items';
 import { ChartItemType, ChartItems, PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
-import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { setDeleteTargetIdListAction } from '@/reducers/contentWizard/mainDocument';
 import { getChartItem, getSceneId } from '@/src/utils/content';
 import _ from 'lodash';
 import { MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -37,7 +37,6 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const chartItemWrapRef = useRef<HTMLDivElement>(null);
   const lineCanvasRef = useRef<HTMLCanvasElement>(null);
   const connectedCanvasRef = useRef<HTMLCanvasElement>(null);
-  const chartItemListRef = useRef([]);
   const scrollTransRef = useRef({ x: 0, y: 0 });
 
   const selectedItemId = useRef<string>(null);
@@ -48,13 +47,12 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const multiSelectBoxStartPos = useRef<[number, number]>(null);
   const multiSelectBoxEndPos = useRef<[number, number]>(null);
 
-  const { chartItems, selectedSceneId, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
+  const { chartItems, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
       chartItems: state.mainDocument.contentDocument.items,
       itemsPos: state.mainDocument.contentDocument.itemsPos,
-      selectedSceneId,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
   }, shallowEqual);
@@ -326,40 +324,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         return;
       }
 
-      chartItemListRef.current.forEach(({ id, ref }) => {
-        if (deleteTargetIdList.includes(id)) {
-          ref?.setMultiDeleteDelay((deleteTargetIdList.indexOf(id) + 1) * 100);
-        }
-      });
-
-      setTimeout(() => {
-        const ops = [];
-
-        let newChartItems = _.pickBy(selectedChartItem, (_item) => !deleteTargetIdList.includes(_item.id));
-        newChartItems = _.mapValues(newChartItems, (_item) => ({
-          ..._item,
-          connectionIds: {
-            ..._item.connectionIds,
-            left: [...(_item.connectionIds?.left || []).filter((_id) => !deleteTargetIdList.includes(_id))],
-            right: [...(_item.connectionIds?.right || []).filter((_id) => !deleteTargetIdList.includes(_id))],
-          },
-        }));
-
-        ops.push({
-          key: 'items',
-          value: newChartItems,
-        });
-        ops.push({
-          key: 'itemsPos',
-          value: _.pickBy(itemsPos, (_v, _itemId) => !deleteTargetIdList.includes(_itemId)),
-        });
-        ops.push({
-          key: `scene.${selectedSceneId}.itemIds`,
-          value: sceneItemIds.filter((_id) => !deleteTargetIdList.includes(_id)),
-        });
-
-        dispatch(setDocumentValueAction(ops));
-      }, (deleteTargetIdList.length + 1) * 100);
+      dispatch(setDeleteTargetIdListAction(deleteTargetIdList));
     }
   };
 
@@ -806,7 +771,6 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         {orderedChartItems.map((_itemInfo, _i) => (
           <ChartItem
             key={_itemInfo.id}
-            ref={(el) => (chartItemListRef.current[_i] = { id: _itemInfo.id, ref: el })}
             chartItems={selectedChartItem}
             itemInfo={_itemInfo}
             isSelected={Object.keys(multiSelectedItemList).includes(_itemInfo.id)}

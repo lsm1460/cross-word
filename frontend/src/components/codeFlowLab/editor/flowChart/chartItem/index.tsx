@@ -12,19 +12,11 @@ import {
 } from '@/consts/codeFlowLab/items';
 import { ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
-import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
-import { getSceneId, useDebounceSubmitText } from '@/src/utils/content';
+import { setDeleteTargetIdListAction, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { useDebounceSubmitText } from '@/src/utils/content';
 import _ from 'lodash';
-import {
-  KeyboardEventHandler,
-  MouseEventHandler,
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useState,
-} from 'react';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { KeyboardEventHandler, MouseEventHandler, useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { getConnectSizeByType, getElType } from '../utils';
 import PropertiesEditBlock from './propertiesEditBlock';
 
@@ -39,15 +31,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   const dispatch = useDispatch();
   const [debounceSubmitText] = useDebounceSubmitText(`items.${itemInfo.id}.name`);
 
-  const { selectedSceneId, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
-    const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
-
-    return {
-      selectedSceneId,
-      itemsPos: state.mainDocument.contentDocument.itemsPos,
-      sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
-    };
-  }, shallowEqual);
+  const deleteTargetIdList = useSelector((state: RootState) => state.mainDocument.deleteTargetIdList);
 
   const connectSizeByType = useMemo(
     () => getConnectSizeByType(itemInfo.connectionIds, chartItems),
@@ -56,38 +40,13 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
 
   const [itemName, setItemName] = useState(itemInfo.name);
   const [isTyping, setIsTyping] = useState(false);
-  const [onDelete, setOnDelete] = useState(false);
-  const [multiDeleteDelay, setMultiDeleteDelay] = useState(0);
+  const [multiDeleteDelay, setMultiDeleteDelay] = useState(-1);
 
   useEffect(() => {
-    if (onDelete) {
-      setTimeout(() => {
-        const ops = [];
-        let newChartItems = _.pickBy(chartItems, (_item) => _item.id !== itemInfo.id);
-        newChartItems = _.mapValues(newChartItems, (_item) => ({
-          ..._item,
-          connectionIds: {
-            ..._item.connectionIds,
-            left: [...(_item.connectionIds?.left || []).filter((_id) => _id !== itemInfo.id)],
-            right: [...(_item.connectionIds?.right || []).filter((_id) => _id !== itemInfo.id)],
-          },
-        }));
-        ops.push({
-          key: 'items',
-          value: newChartItems,
-        });
-        ops.push({
-          key: 'itemsPos',
-          value: _.pickBy(itemsPos, (_item, _itemId) => _itemId !== itemInfo.id),
-        });
-        ops.push({
-          key: `scene.${selectedSceneId}.itemIds`,
-          value: sceneItemIds.filter((_id) => _id !== itemInfo.id),
-        });
-        dispatch(setDocumentValueAction(ops));
-      }, 200);
+    if (deleteTargetIdList.length > 0) {
+      setMultiDeleteDelay(deleteTargetIdList.indexOf(itemInfo.id) * 100);
     }
-  }, [onDelete, chartItems, selectedSceneId, sceneItemIds]);
+  }, [deleteTargetIdList]);
 
   const selectName = (_isTyping, _originText, _insertedText) => {
     if (_isTyping) {
@@ -187,18 +146,14 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
       return;
     }
 
-    setOnDelete(true);
+    dispatch(setDeleteTargetIdListAction([itemInfo.id]));
   };
-
-  useImperativeHandle(ref, () => ({
-    setMultiDeleteDelay,
-  }));
 
   return (
     <div
       className={cx('chart-item', getElType(itemInfo.elType), {
         selected: isSelected,
-        delete: onDelete || multiDeleteDelay > 0,
+        delete: multiDeleteDelay > -1,
       })}
       data-id={itemInfo.id}
       style={{
@@ -259,8 +214,4 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   );
 }
 
-type Ref = {
-  deleteItem: (_ids: string[]) => void;
-} | null;
-
-export default forwardRef<Ref, Props>(ChartItem);
+export default ChartItem;

@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 
 import { all } from 'redux-saga/effects';
 import { mainDocumentReducer } from './contentWizard';
-import { documentSaga } from './contentWizard/mainDocument';
+import documentSaga from './contentWizard/mainDocument/sagas';
 
 const rootReducer = combineReducers({
   mainDocument: mainDocumentReducer,
