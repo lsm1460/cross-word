@@ -44,6 +44,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const multiSelectedIdListClone = useRef<string[]>([]);
   const totalDelta = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const selectedConnectionPoint = useRef<PointPos>(null);
+  const disconnectionPoint = useRef<PointPos>(null);
   const multiSelectBoxStartPos = useRef<[number, number]>(null);
   const multiSelectBoxEndPos = useRef<[number, number]>(null);
 
@@ -237,7 +238,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       connectedCanvasCtx.clearRect(0, 0, connectedCanvasRef.current.width, connectedCanvasRef.current.height);
 
       connectedPointList.forEach((_points) => {
-        drawConnectionPointLine(connectedCanvasCtx, _points[0], _points[1]);
+        drawConnectionPointLine('connected', connectedCanvasCtx, _points[0], _points[1]);
       });
     }
   }, [connectedCanvasCtx, connectedPointList, transX, transY]);
@@ -303,7 +304,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         }
       }
 
-      drawConnectionPointLine(lineCanvasCtx, originPoint, connectedPoint);
+      drawConnectionPointLine('line', lineCanvasCtx, originPoint, connectedPoint);
     }
   }, [
     pointMove,
@@ -368,11 +369,24 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     return { x: (_clientPos.x - left) / scale, y: (_clientPos.y - top) / scale };
   };
 
-  const drawConnectionPointLine = (_ctx: CanvasRenderingContext2D, _origin: PointPos, _next?: PointPos) => {
+  const drawConnectionPointLine = (
+    _type: 'line' | 'connected',
+    _ctx: CanvasRenderingContext2D,
+    _origin: PointPos,
+    _next?: PointPos
+  ) => {
     const GAP = 20;
 
-    _ctx.beginPath();
-    _ctx.moveTo(_origin.left + transX, _origin.top + transY);
+    const isSkip =
+      disconnectionPoint.current &&
+      _type === 'connected' &&
+      ((_origin.id === disconnectionPoint.current.id && _origin.typeIndex === disconnectionPoint.current.typeIndex) ||
+        (_next?.id === disconnectionPoint.current.id && _next?.typeIndex === disconnectionPoint.current.typeIndex));
+
+    if (!isSkip) {
+      _ctx.beginPath();
+      _ctx.moveTo(_origin.left + transX, _origin.top + transY);
+    }
 
     if (_next && _next.id !== _origin.id) {
       let horDir: 'right' | 'left' = null;
@@ -387,7 +401,9 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         // fixed x
       }
 
-      if (_origin.connectType === 'right' && horDir === 'right' && _next.connectType === 'right') {
+      if (isSkip) {
+        // do noting..
+      } else if (_origin.connectType === 'right' && horDir === 'right' && _next.connectType === 'right') {
         _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _origin.top);
         _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _next.top);
       } else if (
@@ -417,12 +433,14 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         _ctx.lineTo(rightPos + GAP + transX, _next.top + transY);
       }
       _ctx.lineTo(_next.left + transX, _next.top + transY);
-    } else {
+    } else if (selectedConnectionPoint.current) {
       _ctx.lineTo(selectedConnectionPoint.current.left + transX, selectedConnectionPoint.current.top + transY);
     }
 
-    _ctx.strokeStyle = '#ff0000';
-    _ctx.stroke();
+    if (!isSkip) {
+      _ctx.strokeStyle = '#ff0000';
+      _ctx.stroke();
+    }
   };
 
   const checkLoopConnection = (_startId, _targetId) => {
@@ -496,7 +514,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         }
 
         let _isLoop = false;
-        if (selectedChartItem[_pos.id].elType === selectedChartItem[_id].elType) {
+        if (getElType(selectedChartItem[_pos.id].elType) === getElType(selectedChartItem[_id].elType)) {
           _isLoop = checkLoopConnection(_pos.id, _id);
         }
 
@@ -607,12 +625,32 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
         if (_hasId) {
           // 이미 연결된 포인트를 분리시켜야 함
+          for (let _i = 0; _i < connectedPointList.length; _i++) {
+            let _lineArray = connectedPointList[_i];
+
+            if (
+              (_lineArray[0].id === _hasId && _lineArray[1].id === selectedPoint.id) ||
+              (_lineArray[1].id === _hasId && _lineArray[0].id === selectedPoint.id)
+            ) {
+              for (let _j = 0; _j < _lineArray.length; _j++) {
+                if (_lineArray[_j].id === _hasId) {
+                  selectedConnectionPoint.current = _lineArray[_j];
+                  disconnectionPoint.current = selectedPoint;
+                  break;
+                }
+              }
+
+              break;
+            }
+          }
+
+          setPointMove({ x: _event.clientX, y: _event.clientY });
         } else {
           selectedConnectionPoint.current = selectedPoint;
-
-          document.addEventListener('mousemove', handleMouseMovePoint);
-          document.addEventListener('mouseup', handleMouseUpPoint);
         }
+
+        document.addEventListener('mousemove', handleMouseMovePoint);
+        document.addEventListener('mouseup', handleMouseUpPoint);
       }
     },
     [lineCanvasCtx, selectedChartItem]
@@ -711,9 +749,21 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         selectedConnectionPoint.current.id
       );
 
-      _connected && connectPoints(selectedConnectionPoint.current, _connected);
+      if (disconnectionPoint.current && _connected) {
+        // change
+        connectPoints(selectedConnectionPoint.current, _connected, disconnectionPoint.current);
+      } else if (disconnectionPoint.current && !_connected) {
+        // disconnect
+        connectPoints(selectedConnectionPoint.current, _connected, disconnectionPoint.current);
+      } else if (!disconnectionPoint.current && _connected) {
+        // connect
+        connectPoints(selectedConnectionPoint.current, _connected);
+      }
+
       selectedConnectionPoint.current = null;
     }
+
+    disconnectionPoint.current = null;
   };
 
   const handleMouseUpMultiSelect = (_event: MouseEvent) => {

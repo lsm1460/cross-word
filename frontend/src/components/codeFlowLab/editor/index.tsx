@@ -2,7 +2,7 @@ import classNames from 'classnames/bind';
 import styles from './editor.module.scss';
 const cx = classNames.bind(styles);
 //
-import { PointPos } from '@/consts/types/codeFlowLab';
+import { ChartItems, PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { getChartItem, getSceneId } from '@/src/utils/content';
@@ -17,7 +17,7 @@ import FlowToolbar from './flowToolbar';
 import FlowZoom from './flowZoom';
 
 export type MoveItems = (_itemIds: string[], _deltaX: number, _deltaY: number) => void;
-export type ConnectPoints = (_prev: PointPos, _next: PointPos) => void;
+export type ConnectPoints = (_prev: PointPos, _next?: PointPos, _delete?: PointPos) => void;
 
 function CodeFlowLabEditor() {
   const dispatch = useDispatch();
@@ -65,30 +65,94 @@ function CodeFlowLabEditor() {
     setMoveItemInfo({ ids: _itemIds, deltaX: _deltaX, deltaY: _deltaY });
   };
 
-  const connectPoints: ConnectPoints = (_prevPos, _nextPos) => {
-    const targetItems = _.pickBy(selectedChartItem, (_item) => [_prevPos.id, _nextPos.id].includes(_item.id));
-    const newTargetItems = _.mapValues(targetItems, (_item) => ({
-      ..._item,
-      ...(_item.id === _prevPos.id && {
-        connectionIds: {
-          ..._item.connectionIds,
-          [_prevPos.connectType]: [..._item.connectionIds[_prevPos.connectType], _nextPos.id],
-        },
-      }),
-      ...(_item.id === _nextPos.id && {
-        connectionIds: {
-          ..._item.connectionIds,
-          [_nextPos.connectType]: [..._item.connectionIds[_nextPos.connectType], _prevPos.id],
-        },
-      }),
-    }));
+  const connectPoints: ConnectPoints = (_prevPos, _nextPos, _deletePos) => {
+    let newTargetItems: _.Dictionary<ChartItems>;
 
-    const operations: Operation[] = Object.values(newTargetItems).map((_item) => ({
-      key: `items.${_item.id}.connectionIds`,
-      value: _item.connectionIds,
-    }));
+    if (_prevPos && _nextPos && !_deletePos) {
+      // connect..
+      const targetItems = _.pickBy(selectedChartItem, (_item) => [_prevPos.id, _nextPos.id].includes(_item.id));
+      newTargetItems = _.mapValues(targetItems, (_item) => ({
+        ..._item,
+        ...(_item.id === _prevPos.id && {
+          connectionIds: {
+            ..._item.connectionIds,
+            [_prevPos.connectType]: [..._item.connectionIds[_prevPos.connectType], _nextPos.id],
+          },
+        }),
+        ...(_item.id === _nextPos.id && {
+          connectionIds: {
+            ..._item.connectionIds,
+            [_nextPos.connectType]: [..._item.connectionIds[_nextPos.connectType], _prevPos.id],
+          },
+        }),
+      }));
+    } else if (_prevPos && !_nextPos && _deletePos) {
+      // disconnect..
+      const targetItems = _.pickBy(selectedChartItem, (_item) => [_prevPos.id, _deletePos.id].includes(_item.id));
+      newTargetItems = _.mapValues(targetItems, (_item) => ({
+        ..._item,
+        ...(_item.id === _prevPos.id && {
+          connectionIds: {
+            ..._item.connectionIds,
+            [_prevPos.connectType]: _item.connectionIds[_prevPos.connectType].filter((_id) => _id !== _deletePos.id),
+          },
+        }),
+        ...(_item.id === _deletePos.id && {
+          connectionIds: {
+            ..._item.connectionIds,
+            [_deletePos.connectType]: _item.connectionIds[_deletePos.connectType].filter((_id) => _id !== _prevPos.id),
+          },
+        }),
+      }));
+    } else if (_prevPos && _nextPos && _deletePos) {
+      // change..
+      const targetItems = _.pickBy(selectedChartItem, (_item) =>
+        [_prevPos.id, _deletePos.id, _nextPos.id].includes(_item.id)
+      );
 
-    dispatch(setDocumentValueAction(operations));
+      newTargetItems = _.mapValues(targetItems, (_item) => {
+        if (_item.id === _prevPos.id) {
+          const deletedIdList = _item.connectionIds[_prevPos.connectType].filter((_id) => _id !== _deletePos.id);
+
+          return {
+            ..._item,
+            connectionIds: {
+              ..._item.connectionIds,
+              [_prevPos.connectType]: [...deletedIdList, _nextPos.id],
+            },
+          };
+        } else if (_item.id === _deletePos.id) {
+          return {
+            ..._item,
+            connectionIds: {
+              ..._item.connectionIds,
+              [_deletePos.connectType]: _item.connectionIds[_deletePos.connectType].filter(
+                (_id) => _id !== _prevPos.id
+              ),
+            },
+          };
+        } else if (_item.id === _nextPos.id) {
+          return {
+            ..._item,
+            connectionIds: {
+              ..._item.connectionIds,
+              [_nextPos.connectType]: [..._item.connectionIds[_nextPos.connectType], _prevPos.id],
+            },
+          };
+        } else {
+          return _item;
+        }
+      });
+    }
+
+    if (newTargetItems) {
+      const operations: Operation[] = Object.values(newTargetItems).map((_item) => ({
+        key: `items.${_item.id}.connectionIds`,
+        value: _item.connectionIds,
+      }));
+
+      dispatch(setDocumentValueAction(operations));
+    }
   };
 
   return (
