@@ -443,7 +443,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     }
   };
 
-  const checkLoopConnection = (_startId, _targetId) => {
+  const checkLoopConnection = (_startId, _targetId, _connectType) => {
     const visitedList = [];
     const visited: { [_pathKey: string]: PathInfo } = {};
 
@@ -469,9 +469,11 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
           visitedList.push(_pathKey);
         }
 
-        const targetPos = Object.values(selectedChartItem[_pathKey].connectionIds)
-          .flat()
-          .map((_node) => ({ pos: _node, prev: _pathKey, prevList: [...path.prevList, path.pos] }));
+        const targetPos = selectedChartItem[_pathKey].connectionIds[_connectType].map((_node) => ({
+          pos: _node,
+          prev: _pathKey,
+          prevList: [...path.prevList, path.pos],
+        }));
 
         needVisit = [...needVisit, ...targetPos];
       }
@@ -515,7 +517,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
         let _isLoop = false;
         if (getElType(selectedChartItem[_pos.id].elType) === getElType(selectedChartItem[_id].elType)) {
-          _isLoop = checkLoopConnection(_pos.id, _id);
+          _isLoop = checkLoopConnection(_pos.id, _id, _connectType);
         }
 
         return connectionTypeList.includes(_elType) && !_isLoop;
