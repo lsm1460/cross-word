@@ -54,7 +54,29 @@
   }
 
   .item-header {
+    position: relative;
     @include flow-item-header;
+
+    .drag-handle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+
+      & > i {
+        display: block;
+        color: #888;
+        font-size: 16px;
+      }
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
   }
 
   .point-list-wrap {

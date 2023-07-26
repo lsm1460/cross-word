@@ -165,7 +165,6 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
         zIndex: itemInfo.zIndex,
         transitionDelay: `${multiDeleteDelay || 100}ms`,
       }}
-      onMouseDown={(_event) => handleItemMoveStart(_event.nativeEvent, itemInfo)}
     >
       {itemInfo.elType !== ChartItemType.body && (
         <button className={cx('delete-button')} onClick={handleDeleteItem}>
@@ -174,6 +173,14 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
       )}
 
       <div className={cx('item-header', getElType(itemInfo.elType))}>
+        <div
+          className={cx('drag-handle')}
+          style={{ height: BLOCK_HEADER_SIZE }}
+          onMouseDown={(_event) => handleItemMoveStart(_event.nativeEvent, itemInfo)}
+        >
+          <i className="material-symbols-outlined">drag_indicator</i>
+        </div>
+
         <input
           type="text"
           readOnly={!isSelected}
