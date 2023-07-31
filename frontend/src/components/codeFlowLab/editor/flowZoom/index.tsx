@@ -122,7 +122,6 @@ function FlowZoom({ children }: Props) {
 
   const handleOnScroll = (_event: WheelEvent) => {
     _event.stopPropagation();
-
     if ((_event.target as HTMLDivElement).className.includes(SELECTOR_CLASS_PREFIX)) {
       return;
     }

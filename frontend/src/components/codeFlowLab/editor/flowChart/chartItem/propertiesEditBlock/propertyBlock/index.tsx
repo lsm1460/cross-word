@@ -2,30 +2,9 @@ import classNames from 'classnames/bind';
 import styles from './propertyBlock.module.scss';
 const cx = classNames.bind(styles);
 //
-import { SELECTOR_CLASS_PREFIX } from '@/consts/codeFlowLab/items';
+import OptionSelector from '@/src/components/common/optionSelector';
 import _ from 'lodash';
-import Select from 'react-select';
 import { KeyboardEventHandler, useCallback, useRef } from 'react';
-
-const SELECT_STYLE = {
-  menuList: (base) => ({
-    ...base,
-
-    '::-webkit-scrollbar': {
-      width: '4px',
-      height: '0px',
-    },
-    '::-webkit-scrollbar-track': {
-      background: '#f1f1f1',
-    },
-    '::-webkit-scrollbar-thumb': {
-      background: '#888',
-    },
-    '::-webkit-scrollbar-thumb:hover': {
-      background: '#555',
-    },
-  }),
-};
 
 type SelectOption = { value: any; label: string; isDisabled?: boolean };
 
@@ -83,30 +62,17 @@ function PropertyBlock({ id, propertyKey, value, propertyKeyList, valueList, onC
         </button>
       )}
       {propertyKeyList ? (
-        <Select
-          instanceId={`${id}-property-select`}
+        <OptionSelector
           options={propertyKeyList.options}
-          className={cx('property-header')}
-          classNamePrefix={SELECTOR_CLASS_PREFIX}
-          defaultValue={{ value: propertyKey, label: _.kebabCase(propertyKey) }}
+          defaultValue={propertyKey}
           isSearchable
-          styles={SELECT_STYLE}
           onChange={handleChangeKey}
         />
       ) : (
         <p className={cx('property-header')}>{propertyKey}</p>
       )}
       {valueList ? (
-        <Select
-          instanceId={`${id}-value-select`}
-          options={valueList}
-          className={cx('value-input')}
-          classNamePrefix={SELECTOR_CLASS_PREFIX}
-          defaultValue={{ value, label: value }}
-          isSearchable
-          styles={SELECT_STYLE}
-          onChange={(_item) => changeValue(_item.value)}
-        />
+        <OptionSelector options={valueList} defaultValue={value} isSearchable onChange={(_val) => changeValue(_val)} />
       ) : (
         <input
           ref={valueInputRef}

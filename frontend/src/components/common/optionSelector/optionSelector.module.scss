@@ -1,0 +1,68 @@
+.select-container {
+  width: 200px;
+  border: 1px solid #ccc;
+  position: relative;
+
+  .selected-option {
+    padding: 8px;
+    position: relative;
+
+    &:after {
+      content: '\25BC';
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    &.active:after {
+      content: '\25B2';
+    }
+  }
+
+  .options-container {
+    border-top: none;
+    overflow-y: scroll;
+    height: 100px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 1;
+
+    /* Add these lines */
+    background-color: white;
+
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+    /* End of added lines */
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #888;
+      border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: #555;
+    }
+
+    .option {
+      padding: 8px;
+
+      &:hover {
+        background-color: #eee;
+      }
+    }
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+}
