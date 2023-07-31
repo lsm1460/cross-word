@@ -1,0 +1,37 @@
+import classNames from 'classnames/bind';
+import styles from './panelItemList.module.scss';
+const cx = classNames.bind(styles);
+//
+import { useState } from 'react';
+import PanelItem from '../panelItem';
+import { ChartItemType } from '@/consts/types/codeFlowLab';
+
+interface Props {
+  itemList: ChartItemType[];
+}
+function PanelItemList({ itemList }: Props) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredList = searchTerm
+    ? itemList.filter((item) => item.toLowerCase().includes(searchTerm.toLowerCase()))
+    : itemList;
+
+  return (
+    <div>
+      <input type="text" placeholder="Search" value={searchTerm} onChange={handleSearch} />
+      <ul className={cx('panel-item-list')}>
+        {filteredList.map((_type) => (
+          <li key={_type}>
+            <PanelItem itemType={_type} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default PanelItemList;

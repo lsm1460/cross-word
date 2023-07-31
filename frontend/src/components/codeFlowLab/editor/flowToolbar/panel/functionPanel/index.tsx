@@ -1,21 +1,9 @@
-import classNames from 'classnames/bind';
-import styles from '../panel.module.scss';
-const cx = classNames.bind(styles);
-//
-import PanelItem from '../panelItem';
+import PanelItemList from '../panelItemList';
 
 function FunctionPanel() {
   const itemList = [];
 
-  return (
-    <ul className={cx('panel-item-list')}>
-      {itemList.map((_type) => (
-        <li>
-          <PanelItem itemType={_type} />
-        </li>
-      ))}
-    </ul>
-  );
+  return <PanelItemList itemList={itemList} />;
 }
 
 export default FunctionPanel;
