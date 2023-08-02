@@ -4,6 +4,7 @@ const cx = classNames.bind(styles);
 //
 import {
   BLOCK_HEADER_SIZE,
+  CONNECT_POINT_CLASS,
   CONNECT_POINT_GAP,
   CONNECT_POINT_SIZE,
   CONNECT_POINT_START,
@@ -27,7 +28,7 @@ interface Props {
   handleItemMoveStart: (_event: MouseEvent, _selectedItem: ChartItems) => void;
   handlePointConnectStart: MouseEventHandler<HTMLSpanElement>;
 }
-function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, handlePointConnectStart }: Props, ref) {
+function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, handlePointConnectStart }: Props) {
   const dispatch = useDispatch();
   const [debounceSubmitText] = useDebounceSubmitText(`items.${itemInfo.id}.name`);
 
@@ -60,7 +61,9 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
 
   const connectPointList = useMemo(() => {
     return Object.keys(FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectionTypeList).map((_x, _i) => {
-      const typeGroup = _.groupBy(itemInfo.connectionIds[_x], (_id) => getElType(chartItems[_id].elType));
+      const typeGroup = _.groupBy(itemInfo.connectionIds[_x], (_point) =>
+        getElType(chartItems[_point.connectParentId]?.elType)
+      );
 
       return (
         <ul key={_i} className={cx('point-list', _x)}>
@@ -68,8 +71,9 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
             return Array((connectSizeByType[_x][_type] || 0) + 1)
               .fill(undefined)
               .map((__, _k) => {
-                const _itemId = typeGroup[_type]?.[_k];
-                const _itemName = _itemId ? chartItems[_itemId].name : '';
+                const _point = typeGroup[_type]?.[_k];
+
+                const _itemName = _point ? chartItems[_point.connectParentId].name : '';
 
                 return (
                   <li
@@ -84,7 +88,15 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
                     </span>
                     <span
                       onMouseDown={handlePointConnectStart}
-                      className={cx('dot', `${getElType(itemInfo.elType)}-${_type}`)}
+                      className={cx('dot', `${getElType(itemInfo.elType)}-${_type}`, { [CONNECT_POINT_CLASS]: true })}
+                      id={`${itemInfo.id}-dot-${_x}-${_j}-${_k}`}
+                      data-connect-type={_x}
+                      data-parent-id={itemInfo.id}
+                      data-index={_j}
+                      data-type-index={_k}
+                      {...(_point && {
+                        'data-connect-id': _point.connectId,
+                      })}
                       style={{
                         width: CONNECT_POINT_SIZE,
                         height: CONNECT_POINT_SIZE,

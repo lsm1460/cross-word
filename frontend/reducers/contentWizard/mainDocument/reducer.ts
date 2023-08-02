@@ -21,14 +21,33 @@ const initialState: DocumentState = {
         name: 'root-name',
         elType: ChartItemType.body,
         zIndex: 1,
-        connectionIds: { right: ['test-id', 'test-button'] },
+        connectionIds: {
+          right: [
+            {
+              id: 'root-dot-right-0-0',
+              parentId: ROOT_BLOCK_ID,
+              connectId: 'test-id-dot-left-0-0',
+              connectParentId: 'test-id',
+            },
+          ],
+        },
       },
       'test-id': {
         id: 'test-id',
         name: 'test-id-name',
         elType: ChartItemType.button,
         zIndex: 2,
-        connectionIds: { left: [ROOT_BLOCK_ID], right: [] },
+        connectionIds: {
+          left: [
+            {
+              id: 'test-id-dot-left-0-0',
+              parentId: 'test-id',
+              connectId: 'root-dot-right-0-0',
+              connectParentId: ROOT_BLOCK_ID,
+            },
+          ],
+          right: [],
+        },
       },
       'test-style': {
         id: 'test-style',
@@ -60,7 +79,7 @@ const initialState: DocumentState = {
         name: 'test-button-name',
         elType: ChartItemType.button,
         zIndex: 6,
-        connectionIds: { left: [ROOT_BLOCK_ID], right: [] },
+        connectionIds: { left: [], right: [] },
       },
     },
     itemsPos: {

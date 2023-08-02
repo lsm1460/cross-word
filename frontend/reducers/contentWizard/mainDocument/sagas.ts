@@ -67,8 +67,8 @@ function* handleDeleteBlock({ payload }: { type: string; payload: string[] }) {
     ..._item,
     connectionIds: {
       ..._item.connectionIds,
-      left: [...(_item.connectionIds?.left || []).filter((_id) => !payload.includes(_id))],
-      right: [...(_item.connectionIds?.right || []).filter((_id) => !payload.includes(_id))],
+      left: [...(_item.connectionIds?.left || []).filter((_point) => !payload.includes(_point.connectParentId))],
+      right: [...(_item.connectionIds?.right || []).filter((_point) => !payload.includes(_point.connectParentId))],
     },
   }));
 

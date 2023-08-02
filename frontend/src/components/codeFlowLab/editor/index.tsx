@@ -70,73 +70,115 @@ function CodeFlowLabEditor() {
 
     if (_prevPos && _nextPos && !_deletePos) {
       // connect..
-      const targetItems = _.pickBy(selectedChartItem, (_item) => [_prevPos.id, _nextPos.id].includes(_item.id));
+      const targetItems = _.pickBy(selectedChartItem, (_item) =>
+        [_prevPos.parentId, _nextPos.parentId].includes(_item.id)
+      );
       newTargetItems = _.mapValues(targetItems, (_item) => ({
         ..._item,
-        ...(_item.id === _prevPos.id && {
+        ...(_item.id === _prevPos.parentId && {
           connectionIds: {
             ..._item.connectionIds,
-            [_prevPos.connectType]: [..._item.connectionIds[_prevPos.connectType], _nextPos.id],
+            [_prevPos.connectType]: [
+              ..._item.connectionIds[_prevPos.connectType],
+              {
+                id: _prevPos.id,
+                parentId: _prevPos.parentId,
+                connectId: _nextPos.id,
+                connectParentId: _nextPos.parentId,
+              },
+            ],
           },
         }),
-        ...(_item.id === _nextPos.id && {
+        ...(_item.id === _nextPos.parentId && {
           connectionIds: {
             ..._item.connectionIds,
-            [_nextPos.connectType]: [..._item.connectionIds[_nextPos.connectType], _prevPos.id],
+            [_nextPos.connectType]: [
+              ..._item.connectionIds[_nextPos.connectType],
+              {
+                id: _nextPos.id,
+                parentId: _nextPos.parentId,
+                connectId: _prevPos.id,
+                connectParentId: _prevPos.parentId,
+              },
+            ],
           },
         }),
       }));
     } else if (_prevPos && !_nextPos && _deletePos) {
       // disconnect..
-      const targetItems = _.pickBy(selectedChartItem, (_item) => [_prevPos.id, _deletePos.id].includes(_item.id));
+      const targetItems = _.pickBy(selectedChartItem, (_item) =>
+        [_prevPos.parentId, _deletePos.parentId].includes(_item.id)
+      );
+
       newTargetItems = _.mapValues(targetItems, (_item) => ({
         ..._item,
-        ...(_item.id === _prevPos.id && {
+        ...(_item.id === _prevPos.parentId && {
           connectionIds: {
             ..._item.connectionIds,
-            [_prevPos.connectType]: _item.connectionIds[_prevPos.connectType].filter((_id) => _id !== _deletePos.id),
+            [_prevPos.connectType]: _item.connectionIds[_prevPos.connectType].filter(
+              (_point) => _point.connectId !== _deletePos.id
+            ),
           },
         }),
-        ...(_item.id === _deletePos.id && {
+        ...(_item.id === _deletePos.parentId && {
           connectionIds: {
             ..._item.connectionIds,
-            [_deletePos.connectType]: _item.connectionIds[_deletePos.connectType].filter((_id) => _id !== _prevPos.id),
+            [_deletePos.connectType]: _item.connectionIds[_deletePos.connectType].filter(
+              (_point) => _point.connectId !== _prevPos.id
+            ),
           },
         }),
       }));
     } else if (_prevPos && _nextPos && _deletePos) {
       // change..
       const targetItems = _.pickBy(selectedChartItem, (_item) =>
-        [_prevPos.id, _deletePos.id, _nextPos.id].includes(_item.id)
+        [_prevPos.parentId, _deletePos.parentId, _nextPos.parentId].includes(_item.id)
       );
-
       newTargetItems = _.mapValues(targetItems, (_item) => {
-        if (_item.id === _prevPos.id) {
-          const deletedIdList = _item.connectionIds[_prevPos.connectType].filter((_id) => _id !== _deletePos.id);
+        if (_item.id === _prevPos.parentId) {
+          const deletedIdList = _item.connectionIds[_prevPos.connectType].filter(
+            (_point) => _point.connectId !== _deletePos.id
+          );
 
           return {
             ..._item,
             connectionIds: {
               ..._item.connectionIds,
-              [_prevPos.connectType]: [...deletedIdList, _nextPos.id],
+              [_prevPos.connectType]: [
+                ...deletedIdList,
+                {
+                  id: _prevPos.id,
+                  parentId: _prevPos.parentId,
+                  connectId: _nextPos.id,
+                  connectParentId: _nextPos.parentId,
+                },
+              ],
             },
           };
-        } else if (_item.id === _deletePos.id) {
+        } else if (_item.id === _deletePos.parentId) {
           return {
             ..._item,
             connectionIds: {
               ..._item.connectionIds,
               [_deletePos.connectType]: _item.connectionIds[_deletePos.connectType].filter(
-                (_id) => _id !== _prevPos.id
+                (_point) => _point.connectId !== _prevPos.id
               ),
             },
           };
-        } else if (_item.id === _nextPos.id) {
+        } else if (_item.id === _nextPos.parentId) {
           return {
             ..._item,
             connectionIds: {
               ..._item.connectionIds,
-              [_nextPos.connectType]: [..._item.connectionIds[_nextPos.connectType], _prevPos.id],
+              [_nextPos.connectType]: [
+                ..._item.connectionIds[_nextPos.connectType],
+                {
+                  id: _nextPos.id,
+                  parentId: _nextPos.parentId,
+                  connectId: _prevPos.id,
+                  connectParentId: _prevPos.parentId,
+                },
+              ],
             },
           };
         } else {

@@ -115,8 +115,7 @@ export const getConnectSizeByType = (
   _chartItems: CodeFlowChartDoc['items']
 ) => {
   return _.mapValues(_idsByDic, (_ids) => {
-    const typeGroup = _.groupBy(_ids, (_id) => getElType(_chartItems[_id].elType));
-
+    const typeGroup = _.groupBy(_ids, (_point) => getElType(_chartItems[_point.parentId]?.elType));
     return _.mapValues(typeGroup, (_ids) => _ids.length);
   });
 };

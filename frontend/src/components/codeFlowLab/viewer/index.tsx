@@ -3,7 +3,7 @@ import styles from './viewer.module.scss';
 const cx = classNames.bind(styles);
 //
 import { ROOT_BLOCK_ID } from '@/consts/codeFlowLab/items';
-import { ChartItem, ChartItemType, ChartStyleItem, ViewerItem } from '@/consts/types/codeFlowLab';
+import { ChartItem, ChartItemType, ChartStyleItem, ConnectPoint, ViewerItem } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { getChartItem, getSceneId } from '@/src/utils/content';
 import React, { useMemo } from 'react';
@@ -24,12 +24,15 @@ function FlowChartViewer({}: Props) {
 
   const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
 
-  const makeStylePropReduce = (_acc = {}, _curId: string) => {
-    const _childStyle = selectedChartItem[_curId].connectionIds.right.reduce(makeStylePropReduce, {});
+  const makeStylePropReduce = (_acc = {}, _curPoint: ConnectPoint) => {
+    const _childStyle = selectedChartItem[_curPoint.connectParentId].connectionIds.right.reduce(
+      makeStylePropReduce,
+      {}
+    );
 
     return {
       ..._acc,
-      ...(selectedChartItem[_curId] as ChartStyleItem).styles,
+      ...(selectedChartItem[_curPoint.connectParentId] as ChartStyleItem).styles,
       ..._childStyle,
     };
   };
@@ -38,11 +41,13 @@ function FlowChartViewer({}: Props) {
     return {
       ..._chartItem,
       styles: _chartItem.connectionIds.right
-        .filter((_id) => selectedChartItem[_id].elType === ChartItemType.style)
+        .filter((_point) => selectedChartItem[_point.connectParentId].elType === ChartItemType.style)
         .reduce(makeStylePropReduce, {}),
       children: _chartItem.connectionIds.right
-        .filter((_id) => [ChartItemType.el, ChartItemType.span].includes(getElType(selectedChartItem[_id].elType)))
-        .map((_id) => makeViewerDocument(selectedChartItem[_id])),
+        .filter((_point) =>
+          [ChartItemType.el, ChartItemType.span].includes(getElType(selectedChartItem[_point.connectParentId].elType))
+        )
+        .map((_point) => makeViewerDocument(selectedChartItem[_point.connectParentId])),
     };
   };
 

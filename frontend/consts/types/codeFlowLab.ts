@@ -20,6 +20,13 @@ interface FlowScene {
   order: number;
 }
 
+export type ConnectPoint = {
+  id: string;
+  parentId: string;
+  connectId: string;
+  connectParentId: string;
+};
+
 export interface ChartItem {
   id: string;
   name: string;
@@ -27,8 +34,8 @@ export interface ChartItem {
   zIndex: number;
   pos?: { left: number; top: number };
   connectionIds: {
-    left?: string[];
-    right?: string[];
+    left?: ConnectPoint[];
+    right?: ConnectPoint[];
   };
 }
 
@@ -86,13 +93,14 @@ export interface CodeFlowChartDoc {
 
 export type PointPos = {
   id: string;
+  parentId: string;
   left: number;
   top: number;
   index: number;
   typeIndex: number;
   connectType: 'right' | 'left';
-  connectionIds: string[];
-  connectElType: ChartItemType;
+  // connectionIds: string[];
+  // connectElType: ChartItemType;
 };
 
 export interface ViewerItem extends ChartItem {
