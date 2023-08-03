@@ -1,9 +1,8 @@
+import { CHART_SCRIPT_ITEMS } from '@/consts/codeFlowLab/items';
 import PanelItemList from '../panelItemList';
 
 function FunctionPanel() {
-  const itemList = [];
-
-  return <PanelItemList itemList={itemList} />;
+  return <PanelItemList itemList={CHART_SCRIPT_ITEMS} />;
 }
 
 export default FunctionPanel;

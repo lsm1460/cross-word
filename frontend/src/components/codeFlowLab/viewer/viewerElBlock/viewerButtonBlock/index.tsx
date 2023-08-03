@@ -1,12 +1,13 @@
-import { ViewerItem } from '@/consts/types/codeFlowLab';
+import { TriggerProps, ViewerItem } from '@/consts/types/codeFlowLab';
 import ViewerElBlock from '..';
 
 interface Props {
   viewerItem: ViewerItem;
+  triggerProps: TriggerProps;
 }
-function ViewerButtonBlock({ viewerItem }: Props) {
+function ViewerButtonBlock({ viewerItem, triggerProps }: Props) {
   return (
-    <button style={viewerItem.styles}>
+    <button style={viewerItem.styles} {...triggerProps}>
       {viewerItem.children.map((_item) => (
         <ViewerElBlock key={_item.id} viewerItem={_item} />
       ))}

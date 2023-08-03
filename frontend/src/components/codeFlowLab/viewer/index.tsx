@@ -8,7 +8,7 @@ import { RootState } from '@/reducers';
 import { getChartItem, getSceneId } from '@/src/utils/content';
 import React, { useMemo } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
-import { getElType } from '../editor/flowChart/utils';
+import { getBlockType } from '../editor/flowChart/utils';
 import ViewerElBlock from './viewerElBlock';
 
 interface Props {}
@@ -37,6 +37,15 @@ function FlowChartViewer({}: Props) {
     };
   };
 
+  const makeScriptProps = (_chartItem: ChartItem) => {
+    return {
+      ..._chartItem,
+      script: _chartItem.connectionIds.right.map((_point) =>
+        makeScriptProps(selectedChartItem[_point.connectParentId])
+      ),
+    };
+  };
+
   const makeViewerDocument = (_chartItem: ChartItem) => {
     return {
       ..._chartItem,
@@ -45,9 +54,14 @@ function FlowChartViewer({}: Props) {
         .reduce(makeStylePropReduce, {}),
       children: _chartItem.connectionIds.right
         .filter((_point) =>
-          [ChartItemType.el, ChartItemType.span].includes(getElType(selectedChartItem[_point.connectParentId].elType))
+          [ChartItemType.el, ChartItemType.span].includes(
+            getBlockType(selectedChartItem[_point.connectParentId].elType)
+          )
         )
         .map((_point) => makeViewerDocument(selectedChartItem[_point.connectParentId])),
+      triggers: _chartItem.connectionIds.right
+        .filter((_point) => selectedChartItem[_point.connectParentId].elType === ChartItemType.trigger)
+        .map((_point) => makeScriptProps(selectedChartItem[_point.connectParentId])),
     };
   };
 

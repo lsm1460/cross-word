@@ -13,6 +13,9 @@ export enum ChartItemType {
   body = 'body',
   el = 'element',
   note = 'note',
+  console = 'console',
+  loop = 'loop',
+  script = 'script',
 }
 
 interface FlowScene {
@@ -71,13 +74,29 @@ export interface ChartFunctionItem extends ChartItem {
   elType: ChartItemType.function;
 }
 
+export interface ChartConsoleItem extends ChartItem {
+  elType: ChartItemType.console;
+  logId: string;
+  text: string;
+}
+
+export interface ChartLoopItem extends ChartItem {
+  elType: ChartItemType.loop;
+  start: number | string;
+  end: number | string;
+  increase: number | string;
+  functionId: string;
+}
+
 export type ChartItems =
   | ChartBodyItem
   | ChartButtonItem
   | ChartStyleItem
   | ChartTriggerItem
   | ChartFunctionItem
-  | ChartSpanItem;
+  | ChartSpanItem
+  | ChartConsoleItem
+  | ChartLoopItem;
 
 export interface CodeFlowChartDoc {
   items: {
@@ -98,12 +117,30 @@ export type PointPos = {
   top: number;
   index: number;
   typeIndex: number;
-  connectType: 'right' | 'left';
+  connectDir: 'right' | 'left';
   // connectionIds: string[];
   // connectElType: ChartItemType;
 };
 
+export interface ScriptTriggerItem extends ChartTriggerItem {
+  script: ScriptItem[];
+}
+
+export interface ScriptLoopItem extends ChartLoopItem {
+  script: ScriptItem[];
+}
+export interface ScriptConsoleItem extends ChartConsoleItem {
+  script: ScriptItem[];
+}
+
+export type ScriptItem = ScriptTriggerItem | ScriptLoopItem | ScriptConsoleItem;
+
 export interface ViewerItem extends ChartItem {
   children: ViewerItem[];
   styles: React.CSSProperties;
+  triggers: ScriptItem[];
+}
+
+export interface TriggerProps {
+  onClick?: () => void;
 }

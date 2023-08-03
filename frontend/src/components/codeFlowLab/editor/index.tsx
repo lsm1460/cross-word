@@ -78,8 +78,8 @@ function CodeFlowLabEditor() {
         ...(_item.id === _prevPos.parentId && {
           connectionIds: {
             ..._item.connectionIds,
-            [_prevPos.connectType]: [
-              ..._item.connectionIds[_prevPos.connectType],
+            [_prevPos.connectDir]: [
+              ..._item.connectionIds[_prevPos.connectDir],
               {
                 id: _prevPos.id,
                 parentId: _prevPos.parentId,
@@ -92,8 +92,8 @@ function CodeFlowLabEditor() {
         ...(_item.id === _nextPos.parentId && {
           connectionIds: {
             ..._item.connectionIds,
-            [_nextPos.connectType]: [
-              ..._item.connectionIds[_nextPos.connectType],
+            [_nextPos.connectDir]: [
+              ..._item.connectionIds[_nextPos.connectDir],
               {
                 id: _nextPos.id,
                 parentId: _nextPos.parentId,
@@ -115,7 +115,7 @@ function CodeFlowLabEditor() {
         ...(_item.id === _prevPos.parentId && {
           connectionIds: {
             ..._item.connectionIds,
-            [_prevPos.connectType]: _item.connectionIds[_prevPos.connectType].filter(
+            [_prevPos.connectDir]: _item.connectionIds[_prevPos.connectDir].filter(
               (_point) => _point.connectId !== _deletePos.id
             ),
           },
@@ -123,7 +123,7 @@ function CodeFlowLabEditor() {
         ...(_item.id === _deletePos.parentId && {
           connectionIds: {
             ..._item.connectionIds,
-            [_deletePos.connectType]: _item.connectionIds[_deletePos.connectType].filter(
+            [_deletePos.connectDir]: _item.connectionIds[_deletePos.connectDir].filter(
               (_point) => _point.connectId !== _prevPos.id
             ),
           },
@@ -136,7 +136,7 @@ function CodeFlowLabEditor() {
       );
       newTargetItems = _.mapValues(targetItems, (_item) => {
         if (_item.id === _prevPos.parentId) {
-          const deletedIdList = _item.connectionIds[_prevPos.connectType].filter(
+          const deletedIdList = _item.connectionIds[_prevPos.connectDir].filter(
             (_point) => _point.connectId !== _deletePos.id
           );
 
@@ -144,7 +144,7 @@ function CodeFlowLabEditor() {
             ..._item,
             connectionIds: {
               ..._item.connectionIds,
-              [_prevPos.connectType]: [
+              [_prevPos.connectDir]: [
                 ...deletedIdList,
                 {
                   id: _prevPos.id,
@@ -160,7 +160,7 @@ function CodeFlowLabEditor() {
             ..._item,
             connectionIds: {
               ..._item.connectionIds,
-              [_deletePos.connectType]: _item.connectionIds[_deletePos.connectType].filter(
+              [_deletePos.connectDir]: _item.connectionIds[_deletePos.connectDir].filter(
                 (_point) => _point.connectId !== _prevPos.id
               ),
             },
@@ -170,8 +170,8 @@ function CodeFlowLabEditor() {
             ..._item,
             connectionIds: {
               ..._item.connectionIds,
-              [_nextPos.connectType]: [
-                ..._item.connectionIds[_nextPos.connectType],
+              [_nextPos.connectDir]: [
+                ..._item.connectionIds[_nextPos.connectDir],
                 {
                   id: _nextPos.id,
                   parentId: _nextPos.parentId,

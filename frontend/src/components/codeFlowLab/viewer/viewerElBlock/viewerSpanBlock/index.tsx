@@ -1,4 +1,4 @@
-import { ChartSpanItem, ViewerItem } from '@/consts/types/codeFlowLab';
+import { ChartSpanItem, TriggerProps, ViewerItem } from '@/consts/types/codeFlowLab';
 
 interface SpanViewerItem extends ViewerItem {
   text?: ChartSpanItem['text'];
@@ -6,9 +6,14 @@ interface SpanViewerItem extends ViewerItem {
 
 interface Props {
   viewerItem: SpanViewerItem;
+  triggerProps: TriggerProps;
 }
-function ViewerSpanBlock({ viewerItem }: Props) {
-  return <span style={viewerItem.styles}>{viewerItem.text}</span>;
+function ViewerSpanBlock({ viewerItem, triggerProps }: Props) {
+  return (
+    <span style={viewerItem.styles} {...triggerProps}>
+      {viewerItem.text}
+    </span>
+  );
 }
 
 export default ViewerSpanBlock;

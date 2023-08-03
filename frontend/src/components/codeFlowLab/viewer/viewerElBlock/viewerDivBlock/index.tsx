@@ -1,10 +1,11 @@
-import { ViewerItem } from '@/consts/types/codeFlowLab';
+import { TriggerProps, ViewerItem } from '@/consts/types/codeFlowLab';
 import ViewerElBlock from '..';
 
 interface Props {
   viewerItem: ViewerItem;
+  triggerProps: TriggerProps;
 }
-function ViewerDivBlock({ viewerItem }: Props) {
+function ViewerDivBlock({ viewerItem, triggerProps }: Props) {
   return (
     <div style={viewerItem.styles}>
       {viewerItem.children.map((_item) => (

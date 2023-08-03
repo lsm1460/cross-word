@@ -1,5 +1,6 @@
 import {
   CHART_ELEMENT_ITEMS,
+  CHART_SCRIPT_ITEMS,
   FLOW_CHART_ITEMS_STYLE,
   FLOW_ITEM_ADDITIONAL_INFO,
   FLOW_ITEM_DEFAULT_INFO,
@@ -102,20 +103,33 @@ export function getRectPoints(element: HTMLElement): IPoint[] {
   ];
 }
 
-export const getElType = (_elType) => {
-  if (_elType === ChartItemType.span) {
-    return _elType;
+export const getBlockType = (_elType, _isDeep = false) => {
+  // 트리거는 function만 붙일 수 있도록 예외처리 추가
+
+  if (CHART_ELEMENT_ITEMS.includes(_elType)) {
+    if (_isDeep && _elType === ChartItemType.span) {
+      return _elType;
+    }
+
+    return ChartItemType.el;
+  } else if (CHART_SCRIPT_ITEMS.includes(_elType)) {
+    if (_isDeep && _elType === ChartItemType.function) {
+      return _elType;
+    }
+
+    return ChartItemType.script;
   }
 
-  return CHART_ELEMENT_ITEMS.includes(_elType) ? ChartItemType.el : _elType;
+  return _elType;
 };
 
 export const getConnectSizeByType = (
   _idsByDic: ChartItems['connectionIds'],
-  _chartItems: CodeFlowChartDoc['items']
+  _chartItems: CodeFlowChartDoc['items'],
+  _isDeep: boolean
 ) => {
   return _.mapValues(_idsByDic, (_ids) => {
-    const typeGroup = _.groupBy(_ids, (_point) => getElType(_chartItems[_point.parentId]?.elType));
+    const typeGroup = _.groupBy(_ids, (_point) => getBlockType(_chartItems[_point.connectParentId]?.elType, _isDeep));
     return _.mapValues(typeGroup, (_ids) => _ids.length);
   });
 };

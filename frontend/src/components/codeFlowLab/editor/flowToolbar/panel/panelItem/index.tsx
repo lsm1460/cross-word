@@ -6,7 +6,7 @@ import { ZOOM_AREA_ELEMENT_ID } from '@/consts/codeFlowLab/items';
 import { ChartItemType } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
-import { getElType, makeNewItem } from '@/src/components/codeFlowLab/editor/flowChart/utils';
+import { getBlockType, makeNewItem } from '@/src/components/codeFlowLab/editor/flowChart/utils';
 import { getChartItem, getSceneId } from '@/src/utils/content';
 import { useMemo } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
@@ -36,6 +36,9 @@ function PanelItem({ itemType }: Props) {
     [ChartItemType.span]: '텍스트를 입력하는 가장 작은 단위 입니다.',
     [ChartItemType.button]: '스크립트 기능을 실행하기 위한 플로우 박스 입니다.',
     [ChartItemType.image]: '이미지를 불러올 수 있는 플로우 박스 입니다.',
+    [ChartItemType.function]: '스크립트 블럭을 만들기 위한 단위입니다.',
+    [ChartItemType.loop]: '연결된 Function 블럭을 지정된 횟수 만큼 반복 실행합니다.',
+    [ChartItemType.console]: '변수와 함수의 실행 여부 확인을 위해 디버깅 용도로 사용됩니다.',
   };
 
   const handleMakeItem = () => {
@@ -69,7 +72,7 @@ function PanelItem({ itemType }: Props) {
 
   return (
     <div className={cx('panel-item')} onClick={handleMakeItem}>
-      <p className={cx('panel-title', getElType(itemType))}>
+      <p className={cx('panel-title', getBlockType(itemType))}>
         <span>{itemType}</span>
       </p>
       <p className={cx('panel-desc')}>{itemDesc[itemType]}</p>

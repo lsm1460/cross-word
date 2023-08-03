@@ -9,6 +9,8 @@ export const CHART_ELEMENT_ITEMS = [
   ChartItemType.image,
 ];
 
+export const CHART_SCRIPT_ITEMS = [ChartItemType.function, ChartItemType.console, ChartItemType.loop];
+
 export const FLOW_CHART_ITEMS_STYLE: {
   [_key in ChartItemType]: {
     width: number;
@@ -110,11 +112,39 @@ export const FLOW_CHART_ITEMS_STYLE: {
     },
     backgroundColor: '#e36775',
   },
+  [ChartItemType.script]: {
+    //dummy
+    width: 0,
+    height: 0,
+    connectionTypeList: {
+      left: [],
+      right: [],
+    },
+    backgroundColor: '#7b7be8',
+  },
   [ChartItemType.function]: {
     width: 200,
     height: 100,
     connectionTypeList: {
-      left: [ChartItemType.trigger],
+      left: [ChartItemType.trigger, ChartItemType.function],
+      right: [ChartItemType.script],
+    },
+    backgroundColor: '#dadada',
+  },
+  [ChartItemType.console]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.script],
+      right: [],
+    },
+    backgroundColor: '#dadada',
+  },
+  [ChartItemType.loop]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.script],
       right: [],
     },
     backgroundColor: '#dadada',
@@ -141,6 +171,16 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
   },
   [ChartItemType.span]: {
     text: '',
+  },
+  [ChartItemType.console]: {
+    logId: '',
+    text: '',
+  },
+  [ChartItemType.loop]: {
+    start: 0,
+    end: 3,
+    increase: 1,
+    functionId: '',
   },
 };
 

@@ -2,7 +2,7 @@ import classNames from 'classnames/bind';
 import styles from './flowChart.module.scss';
 const cx = classNames.bind(styles);
 //
-import { CONNECT_POINT_CLASS, FLOW_CHART_ITEMS_STYLE } from '@/consts/codeFlowLab/items';
+import { CONNECT_POINT_CLASS } from '@/consts/codeFlowLab/items';
 import { ChartItemType, ChartItems, PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { setDeleteTargetIdListAction } from '@/reducers/contentWizard/mainDocument';
@@ -12,7 +12,7 @@ import { MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState } 
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { ConnectPoints, MoveItems } from '..';
 import ChartItem from './chartItem';
-import { doPolygonsIntersect, getElType, getRectPoints } from './utils';
+import { doPolygonsIntersect, getBlockType, getRectPoints } from './utils';
 
 type PathInfo = { pos: string; prev: string; prevList: string[] };
 
@@ -94,7 +94,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       top: convertedY - _transY,
       index: parseInt(_el.dataset.index, 10),
       typeIndex: parseInt(_el.dataset.typeIndex, 10),
-      connectType: _el.dataset.connectType as 'left' | 'right',
+      connectDir: _el.dataset.connectDir as 'left' | 'right',
     };
   };
 
@@ -230,12 +230,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       if (pointMove.el) {
         const targetPoint = makePointPosByEl(pointMove.el);
 
-        const isAbleConnect = checkConnectable(
-          selectedConnectionPoint.current.connectType,
-          selectedConnectionPoint.current.parentId,
-          targetPoint.connectType,
-          targetPoint.parentId
-        );
+        const isAbleConnect = checkConnectable(selectedConnectionPoint.current.id, targetPoint.id);
 
         if (isAbleConnect) {
           connectedPoint = targetPoint;
@@ -294,19 +289,19 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
       if (isSkip) {
         // do noting..
-      } else if (_origin.connectType === 'right' && horDir === 'right' && _next.connectType === 'right') {
+      } else if (_origin.connectDir === 'right' && horDir === 'right' && _next.connectDir === 'right') {
         _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _origin.top);
         _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _next.top);
       } else if (
-        (_origin.connectType === 'right' && horDir === 'right' && _next.connectType === 'left') ||
-        (_origin.connectType === 'left' && horDir === 'left' && _next.connectType === 'right')
+        (_origin.connectDir === 'right' && horDir === 'right' && _next.connectDir === 'left') ||
+        (_origin.connectDir === 'left' && horDir === 'left' && _next.connectDir === 'right')
       ) {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
         _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0) + transX, _origin.top + transY);
         _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0) + transX, _next.top + transY);
-      } else if (_origin.connectType === 'right' && horDir === 'left' && _next.connectType === 'left') {
+      } else if (_origin.connectDir === 'right' && horDir === 'left' && _next.connectDir === 'left') {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
@@ -314,7 +309,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         _ctx.lineTo(rightPos + GAP, Math.max((_next.top + _origin.top) / 2, 0));
         _ctx.lineTo(leftPos - GAP, Math.max((_next.top + _origin.top) / 2, 0));
         _ctx.lineTo(leftPos - GAP, _next.top);
-      } else if (_origin.connectType === 'left' && horDir === 'right' && _next.connectType === 'right') {
+      } else if (_origin.connectDir === 'left' && horDir === 'right' && _next.connectDir === 'right') {
         const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
         const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
 
@@ -334,7 +329,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     }
   };
 
-  const checkLoopConnection = (_startId, _targetId, _connectType) => {
+  const checkLoopConnection = (_startId, _targetId, _connectDir) => {
     const visitedList = [];
     const visited: { [_pathKey: string]: PathInfo } = {};
 
@@ -360,7 +355,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
           visitedList.push(_pathKey);
         }
 
-        const targetPos = selectedChartItem[_pathKey].connectionIds[_connectType].map((_node) => ({
+        const targetPos = (selectedChartItem[_pathKey].connectionIds[_connectDir] || []).map((_node) => ({
           pos: _node.parentId,
           prev: _pathKey,
           prevList: [...path.prevList, path.pos],
@@ -373,25 +368,55 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     return isLoop;
   };
 
-  const checkConnectable = (
-    _originConnectType: 'left' | 'right',
-    _originId: string,
-    _targetConnectType,
-    _targetId
-  ): boolean => {
-    if (_originConnectType === _targetConnectType || !_targetId) {
+  const checkConnectable = (_originId: string, _targetId: string): boolean => {
+    if (!_targetId || !_originId) {
+      // 아이디 유무확인
       return false;
     }
 
-    if (checkLoopConnection(_targetId, _originId, _originConnectType)) {
+    const {
+      parentId: originParentId,
+      connectDir: originConnectDir,
+      connectId: originConnectId,
+      connectType: originConnectType,
+    } = document.getElementById(_originId).dataset;
+
+    const {
+      parentId: targetParentId,
+      connectDir: targetConnectDir,
+      connectType: targetConnectType,
+    } = document.getElementById(_targetId).dataset;
+
+    if (originConnectId === _targetId) {
+      // 이미 연결된 블럭 확인
       return false;
     }
 
-    const _elType = getElType(selectedChartItem[_originId].elType);
-    const connectionTypeList =
-      FLOW_CHART_ITEMS_STYLE[selectedChartItem[_targetId].elType].connectionTypeList?.[_targetConnectType] || [];
+    if (originConnectDir === targetConnectDir) {
+      // 좌우 확인
+      return false;
+    }
 
-    return connectionTypeList.includes(_elType);
+    if (checkLoopConnection(targetParentId, originParentId, originConnectDir)) {
+      // 루프 확인
+      return false;
+    }
+
+    const _elType = selectedChartItem[originParentId].elType;
+    const _targetType = selectedChartItem[targetParentId].elType;
+
+    const isTargetDeepCheck =
+      _.intersection([_elType, _targetType], [ChartItemType.trigger, ChartItemType.function]).length > 1;
+
+    const _convertedElType = getBlockType(_elType);
+    const _convertedTargetElType = getBlockType(selectedChartItem[targetParentId].elType, isTargetDeepCheck);
+
+    // 시작점의 가능 타입과 타겟 블럭이 같고,
+    // 연결점의 가능 타입과 시작 블럭의 타입이 같을 때
+    return (
+      getBlockType(originConnectType, isTargetDeepCheck) === _convertedTargetElType &&
+      getBlockType(targetConnectType) === _convertedElType
+    );
   };
 
   const getSelectedItemIds = () => {
@@ -576,12 +601,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     if (selectedConnectionPoint.current) {
       const { x: _transX, y: _transY } = scrollTransRef.current;
 
-      const _connected = checkConnectable(
-        selectedConnectionPoint.current.connectType,
-        selectedConnectionPoint.current.parentId,
-        _upEl.dataset.connectType,
-        _upEl.dataset.parentId
-      );
+      const _connected = checkConnectable(selectedConnectionPoint.current.id, _upEl.id);
 
       let connectPoint: PointPos;
 

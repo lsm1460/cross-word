@@ -72,7 +72,7 @@ function FlowToolbar() {
           <button onClick={() => makeItem(ChartItemType.trigger)}>Trigger</button>
         </li>
         <li className={cx('toolbar-item', 'function', { active: panel === 'function' })}>
-          <button onClick={() => setPanel((_prev) => (_prev !== 'function' ? 'function' : ''))}>Function</button>
+          <button onClick={() => setPanel((_prev) => (_prev !== 'function' ? 'function' : ''))}>Script</button>
         </li>
       </ul>
 

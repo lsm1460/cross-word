@@ -4,6 +4,7 @@ const cx = classNames.bind(styles);
 //
 import {
   BLOCK_HEADER_SIZE,
+  CHART_SCRIPT_ITEMS,
   CONNECT_POINT_CLASS,
   CONNECT_POINT_GAP,
   CONNECT_POINT_SIZE,
@@ -18,7 +19,7 @@ import { useDebounceSubmitText } from '@/src/utils/content';
 import _ from 'lodash';
 import { KeyboardEventHandler, MouseEventHandler, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getConnectSizeByType, getElType } from '../utils';
+import { getConnectSizeByType, getBlockType } from '../utils';
 import PropertiesEditBlock from './propertiesEditBlock';
 
 interface Props {
@@ -34,8 +35,10 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
 
   const deleteTargetIdList = useSelector((state: RootState) => state.mainDocument.deleteTargetIdList);
 
+  const checkDeep = ![ChartItemType.function].includes(itemInfo.elType);
+
   const connectSizeByType = useMemo(
-    () => getConnectSizeByType(itemInfo.connectionIds, chartItems),
+    () => getConnectSizeByType(itemInfo.connectionIds, chartItems, checkDeep),
     [chartItems, itemInfo]
   );
 
@@ -58,11 +61,10 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   };
 
   const selectedName = useMemo(() => selectName(isTyping, itemInfo.name, itemName), [isTyping, itemInfo, itemName]);
-
   const connectPointList = useMemo(() => {
     return Object.keys(FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectionTypeList).map((_x, _i) => {
       const typeGroup = _.groupBy(itemInfo.connectionIds[_x], (_point) =>
-        getElType(chartItems[_point.connectParentId]?.elType)
+        getBlockType(chartItems[_point.connectParentId]?.elType, checkDeep ? _x === 'right' : _x !== 'right')
       );
 
       return (
@@ -72,7 +74,6 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
               .fill(undefined)
               .map((__, _k) => {
                 const _point = typeGroup[_type]?.[_k];
-
                 const _itemName = _point ? chartItems[_point.connectParentId].name : '';
 
                 return (
@@ -88,12 +89,15 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
                     </span>
                     <span
                       onMouseDown={handlePointConnectStart}
-                      className={cx('dot', `${getElType(itemInfo.elType)}-${_type}`, { [CONNECT_POINT_CLASS]: true })}
+                      className={cx('dot', `${getBlockType(itemInfo.elType)}-${_type}`, {
+                        [CONNECT_POINT_CLASS]: true,
+                      })}
                       id={`${itemInfo.id}-dot-${_x}-${_j}-${_k}`}
-                      data-connect-type={_x}
+                      data-connect-dir={_x}
                       data-parent-id={itemInfo.id}
                       data-index={_j}
                       data-type-index={_k}
+                      data-connect-type={_type}
                       {...(_point && {
                         'data-connect-id': _point.connectId,
                       })}
@@ -163,7 +167,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
 
   return (
     <div
-      className={cx('chart-item', getElType(itemInfo.elType), {
+      className={cx('chart-item', getBlockType(itemInfo.elType), {
         selected: isSelected,
         delete: multiDeleteDelay > -1,
       })}
@@ -184,7 +188,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
         </button>
       )}
 
-      <div className={cx('item-header', getElType(itemInfo.elType))}>
+      <div className={cx('item-header', getBlockType(itemInfo.elType))}>
         <div
           className={cx('drag-handle')}
           style={{ height: BLOCK_HEADER_SIZE }}
