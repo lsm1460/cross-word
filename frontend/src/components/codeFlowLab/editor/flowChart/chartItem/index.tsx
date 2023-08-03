@@ -89,7 +89,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
                     </span>
                     <span
                       onMouseDown={handlePointConnectStart}
-                      className={cx('dot', `${getBlockType(itemInfo.elType)}-${_type}`, {
+                      className={cx('dot', `${getBlockType(itemInfo.elType, true)}-${_type}`, {
                         [CONNECT_POINT_CLASS]: true,
                       })}
                       id={`${itemInfo.id}-dot-${_x}-${_j}-${_k}`}
@@ -167,7 +167,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
 
   return (
     <div
-      className={cx('chart-item', getBlockType(itemInfo.elType), {
+      className={cx('chart-item', getBlockType(itemInfo.elType, true), {
         selected: isSelected,
         delete: multiDeleteDelay > -1,
       })}
@@ -188,7 +188,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
         </button>
       )}
 
-      <div className={cx('item-header', getBlockType(itemInfo.elType))}>
+      <div className={cx('item-header', getBlockType(itemInfo.elType, true))}>
         <div
           className={cx('drag-handle')}
           style={{ height: BLOCK_HEADER_SIZE }}

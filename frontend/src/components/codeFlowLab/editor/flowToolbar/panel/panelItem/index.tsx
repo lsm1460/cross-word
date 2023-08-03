@@ -72,7 +72,7 @@ function PanelItem({ itemType }: Props) {
 
   return (
     <div className={cx('panel-item')} onClick={handleMakeItem}>
-      <p className={cx('panel-title', getBlockType(itemType))}>
+      <p className={cx('panel-title', getBlockType(itemType, true))}>
         <span>{itemType}</span>
       </p>
       <p className={cx('panel-desc')}>{itemDesc[itemType]}</p>
