@@ -21,8 +21,14 @@ function PanelItemList({ itemList }: Props) {
     : itemList;
 
   return (
-    <div>
-      <input type="text" placeholder="Search" value={searchTerm} onChange={handleSearch} />
+    <div className={cx('panel-wrap')}>
+      <input
+        className={cx('search-input')}
+        type="text"
+        placeholder="Search"
+        value={searchTerm}
+        onChange={handleSearch}
+      />
       <ul className={cx('panel-item-list')}>
         {filteredList.map((_type) => (
           <li key={_type}>
