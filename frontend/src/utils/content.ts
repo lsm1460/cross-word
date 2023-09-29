@@ -72,7 +72,7 @@ export const getChartItem = (sceneItemIdList: string[], chartItem: CodeFlowChart
   return _.pickBy(chartItem, (_item) => (sceneItemIdList || []).includes(_item.id));
 };
 
-export const useDebounceSubmitText = (_dispatchKey) => {
+export const useDebounceSubmitText = (_dispatchKey, _debounceCallbak = undefined) => {
   const [dispatchKey, setDispatchKey] = useState(_dispatchKey);
   const dispatch = useDispatch();
 
@@ -84,6 +84,8 @@ export const useDebounceSubmitText = (_dispatchKey) => {
           value: _text,
         })
       );
+
+      _debounceCallbak && _debounceCallbak(_text);
     }, 800),
     []
   );

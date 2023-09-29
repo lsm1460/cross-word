@@ -9,7 +9,12 @@ export const CHART_ELEMENT_ITEMS = [
   ChartItemType.image,
 ];
 
-export const CHART_SCRIPT_ITEMS = [ChartItemType.function, ChartItemType.console, ChartItemType.loop];
+export const CHART_SCRIPT_ITEMS = [
+  ChartItemType.function,
+  ChartItemType.console,
+  ChartItemType.loop,
+  ChartItemType.variable,
+];
 
 export const FLOW_CHART_ITEMS_STYLE: {
   [_key in ChartItemType]: {
@@ -149,6 +154,15 @@ export const FLOW_CHART_ITEMS_STYLE: {
     },
     backgroundColor: '#dadada',
   },
+  [ChartItemType.variable]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.script],
+      right: [],
+    },
+    backgroundColor: '#dadada',
+  },
 };
 
 export const FLOW_ITEM_DEFAULT_INFO = {
@@ -181,6 +195,10 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     end: 3,
     increase: 1,
     functionId: '',
+  },
+  [ChartItemType.variable]: {
+    var: '',
+    sceneId: '',
   },
 };
 

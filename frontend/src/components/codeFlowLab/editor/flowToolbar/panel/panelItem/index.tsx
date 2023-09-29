@@ -39,6 +39,7 @@ function PanelItem({ itemType }: Props) {
     [ChartItemType.function]: '스크립트 블럭을 만들기 위한 단위입니다.',
     [ChartItemType.loop]: '연결된 Function 블럭을 지정된 횟수 만큼 반복 실행합니다.',
     [ChartItemType.console]: '변수와 함수의 실행 여부 확인을 위해 디버깅 용도로 사용됩니다.',
+    [ChartItemType.variable]: '페이지 또는 프로젝트에서 사용할 변수를 담아 놓은 박스 입니다.',
   };
 
   const handleMakeItem = () => {

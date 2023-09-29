@@ -10,14 +10,16 @@ import { useDispatch } from 'react-redux';
 interface Props {
   id: string;
   text: string;
+  propertyKey: string;
+  emitCallback?: (_text: string) => void;
 }
-function TextEditBlock({ id, text }: Props) {
+function TextEditBlock({ id, text, propertyKey, emitCallback }: Props) {
   const dispatch = useDispatch();
 
   const [isTyping, setIsTyping] = useState(false);
   const [typingText, setTypingText] = useState(text);
 
-  const [debounceSubmitText] = useDebounceSubmitText(`items.${id}.text`);
+  const [debounceSubmitText] = useDebounceSubmitText(`items.${id}.${propertyKey}`, emitCallback);
 
   const selectText = (_isTyping, _originText, _insertedText) => {
     if (_isTyping) {
@@ -43,10 +45,12 @@ function TextEditBlock({ id, text }: Props) {
     if (_text !== text) {
       dispatch(
         setDocumentValueAction({
-          key: `items.${id}.text`,
+          key: `items.${id}.${propertyKey}`,
           value: _text,
         })
       );
+
+      emitCallback && emitCallback(_text);
     }
   };
 

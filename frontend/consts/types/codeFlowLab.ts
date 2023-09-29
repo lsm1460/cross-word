@@ -16,6 +16,7 @@ export enum ChartItemType {
   console = 'console',
   loop = 'loop',
   script = 'script',
+  variable = 'variable',
 }
 
 interface FlowScene {
@@ -88,6 +89,12 @@ export interface ChartLoopItem extends ChartItem {
   functionId: string;
 }
 
+export interface ChartVariableItem extends ChartItem {
+  elType: ChartItemType.variable;
+  var: string;
+  sceneId: string;
+}
+
 export type ChartItems =
   | ChartBodyItem
   | ChartButtonItem
@@ -96,7 +103,8 @@ export type ChartItems =
   | ChartFunctionItem
   | ChartSpanItem
   | ChartConsoleItem
-  | ChartLoopItem;
+  | ChartLoopItem
+  | ChartVariableItem;
 
 export interface CodeFlowChartDoc {
   items: {
@@ -133,7 +141,11 @@ export interface ScriptConsoleItem extends ChartConsoleItem {
   script: ScriptItem[];
 }
 
-export type ScriptItem = ScriptTriggerItem | ScriptLoopItem | ScriptConsoleItem;
+export interface ScriptVariableItem extends ChartVariableItem {
+  script: ScriptItem[];
+}
+
+export type ScriptItem = ScriptTriggerItem | ScriptLoopItem | ScriptConsoleItem | ScriptVariableItem;
 
 export interface ViewerItem extends ChartItem {
   children: ViewerItem[];

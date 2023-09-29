@@ -6,6 +6,7 @@ import { ChartItemType, ChartItems } from '@/consts/types/codeFlowLab';
 import StyleEditBlock from './styleEditBlock';
 import TriggerEditBlock from './triggerEditBlock';
 import TextEditBlock from './textEditBlock';
+import VariableEditBlock from './variableEditBlock';
 
 interface Props {
   chartItem: ChartItems;
@@ -18,7 +19,9 @@ function PropertiesEditBlock({ chartItem }: Props) {
       case ChartItemType.trigger:
         return <TriggerEditBlock id={chartItem.id} triggerType={chartItem.triggerType} />;
       case ChartItemType.span:
-        return <TextEditBlock id={chartItem.id} text={chartItem.text} />;
+        return <TextEditBlock id={chartItem.id} text={chartItem.text} propertyKey={'text'} />;
+      case ChartItemType.variable:
+        return <VariableEditBlock id={chartItem.id} variable={chartItem.var} />;
 
       default:
         return <></>;
@@ -27,6 +30,7 @@ function PropertiesEditBlock({ chartItem }: Props) {
 
   return (
     <div className={cx('property-block-wrap')}>
+      <p className={cx('block-el-type')}>Block Type: {chartItem.elType}</p>
       <div>{drawInnerBlock()}</div>
     </div>
   );
