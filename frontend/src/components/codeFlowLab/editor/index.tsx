@@ -2,7 +2,7 @@ import classNames from 'classnames/bind';
 import styles from './editor.module.scss';
 const cx = classNames.bind(styles);
 //
-import { ChartItems, PointPos } from '@/consts/types/codeFlowLab';
+import { ChartItemType, ChartItems, PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { getChartItem, getSceneId } from '@/src/utils/content';
@@ -67,43 +67,99 @@ function CodeFlowLabEditor() {
 
   const connectPoints: ConnectPoints = (_prevPos, _nextPos, _deletePos) => {
     let newTargetItems: _.Dictionary<ChartItems>;
+    let isVariableFlag = false;
 
     if (_prevPos && _nextPos && !_deletePos) {
       // connect..
       const targetItems = _.pickBy(selectedChartItem, (_item) =>
         [_prevPos.parentId, _nextPos.parentId].includes(_item.id)
       );
-      newTargetItems = _.mapValues(targetItems, (_item) => ({
-        ..._item,
-        ...(_item.id === _prevPos.parentId && {
-          connectionIds: {
-            ..._item.connectionIds,
-            [_prevPos.connectDir]: [
-              ..._item.connectionIds[_prevPos.connectDir],
-              {
-                id: _prevPos.id,
-                parentId: _prevPos.parentId,
-                connectId: _nextPos.id,
-                connectParentId: _nextPos.parentId,
-              },
-            ],
-          },
-        }),
-        ...(_item.id === _nextPos.parentId && {
-          connectionIds: {
-            ..._item.connectionIds,
-            [_nextPos.connectDir]: [
-              ..._item.connectionIds[_nextPos.connectDir],
-              {
-                id: _nextPos.id,
-                parentId: _nextPos.parentId,
-                connectId: _prevPos.id,
-                connectParentId: _prevPos.parentId,
-              },
-            ],
-          },
-        }),
-      }));
+
+      const targetEltypeList = [
+        selectedChartItem[_prevPos.parentId].elType,
+        //_prevPos, _nextPos의 id로 elType을 가져온 후 변수일 경우
+        selectedChartItem[_nextPos.parentId].elType,
+      ];
+
+      isVariableFlag = targetEltypeList.includes(ChartItemType.variable);
+
+      if (isVariableFlag) {
+        // 블록과 변수 간 연결상황일 때
+        const variablePosIndex = targetEltypeList.indexOf(ChartItemType.variable);
+        const variablePos = variablePosIndex === 0 ? _prevPos : _nextPos;
+        const targetPos = variablePosIndex !== 0 ? _prevPos : _nextPos;
+
+        const { index: variableIndex } = document.getElementById(targetPos.id).dataset;
+        const _variableIndex = parseInt(variableIndex);
+
+        // 변수 아이템은 connectionIds에 할당
+        newTargetItems = _.mapValues(targetItems, (_item) => ({
+          ..._item,
+          ...(_item.id === variablePos.parentId && {
+            connectionIds: {
+              ..._item.connectionIds,
+              [variablePos.connectDir]: [
+                ..._item.connectionIds[variablePos.connectDir],
+                {
+                  id: variablePos.id,
+                  parentId: variablePos.parentId,
+                  connectId: targetPos.id,
+                  connectParentId: targetPos.parentId,
+                },
+              ],
+            },
+          }),
+          // 변수를 입력받는 아이템은 connectionVariables에 할당
+          // 할당 시 인덱스에 유의해서 넣어야 함
+          ...(_item.id === targetPos.parentId && {
+            connectionVariables: new Array(_variableIndex + 1).fill(undefined).map((_v, _i) => {
+              if (_variableIndex === _i) {
+                return {
+                  id: targetPos.id,
+                  parentId: targetPos.parentId,
+                  connectId: variablePos.id,
+                  connectParentId: variablePos.parentId,
+                };
+              } else {
+                return _item.connectionVariables[_i];
+              }
+            }),
+          }),
+        }));
+      } else {
+        // 일반적인 블록 간 연결상황일 때
+        newTargetItems = _.mapValues(targetItems, (_item) => ({
+          ..._item,
+          ...(_item.id === _prevPos.parentId && {
+            connectionIds: {
+              ..._item.connectionIds,
+              [_prevPos.connectDir]: [
+                ..._item.connectionIds[_prevPos.connectDir],
+                {
+                  id: _prevPos.id,
+                  parentId: _prevPos.parentId,
+                  connectId: _nextPos.id,
+                  connectParentId: _nextPos.parentId,
+                },
+              ],
+            },
+          }),
+          ...(_item.id === _nextPos.parentId && {
+            connectionIds: {
+              ..._item.connectionIds,
+              [_nextPos.connectDir]: [
+                ..._item.connectionIds[_nextPos.connectDir],
+                {
+                  id: _nextPos.id,
+                  parentId: _nextPos.parentId,
+                  connectId: _prevPos.id,
+                  connectParentId: _prevPos.parentId,
+                },
+              ],
+            },
+          }),
+        }));
+      }
     } else if (_prevPos && !_nextPos && _deletePos) {
       // disconnect..
       const targetItems = _.pickBy(selectedChartItem, (_item) =>
@@ -188,10 +244,23 @@ function CodeFlowLabEditor() {
     }
 
     if (newTargetItems) {
-      const operations: Operation[] = Object.values(newTargetItems).map((_item) => ({
-        key: `items.${_item.id}.connectionIds`,
-        value: _item.connectionIds,
-      }));
+      let operations: Operation[];
+
+      if (isVariableFlag) {
+        operations = Object.values(newTargetItems).map((_item) => {
+          const _changeKey = _item.connectionVariables ? 'connectionVariables' : 'connectionIds';
+
+          return {
+            key: `items.${_item.id}.${_changeKey}`,
+            value: _item[_changeKey],
+          };
+        });
+      } else {
+        operations = Object.values(newTargetItems).map((_item) => ({
+          key: `items.${_item.id}.connectionIds`,
+          value: _item.connectionIds,
+        }));
+      }
 
       dispatch(setDocumentValueAction(operations));
     }

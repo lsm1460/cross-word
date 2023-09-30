@@ -132,6 +132,7 @@ const initialState: DocumentState = {
           right: [],
         },
         text: 'test',
+        connectionVariables: [],
       },
       lQJ488Mt: {
         id: 'lQJ488Mt',
@@ -157,6 +158,7 @@ const initialState: DocumentState = {
         end: 3,
         increase: 1,
         functionId: '',
+        connectionVariables: [],
       },
     },
     itemsPos: {

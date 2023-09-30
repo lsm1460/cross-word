@@ -41,6 +41,7 @@ export interface ChartItem {
     left?: ConnectPoint[];
     right?: ConnectPoint[];
   };
+  connectionVariables?: ConnectPoint[];
 }
 
 export interface ChartItemPos {
@@ -77,7 +78,6 @@ export interface ChartFunctionItem extends ChartItem {
 
 export interface ChartConsoleItem extends ChartItem {
   elType: ChartItemType.console;
-  logId: string;
   text: string;
 }
 

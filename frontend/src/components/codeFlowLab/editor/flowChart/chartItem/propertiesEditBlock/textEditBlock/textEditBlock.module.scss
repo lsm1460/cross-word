@@ -1,7 +1,36 @@
-.text-input {
-  padding: 3px 5px 5px;
-  background-color: #3c3c3c;
-  color: #cccccc;
-  border: none;
-  font-size: 15px;
+@import '../../../../../variables';
+
+.text-input-wrap {
+  position: relative;
+
+  .text-input {
+    padding: 3px 5px 5px;
+    background-color: #3c3c3c;
+    color: #cccccc;
+    border: none;
+    font-size: 15px;
+
+    &:read-only {
+      text-decoration: line-through;
+      color: #5b5b5b;
+      outline: none;
+    }
+  }
+
+  .dot {
+    position: absolute;
+    transform: translate(50%, -50%);
+    top: 50%;
+    right: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transition: 0.3s width, 0.3s height;
+    background-color: $other-point-color;
+
+    &:hover {
+      width: 10px;
+      height: 10px;
+    }
+  }
 }

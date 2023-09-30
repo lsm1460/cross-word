@@ -158,7 +158,7 @@ export const FLOW_CHART_ITEMS_STYLE: {
     width: 200,
     height: 100,
     connectionTypeList: {
-      left: [ChartItemType.script],
+      left: [ChartItemType.variable],
       right: [],
     },
     backgroundColor: '#dadada',
@@ -185,16 +185,18 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
   },
   [ChartItemType.span]: {
     text: '',
+    connectionVariables: [],
   },
   [ChartItemType.console]: {
-    logId: '',
     text: '',
+    connectionVariables: [],
   },
   [ChartItemType.loop]: {
     start: 0,
     end: 3,
     increase: 1,
     functionId: '',
+    connectionVariables: [],
   },
   [ChartItemType.variable]: {
     var: '',

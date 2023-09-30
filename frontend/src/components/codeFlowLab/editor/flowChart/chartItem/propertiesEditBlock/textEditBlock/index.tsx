@@ -2,18 +2,25 @@ import classNames from 'classnames/bind';
 import styles from './textEditBlock.module.scss';
 const cx = classNames.bind(styles);
 //
+import { CONNECT_POINT_CLASS } from '@/consts/codeFlowLab/items';
 import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { useDebounceSubmitText } from '@/src/utils/content';
-import { useMemo, useState } from 'react';
+import { MouseEventHandler, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { ChartItemType, ConnectPoint } from '@/consts/types/codeFlowLab';
 
 interface Props {
   id: string;
   text: string;
   propertyKey: string;
+  pointInfo?: {
+    pointIndex: number;
+    connectPoint: ConnectPoint | undefined;
+    handlePointConnectStart?: MouseEventHandler<HTMLElement>;
+  };
   emitCallback?: (_text: string) => void;
 }
-function TextEditBlock({ id, text, propertyKey, emitCallback }: Props) {
+function TextEditBlock({ id, text, propertyKey, pointInfo, emitCallback }: Props) {
   const dispatch = useDispatch();
 
   const [isTyping, setIsTyping] = useState(false);
@@ -55,17 +62,37 @@ function TextEditBlock({ id, text, propertyKey, emitCallback }: Props) {
   };
 
   return (
-    <input
-      className={cx('text-input')}
-      value={selectedText}
-      onChange={handleTitleInput}
-      placeholder="insert something.."
-      onBlur={(_event) => {
-        setIsTyping(false);
+    <div className={cx('text-input-wrap')}>
+      <input
+        className={cx('text-input')}
+        value={selectedText}
+        onChange={handleTitleInput}
+        placeholder="insert something.."
+        onBlur={(_event) => {
+          setIsTyping(false);
 
-        emitText(_event.target.value);
-      }}
-    />
+          emitText(_event.target.value);
+        }}
+        readOnly={!!pointInfo.connectPoint}
+      />
+      {pointInfo && (
+        <span
+          className={cx('dot', {
+            [CONNECT_POINT_CLASS]: true,
+          })}
+          id={`${id}-dot-${propertyKey}`}
+          data-parent-id={id}
+          data-connect-dir={'right'}
+          data-connect-type={ChartItemType.variable}
+          data-index={pointInfo.pointIndex || 0}
+          data-type-index={0}
+          {...(pointInfo.connectPoint && {
+            'data-connect-id': pointInfo.connectPoint.connectId,
+          })}
+          onMouseDown={pointInfo.handlePointConnectStart}
+        />
+      )}
+    </div>
   );
 }
 

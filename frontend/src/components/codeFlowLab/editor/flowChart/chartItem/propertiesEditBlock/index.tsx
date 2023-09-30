@@ -7,11 +7,13 @@ import StyleEditBlock from './styleEditBlock';
 import TriggerEditBlock from './triggerEditBlock';
 import TextEditBlock from './textEditBlock';
 import VariableEditBlock from './variableEditBlock';
+import { MouseEventHandler } from 'react';
 
 interface Props {
   chartItem: ChartItems;
+  handlePointConnectStart: MouseEventHandler<HTMLElement>;
 }
-function PropertiesEditBlock({ chartItem }: Props) {
+function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
   const drawInnerBlock = () => {
     switch (chartItem.elType) {
       case ChartItemType.style:
@@ -19,7 +21,19 @@ function PropertiesEditBlock({ chartItem }: Props) {
       case ChartItemType.trigger:
         return <TriggerEditBlock id={chartItem.id} triggerType={chartItem.triggerType} />;
       case ChartItemType.span:
-        return <TextEditBlock id={chartItem.id} text={chartItem.text} propertyKey={'text'} />;
+      case ChartItemType.console:
+        return (
+          <TextEditBlock
+            id={chartItem.id}
+            text={chartItem.text}
+            propertyKey={'text'}
+            pointInfo={{
+              pointIndex: 0,
+              connectPoint: chartItem.connectionVariables[0],
+              handlePointConnectStart,
+            }}
+          />
+        );
       case ChartItemType.variable:
         return <VariableEditBlock id={chartItem.id} variable={chartItem.var} />;
 

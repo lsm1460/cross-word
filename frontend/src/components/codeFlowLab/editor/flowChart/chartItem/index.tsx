@@ -232,7 +232,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
         {connectPointList}
       </div>
 
-      <PropertiesEditBlock chartItem={itemInfo} />
+      <PropertiesEditBlock chartItem={itemInfo} handlePointConnectStart={handlePointConnectStart} />
     </div>
   );
 }

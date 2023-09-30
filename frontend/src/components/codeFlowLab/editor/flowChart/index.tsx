@@ -60,7 +60,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const [itemMoveDelta, setItemMoveDelta] = useState({ x: 0, y: 0 });
   const [pointMove, setPointMove] = useState(null);
   const [isClearCanvasTrigger, setIsClearCanvasTrigger] = useState(false);
-  const [connectedPointList, setconnectedPointList] = useState([]);
+  const [connectedPointList, setConnectedPointList] = useState([]);
 
   const convertClientPosToLocalPos = (_clientPos: { x: number; y: number }) => {
     if (!flowChartRef.current) {
@@ -134,7 +134,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       }
     }
 
-    setconnectedPointList(result);
+    setConnectedPointList(result);
   }, [orderedChartItems]);
 
   useEffect(() => {
@@ -410,6 +410,10 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
     const _convertedElType = getBlockType(_elType);
     const _convertedTargetElType = getBlockType(selectedChartItem[targetParentId].elType, isTargetDeepCheck);
+
+    if (originConnectType === targetConnectType) {
+      return true;
+    }
 
     // 시작점의 가능 타입과 타겟 블럭이 같고,
     // 연결점의 가능 타입과 시작 블럭의 타입이 같을 때
