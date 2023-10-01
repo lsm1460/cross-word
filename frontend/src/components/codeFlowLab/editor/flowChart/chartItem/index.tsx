@@ -63,14 +63,26 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   const selectedName = useMemo(() => selectName(isTyping, itemInfo.name, itemName), [isTyping, itemInfo, itemName]);
   const connectPointList = useMemo(() => {
     return Object.keys(FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectionTypeList).map((_x, _i) => {
-      const typeGroup = _.groupBy(itemInfo.connectionIds[_x], (_point) =>
-        getBlockType(chartItems[_point.connectParentId]?.elType, checkDeep ? _x === 'right' : _x !== 'right')
-      );
+      const typeGroup = _.groupBy(itemInfo.connectionIds[_x], (_point) => {
+        // 일반적으로는 그룹 별로 묶지만, 변수의 경우 다양한 블록들과 그룹지어 연결하지 않기 때문에 분기처리 추가
+        if (itemInfo.elType === ChartItemType.variable) {
+          return ChartItemType.variable;
+        }
+
+        return getBlockType(chartItems[_point.connectParentId]?.elType, checkDeep ? _x === 'right' : _x !== 'right');
+      });
 
       return (
         <ul key={_i} className={cx('point-list', _x)}>
           {(FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectionTypeList[_x] || []).map((_type, _j) => {
-            return Array((connectSizeByType[_x][_type] || 0) + 1)
+            let _pointSize = connectSizeByType[_x][_type] || 0;
+
+            // 일반적으로는 그룹 별로 묶인 수 + 1로 연결점의 수 정의되지만, 변수의 경우 다양한 블록들과 그룹지어 연결하지 않기 때문에 분기처리 추가
+            if (itemInfo.elType === ChartItemType.variable) {
+              _pointSize = (Object.values(connectSizeByType[_x]) as number[]).reduce((_acc, _cur) => _acc + _cur, 0);
+            }
+
+            return Array(_pointSize + 1)
               .fill(undefined)
               .map((__, _k) => {
                 const _point = typeGroup[_type]?.[_k];

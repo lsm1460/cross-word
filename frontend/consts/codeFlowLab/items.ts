@@ -150,7 +150,7 @@ export const FLOW_CHART_ITEMS_STYLE: {
     height: 100,
     connectionTypeList: {
       left: [ChartItemType.script],
-      right: [],
+      right: [ChartItemType.script],
     },
     backgroundColor: '#dadada',
   },
@@ -192,9 +192,11 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     connectionVariables: [],
   },
   [ChartItemType.loop]: {
-    start: 0,
-    end: 3,
-    increase: 1,
+    loop: {
+      start: 0,
+      end: 3,
+      increase: 1,
+    },
     functionId: '',
     connectionVariables: [],
   },

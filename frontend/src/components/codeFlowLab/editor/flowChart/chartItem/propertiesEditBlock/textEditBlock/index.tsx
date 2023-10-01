@@ -11,22 +11,23 @@ import { ChartItemType, ConnectPoint } from '@/consts/types/codeFlowLab';
 
 interface Props {
   id: string;
-  text: string;
+  text: string | number;
   propertyKey: string;
   pointInfo?: {
     pointIndex: number;
     connectPoint: ConnectPoint | undefined;
     handlePointConnectStart?: MouseEventHandler<HTMLElement>;
   };
-  emitCallback?: (_text: string) => void;
+  label?: string;
+  inputType?: 'text' | 'number';
 }
-function TextEditBlock({ id, text, propertyKey, pointInfo, emitCallback }: Props) {
+function TextEditBlock({ id, text, propertyKey, pointInfo, label, inputType = 'text' }: Props) {
   const dispatch = useDispatch();
 
   const [isTyping, setIsTyping] = useState(false);
   const [typingText, setTypingText] = useState(text);
 
-  const [debounceSubmitText] = useDebounceSubmitText(`items.${id}.${propertyKey}`, emitCallback);
+  const [debounceSubmitText] = useDebounceSubmitText(`items.${id}.${propertyKey}`);
 
   const selectText = (_isTyping, _originText, _insertedText) => {
     if (_isTyping) {
@@ -56,14 +57,14 @@ function TextEditBlock({ id, text, propertyKey, pointInfo, emitCallback }: Props
           value: _text,
         })
       );
-
-      emitCallback && emitCallback(_text);
     }
   };
 
   return (
     <div className={cx('text-input-wrap')}>
+      {label && <label htmlFor={`${id}-input-${propertyKey}`}>{label}</label>}
       <input
+        id={`${id}-input-${propertyKey}`}
         className={cx('text-input')}
         value={selectedText}
         onChange={handleTitleInput}
@@ -73,7 +74,8 @@ function TextEditBlock({ id, text, propertyKey, pointInfo, emitCallback }: Props
 
           emitText(_event.target.value);
         }}
-        readOnly={!!pointInfo.connectPoint}
+        readOnly={!!pointInfo?.connectPoint}
+        type={inputType}
       />
       {pointInfo && (
         <span
@@ -84,7 +86,7 @@ function TextEditBlock({ id, text, propertyKey, pointInfo, emitCallback }: Props
           data-parent-id={id}
           data-connect-dir={'right'}
           data-connect-type={ChartItemType.variable}
-          data-index={pointInfo.pointIndex || 0}
+          data-index={pointInfo?.pointIndex || 0}
           data-type-index={0}
           {...(pointInfo.connectPoint && {
             'data-connect-id': pointInfo.connectPoint.connectId,

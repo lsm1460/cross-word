@@ -11,6 +11,7 @@ import { RootState } from '@/reducers';
 import { addHistory } from '@/src/utils/history';
 import _ from 'lodash';
 import { getSceneId } from '@/src/utils/content';
+import { ConnectPoint } from '@/consts/types/codeFlowLab';
 
 function* handleSetDocumentValue({ payload }: SagaOperationParam) {
   const { mainDocument }: RootState = yield select();
@@ -62,14 +63,21 @@ function* handleDeleteBlock({ payload }: { type: string; payload: string[] }) {
 
   const ops = [];
 
+  const filterPoint = (_point: ConnectPoint) => !payload.includes(_point.connectParentId);
+
   let newChartItems = _.pickBy(items, (_item) => !payload.includes(_item.id));
   newChartItems = _.mapValues(newChartItems, (_item) => ({
     ..._item,
     connectionIds: {
       ..._item.connectionIds,
-      left: [...(_item.connectionIds?.left || []).filter((_point) => !payload.includes(_point.connectParentId))],
-      right: [...(_item.connectionIds?.right || []).filter((_point) => !payload.includes(_point.connectParentId))],
+      left: [...(_item.connectionIds?.left || []).filter(filterPoint)],
+      right: [...(_item.connectionIds?.right || []).filter(filterPoint)],
     },
+    ...(_item.connectionVariables && {
+      connectionVariables: _item.connectionVariables.map((_point) =>
+        payload.includes(_point.connectParentId) ? undefined : _point
+      ),
+    }),
   }));
 
   ops.push({

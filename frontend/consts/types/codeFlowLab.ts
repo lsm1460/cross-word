@@ -83,9 +83,11 @@ export interface ChartConsoleItem extends ChartItem {
 
 export interface ChartLoopItem extends ChartItem {
   elType: ChartItemType.loop;
-  start: number | string;
-  end: number | string;
-  increase: number | string;
+  loop: {
+    start: number | string;
+    end: number | string;
+    increase: number | string;
+  };
   functionId: string;
 }
 

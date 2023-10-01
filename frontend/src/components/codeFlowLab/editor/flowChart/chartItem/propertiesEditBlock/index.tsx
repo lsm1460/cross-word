@@ -7,7 +7,8 @@ import StyleEditBlock from './styleEditBlock';
 import TriggerEditBlock from './triggerEditBlock';
 import TextEditBlock from './textEditBlock';
 import VariableEditBlock from './variableEditBlock';
-import { MouseEventHandler } from 'react';
+import { MouseEventHandler, useEffect } from 'react';
+import LoopEditBlock from './loopEditBlock';
 
 interface Props {
   chartItem: ChartItems;
@@ -36,6 +37,15 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
         );
       case ChartItemType.variable:
         return <VariableEditBlock id={chartItem.id} variable={chartItem.var} />;
+      case ChartItemType.loop:
+        return (
+          <LoopEditBlock
+            id={chartItem.id}
+            loop={chartItem.loop}
+            connectionVariables={chartItem.connectionVariables}
+            handlePointConnectStart={handlePointConnectStart}
+          />
+        );
 
       default:
         return <></>;

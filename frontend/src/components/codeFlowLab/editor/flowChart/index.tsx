@@ -459,9 +459,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     if (multiSelectedIdListClone.current.includes(_selectedItem.id)) {
       if (_event.ctrlKey) {
         // 다중 선택이 있을 때 컨트롤 키가 눌러져 있다면 그 아이템을 선택취소한다.
-        setMultiSelectedItemList((_prev) => {
-          return _.pickBy(_prev, (_v, _itemId) => _itemId !== _selectedItem.id);
-        });
+        setMultiSelectedItemList((_prev) => _.pickBy(_prev, (_v, _itemId) => _itemId !== _selectedItem.id));
       } else {
         // 다중 선택일 때 컨트롤 키가 눌러져 있지 않다면 그 아이템을 기준으로 움직인다.
         selectedItemId.current = _selectedItem.id;
@@ -493,7 +491,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
       // 초기화
       selectedItemId.current = null;
-      setMultiSelectedItemList({});
+      setMultiSelectedItemList((_prev) => (_.isEqual(_prev, {}) ? _prev : {}));
 
       const dotEl = _event.target as HTMLSpanElement;
       const selectedPoint = makePointPosByEl(dotEl);
@@ -567,8 +565,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
       const selectedIds = getSelectedItemIds();
       const selectedItemPos = getSelectItemPos(selectedIds);
-
-      setMultiSelectedItemList(selectedItemPos);
+      setMultiSelectedItemList((_prev) => (_.isEqual(_prev, selectedItemPos) ? _prev : selectedItemPos));
 
       lineCanvasCtx.beginPath();
 
@@ -635,7 +632,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const selectedIds = getSelectedItemIds();
     const selectedItemPos = getSelectItemPos(selectedIds);
 
-    setMultiSelectedItemList(selectedItemPos);
+    setMultiSelectedItemList((_prev) => (_.isEqual(_prev, selectedItemPos) ? _prev : selectedItemPos));
 
     multiSelectBoxStartPos.current = null;
     multiSelectBoxEndPos.current = null;

@@ -16,9 +16,9 @@ function ViewerElBlock({ viewerItem }: Props) {
     switch (_scriptBlock.elType) {
       case ChartItemType.loop:
         for (
-          let _i = Number(_scriptBlock.start);
-          _i < Number(_scriptBlock.end);
-          _i = _i + Number(_scriptBlock.increase)
+          let _i = Number(_scriptBlock.loop.start);
+          _i < Number(_scriptBlock.loop.end);
+          _i = _i + Number(_scriptBlock.loop.increase)
         ) {
           console.log('test..');
         }

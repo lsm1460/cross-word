@@ -67,30 +67,29 @@ function CodeFlowLabEditor() {
 
   const connectPoints: ConnectPoints = (_prevPos, _nextPos, _deletePos) => {
     let newTargetItems: _.Dictionary<ChartItems>;
-    let isVariableFlag = false;
 
-    if (_prevPos && _nextPos && !_deletePos) {
-      // connect..
-      const targetItems = _.pickBy(selectedChartItem, (_item) =>
-        [_prevPos.parentId, _nextPos.parentId].includes(_item.id)
-      );
+    const targetEltypeList = _.compact([
+      selectedChartItem[_prevPos.parentId].elType,
+      selectedChartItem[_nextPos?.parentId]?.elType,
+      selectedChartItem[_deletePos?.parentId]?.elType,
+    ]);
+    //_prevPos, _nextPos, _deletePos의 id로 elType을 가져온 후 변수일 경우
+    const isVariableFlag = targetEltypeList.includes(ChartItemType.variable);
 
-      const targetEltypeList = [
-        selectedChartItem[_prevPos.parentId].elType,
-        //_prevPos, _nextPos의 id로 elType을 가져온 후 변수일 경우
-        selectedChartItem[_nextPos.parentId].elType,
-      ];
+    if (isVariableFlag) {
+      // 블록과 변수 간 연결상황일 때
+      const variablePosIndex = targetEltypeList.indexOf(ChartItemType.variable);
+      const _targetPosList = _.compact([_prevPos, _nextPos, _deletePos]);
+      const variablePos = _targetPosList[variablePosIndex];
+      const targetPos = _targetPosList[Number(!variablePosIndex)];
 
-      isVariableFlag = targetEltypeList.includes(ChartItemType.variable);
+      const { index: variableIndex } = document.getElementById(targetPos.id).dataset;
+      const _variableIndex = parseInt(variableIndex);
 
-      if (isVariableFlag) {
-        // 블록과 변수 간 연결상황일 때
-        const variablePosIndex = targetEltypeList.indexOf(ChartItemType.variable);
-        const variablePos = variablePosIndex === 0 ? _prevPos : _nextPos;
-        const targetPos = variablePosIndex !== 0 ? _prevPos : _nextPos;
-
-        const { index: variableIndex } = document.getElementById(targetPos.id).dataset;
-        const _variableIndex = parseInt(variableIndex);
+      /**connect..**/ if (_prevPos && _nextPos && !_deletePos) {
+        const targetItems = _.pickBy(selectedChartItem, (_item) =>
+          [_prevPos.parentId, _nextPos.parentId].includes(_item.id)
+        );
 
         // 변수 아이템은 connectionIds에 할당
         newTargetItems = _.mapValues(targetItems, (_item) => ({
@@ -126,8 +125,35 @@ function CodeFlowLabEditor() {
             }),
           }),
         }));
-      } else {
-        // 일반적인 블록 간 연결상황일 때
+      } /** disconnect..**/ else if (_prevPos && !_nextPos && _deletePos) {
+        const targetItems = _.pickBy(selectedChartItem, (_item) =>
+          [_prevPos.parentId, _deletePos.parentId].includes(_item.id)
+        );
+
+        newTargetItems = _.mapValues(targetItems, (_item) => ({
+          ..._item,
+          ...(_item.id === variablePos.parentId && {
+            connectionIds: {
+              ..._item.connectionIds,
+              [variablePos.connectDir]: _item.connectionIds[variablePos.connectDir].filter(
+                (_point) => _point.connectId !== targetPos.id
+              ),
+            },
+          }),
+          ...(_item.id === targetPos.parentId && {
+            connectionVariables: _item.connectionVariables.map((_point) =>
+              _point.connectId === variablePos.id ? undefined : _point
+            ),
+          }),
+        }));
+      }
+    } else {
+      // 일반적인 블록 간 연결상황일 때
+      /**connect..**/ if (_prevPos && _nextPos && !_deletePos) {
+        const targetItems = _.pickBy(selectedChartItem, (_item) =>
+          [_prevPos.parentId, _nextPos.parentId].includes(_item.id)
+        );
+
         newTargetItems = _.mapValues(targetItems, (_item) => ({
           ..._item,
           ...(_item.id === _prevPos.parentId && {
@@ -159,88 +185,86 @@ function CodeFlowLabEditor() {
             },
           }),
         }));
-      }
-    } else if (_prevPos && !_nextPos && _deletePos) {
-      // disconnect..
-      const targetItems = _.pickBy(selectedChartItem, (_item) =>
-        [_prevPos.parentId, _deletePos.parentId].includes(_item.id)
-      );
+      } /** disconnect..**/ else if (_prevPos && !_nextPos && _deletePos) {
+        const targetItems = _.pickBy(selectedChartItem, (_item) =>
+          [_prevPos.parentId, _deletePos.parentId].includes(_item.id)
+        );
 
-      newTargetItems = _.mapValues(targetItems, (_item) => ({
-        ..._item,
-        ...(_item.id === _prevPos.parentId && {
-          connectionIds: {
-            ..._item.connectionIds,
-            [_prevPos.connectDir]: _item.connectionIds[_prevPos.connectDir].filter(
-              (_point) => _point.connectId !== _deletePos.id
-            ),
-          },
-        }),
-        ...(_item.id === _deletePos.parentId && {
-          connectionIds: {
-            ..._item.connectionIds,
-            [_deletePos.connectDir]: _item.connectionIds[_deletePos.connectDir].filter(
-              (_point) => _point.connectId !== _prevPos.id
-            ),
-          },
-        }),
-      }));
-    } else if (_prevPos && _nextPos && _deletePos) {
-      // change..
-      const targetItems = _.pickBy(selectedChartItem, (_item) =>
-        [_prevPos.parentId, _deletePos.parentId, _nextPos.parentId].includes(_item.id)
-      );
-      newTargetItems = _.mapValues(targetItems, (_item) => {
-        if (_item.id === _prevPos.parentId) {
-          const deletedIdList = _item.connectionIds[_prevPos.connectDir].filter(
-            (_point) => _point.connectId !== _deletePos.id
-          );
-
-          return {
-            ..._item,
+        newTargetItems = _.mapValues(targetItems, (_item) => ({
+          ..._item,
+          ...(_item.id === _prevPos.parentId && {
             connectionIds: {
               ..._item.connectionIds,
-              [_prevPos.connectDir]: [
-                ...deletedIdList,
-                {
-                  id: _prevPos.id,
-                  parentId: _prevPos.parentId,
-                  connectId: _nextPos.id,
-                  connectParentId: _nextPos.parentId,
-                },
-              ],
+              [_prevPos.connectDir]: _item.connectionIds[_prevPos.connectDir].filter(
+                (_point) => _point.connectId !== _deletePos.id
+              ),
             },
-          };
-        } else if (_item.id === _deletePos.parentId) {
-          return {
-            ..._item,
+          }),
+          ...(_item.id === _deletePos.parentId && {
             connectionIds: {
               ..._item.connectionIds,
               [_deletePos.connectDir]: _item.connectionIds[_deletePos.connectDir].filter(
                 (_point) => _point.connectId !== _prevPos.id
               ),
             },
-          };
-        } else if (_item.id === _nextPos.parentId) {
-          return {
-            ..._item,
-            connectionIds: {
-              ..._item.connectionIds,
-              [_nextPos.connectDir]: [
-                ..._item.connectionIds[_nextPos.connectDir],
-                {
-                  id: _nextPos.id,
-                  parentId: _nextPos.parentId,
-                  connectId: _prevPos.id,
-                  connectParentId: _prevPos.parentId,
-                },
-              ],
-            },
-          };
-        } else {
-          return _item;
-        }
-      });
+          }),
+        }));
+      } /** change.. **/ else if (_prevPos && _nextPos && _deletePos) {
+        const targetItems = _.pickBy(selectedChartItem, (_item) =>
+          [_prevPos.parentId, _deletePos.parentId, _nextPos.parentId].includes(_item.id)
+        );
+        newTargetItems = _.mapValues(targetItems, (_item) => {
+          if (_item.id === _prevPos.parentId) {
+            const deletedIdList = _item.connectionIds[_prevPos.connectDir].filter(
+              (_point) => _point.connectId !== _deletePos.id
+            );
+
+            return {
+              ..._item,
+              connectionIds: {
+                ..._item.connectionIds,
+                [_prevPos.connectDir]: [
+                  ...deletedIdList,
+                  {
+                    id: _prevPos.id,
+                    parentId: _prevPos.parentId,
+                    connectId: _nextPos.id,
+                    connectParentId: _nextPos.parentId,
+                  },
+                ],
+              },
+            };
+          } else if (_item.id === _deletePos.parentId) {
+            return {
+              ..._item,
+              connectionIds: {
+                ..._item.connectionIds,
+                [_deletePos.connectDir]: _item.connectionIds[_deletePos.connectDir].filter(
+                  (_point) => _point.connectId !== _prevPos.id
+                ),
+              },
+            };
+          } else if (_item.id === _nextPos.parentId) {
+            return {
+              ..._item,
+              connectionIds: {
+                ..._item.connectionIds,
+                [_nextPos.connectDir]: [
+                  ..._item.connectionIds[_nextPos.connectDir],
+                  {
+                    id: _nextPos.id,
+                    parentId: _nextPos.parentId,
+                    connectId: _prevPos.id,
+                    connectParentId: _prevPos.parentId,
+                  },
+                ],
+              },
+            };
+          } else {
+            return _item;
+          }
+        });
+      }
     }
 
     if (newTargetItems) {

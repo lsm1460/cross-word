@@ -6,10 +6,6 @@ interface Props {
   variable: string;
 }
 function VariableEditBlock({ id, variable }: Props) {
-  const emitCallback = (_text: string) => {
-    console.log(_text);
-  };
-
   const toggleCallback = (_toggle: boolean) => {
     console.log(_toggle);
   };
@@ -17,7 +13,7 @@ function VariableEditBlock({ id, variable }: Props) {
   return (
     <div>
       <ToggleEditBlock label="global" toggleCallback={toggleCallback} />
-      <TextEditBlock id={id} text={variable} propertyKey="var" emitCallback={emitCallback} />
+      <TextEditBlock id={id} text={variable} propertyKey="var" />
     </div>
   );
 }
