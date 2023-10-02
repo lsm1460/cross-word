@@ -4,7 +4,6 @@ const cx = classNames.bind(styles);
 //
 import {
   BLOCK_HEADER_SIZE,
-  CHART_SCRIPT_ITEMS,
   CONNECT_POINT_CLASS,
   CONNECT_POINT_GAP,
   CONNECT_POINT_SIZE,
@@ -19,7 +18,7 @@ import { useDebounceSubmitText } from '@/src/utils/content';
 import _ from 'lodash';
 import { KeyboardEventHandler, MouseEventHandler, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getConnectSizeByType, getBlockType } from '../utils';
+import { getBlockType, getConnectSizeByType } from '../utils';
 import PropertiesEditBlock from './propertiesEditBlock';
 
 interface Props {
@@ -35,7 +34,12 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
 
   const deleteTargetIdList = useSelector((state: RootState) => state.mainDocument.deleteTargetIdList);
 
-  const checkDeep = ![ChartItemType.function].includes(itemInfo.elType);
+  const checkDeep = ![
+    ChartItemType.function,
+    ChartItemType.trigger,
+    ChartItemType.style,
+    ChartItemType.console,
+  ].includes(itemInfo.elType);
 
   const connectSizeByType = useMemo(
     () => getConnectSizeByType(itemInfo.connectionIds, chartItems, checkDeep),
@@ -69,13 +73,13 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
           return ChartItemType.variable;
         }
 
-        return getBlockType(chartItems[_point.connectParentId]?.elType, checkDeep ? _x === 'right' : _x !== 'right');
+        return getBlockType(chartItems[_point.connectParentId]?.elType, checkDeep);
       });
 
       return (
         <ul key={_i} className={cx('point-list', _x)}>
           {(FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectionTypeList[_x] || []).map((_type, _j) => {
-            let _pointSize = connectSizeByType[_x][_type] || 0;
+            let _pointSize = connectSizeByType[_x][getBlockType(_type, checkDeep)] || 0;
 
             // 일반적으로는 그룹 별로 묶인 수 + 1로 연결점의 수 정의되지만, 변수의 경우 다양한 블록들과 그룹지어 연결하지 않기 때문에 분기처리 추가
             if (itemInfo.elType === ChartItemType.variable) {
@@ -85,7 +89,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
             return Array(_pointSize + 1)
               .fill(undefined)
               .map((__, _k) => {
-                const _point = typeGroup[_type]?.[_k];
+                const _point = typeGroup[getBlockType(_type, checkDeep)]?.[_k];
                 const _itemName = _point ? chartItems[_point.connectParentId].name : '';
 
                 return (

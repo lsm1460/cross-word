@@ -179,6 +179,11 @@
           &.trigger-element::before {
             background-color: $trigger-point-color;
           }
+
+          &.trigger-function::before,
+          &.function-trigger::before {
+            background-color: $trigger-function-point-color;
+          }
         }
       }
     }

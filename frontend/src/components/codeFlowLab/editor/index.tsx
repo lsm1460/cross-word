@@ -142,10 +142,95 @@ function CodeFlowLabEditor() {
           }),
           ...(_item.id === targetPos.parentId && {
             connectionVariables: _item.connectionVariables.map((_point) =>
-              _point.connectId === variablePos.id ? undefined : _point
+              _point?.connectId === variablePos.id ? undefined : _point
             ),
           }),
         }));
+      } /** change.. **/ else if (_prevPos && _nextPos && _deletePos) {
+        const targetItems = _.pickBy(selectedChartItem, (_item) =>
+          [_prevPos.parentId, _deletePos.parentId, _nextPos.parentId].includes(_item.id)
+        );
+
+        newTargetItems = _.mapValues(targetItems, (_item) => {
+          if (_item.id === variablePos.parentId) {
+            const deletedIdList = _item.connectionIds[variablePos.connectDir].filter(
+              (_point) => _point.connectId !== _deletePos.id
+            );
+
+            return {
+              ..._item,
+              connectionIds: {
+                ..._item.connectionIds,
+                [variablePos.connectDir]: [
+                  ...deletedIdList,
+                  {
+                    id: variablePos.id,
+                    parentId: variablePos.parentId,
+                    connectId: targetPos.id,
+                    connectParentId: targetPos.parentId,
+                  },
+                ],
+              },
+            };
+          } else if (_item.id !== targetPos.parentId && _item.id === _deletePos.parentId) {
+            // 변수 블록을 바꾸었을 때의 연결관계를 삭제하는 변수 블록
+
+            return {
+              ..._item,
+              connectionIds: {
+                ..._item.connectionIds,
+                [_deletePos.connectDir]: _item.connectionIds[_deletePos.connectDir].filter(
+                  (_point) => _point.connectId !== _prevPos.id
+                ),
+              },
+            };
+          } else if (_item.id === targetPos.parentId && _item.id !== _deletePos.parentId) {
+            // 변수 블록을 바꾸었을 때의 타겟 블록
+
+            return {
+              ..._item,
+              connectionVariables: _item.connectionVariables.map((_point) =>
+                _point?.connectId === _deletePos.id
+                  ? {
+                      id: targetPos.id,
+                      parentId: targetPos.parentId,
+                      connectId: variablePos.id,
+                      connectParentId: variablePos.parentId,
+                    }
+                  : _point
+              ),
+            };
+          } else if (_item.id === targetPos.parentId && _item.id === _deletePos.parentId) {
+            // 변수 연결점을 변경했을 때의 타겟 블록
+            const _variablesSize =
+              _item.connectionVariables.length > _variableIndex + 1
+                ? _item.connectionVariables.length
+                : _variableIndex + 1;
+
+            const { index: deletePosIndex } = document.getElementById(_deletePos.id).dataset;
+            const _deletePosIndex = parseInt(deletePosIndex);
+
+            return {
+              ..._item,
+              connectionVariables: new Array(_variablesSize).fill(undefined).map((__, _i) => {
+                if (_i === _deletePosIndex) {
+                  return undefined;
+                } else if (_i === _variableIndex) {
+                  return {
+                    id: targetPos.id,
+                    parentId: targetPos.parentId,
+                    connectId: variablePos.id,
+                    connectParentId: variablePos.parentId,
+                  };
+                } else {
+                  return _item.connectionVariables[_i];
+                }
+              }),
+            };
+          } else {
+            return _item;
+          }
+        });
       }
     } else {
       // 일반적인 블록 간 연결상황일 때

@@ -7,7 +7,7 @@ interface Props {
 }
 function ViewerDivBlock({ viewerItem, triggerProps }: Props) {
   return (
-    <div style={viewerItem.styles}>
+    <div style={viewerItem.styles} {...triggerProps}>
       {viewerItem.children.map((_item) => (
         <ViewerElBlock key={_item.id} viewerItem={_item} />
       ))}

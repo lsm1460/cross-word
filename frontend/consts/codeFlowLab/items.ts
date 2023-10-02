@@ -149,8 +149,8 @@ export const FLOW_CHART_ITEMS_STYLE: {
     width: 200,
     height: 100,
     connectionTypeList: {
-      left: [ChartItemType.script],
-      right: [ChartItemType.script],
+      left: [ChartItemType.function],
+      right: [ChartItemType.function],
     },
     backgroundColor: '#dadada',
   },

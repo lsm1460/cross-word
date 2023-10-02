@@ -3,7 +3,7 @@ import styles from './flowChart.module.scss';
 const cx = classNames.bind(styles);
 //
 import { CONNECT_POINT_CLASS } from '@/consts/codeFlowLab/items';
-import { ChartItemType, ChartItems, PointPos } from '@/consts/types/codeFlowLab';
+import { ChartItemType, ChartItems, ConnectPoint, PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { setDeleteTargetIdListAction } from '@/reducers/contentWizard/mainDocument';
 import { getChartItem, getSceneId } from '@/src/utils/content';
@@ -231,7 +231,6 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         const targetPoint = makePointPosByEl(pointMove.el);
 
         const isAbleConnect = checkConnectable(selectedConnectionPoint.current.id, targetPoint.id);
-
         if (isAbleConnect) {
           connectedPoint = targetPoint;
         }
@@ -356,7 +355,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         }
 
         const targetPos = (selectedChartItem[_pathKey].connectionIds[_connectDir] || []).map((_node) => ({
-          pos: _node.parentId,
+          pos: _node.connectParentId,
           prev: _pathKey,
           prevList: [...path.prevList, path.pos],
         }));
@@ -387,8 +386,17 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       connectType: targetConnectType,
     } = document.getElementById(_targetId).dataset;
 
+    // 이미 연결된 점 확인
     if (originConnectId === _targetId) {
-      // 이미 연결된 블럭 확인
+      return false;
+    }
+
+    // 이미 연결된 블럭 확인
+    const isAlreadyConnected = !!_.find(
+      selectedChartItem[originParentId].connectionIds[originConnectDir],
+      (_pos: ConnectPoint) => _pos.connectParentId === targetParentId
+    );
+    if (isAlreadyConnected) {
       return false;
     }
 
@@ -411,7 +419,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const _convertedElType = getBlockType(_elType);
     const _convertedTargetElType = getBlockType(selectedChartItem[targetParentId].elType, isTargetDeepCheck);
 
-    if (originConnectType === targetConnectType) {
+    if (originConnectType === ChartItemType.variable && targetConnectType === ChartItemType.variable) {
       return true;
     }
 
@@ -491,7 +499,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
       // 초기화
       selectedItemId.current = null;
-      setMultiSelectedItemList((_prev) => (_.isEqual(_prev, {}) ? _prev : {}));
+      setMultiSelectedItemList({});
 
       const dotEl = _event.target as HTMLSpanElement;
       const selectedPoint = makePointPosByEl(dotEl);

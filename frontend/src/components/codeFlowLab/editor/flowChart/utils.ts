@@ -104,6 +104,10 @@ export function getRectPoints(element: HTMLElement): IPoint[] {
 }
 
 export const getBlockType = (_elType, _isDeep = false) => {
+  if (_elType === ChartItemType.variable) {
+    return _elType;
+  }
+
   // 트리거는 function만 붙일 수 있도록 예외처리 추가
 
   if (CHART_ELEMENT_ITEMS.includes(_elType)) {

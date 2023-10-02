@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import { useCallback, useState } from 'react';
 
-import { CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
-import { DocumentState, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { ChartItemType, ChartVariableItem, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
+import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { nanoid } from 'nanoid';
 import { useDispatch } from 'react-redux';
 
@@ -95,4 +95,13 @@ export const useDebounceSubmitText = (_dispatchKey, _debounceCallbak = undefined
 
 export const getRandomId = (_length = 8) => {
   return nanoid(_length);
+};
+
+export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items']) => {
+  const _variableItemList = _.pickBy(
+    _items,
+    (_item) => _item.elType === ChartItemType.variable && (_item.sceneId === _sceneId || !_item.sceneId)
+  );
+
+  return _.mapValues(_variableItemList, (_item: ChartVariableItem) => _item.var);
 };
