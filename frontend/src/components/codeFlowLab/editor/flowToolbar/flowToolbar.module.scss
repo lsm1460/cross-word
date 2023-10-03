@@ -63,7 +63,14 @@
       &.function {
         button::before {
           content: '';
-          background-color: $other-point-color;
+          background-color: $function-point-color;
+        }
+      }
+
+      &.variable {
+        button::before {
+          content: '';
+          background-color: $variable-point-color;
         }
       }
 

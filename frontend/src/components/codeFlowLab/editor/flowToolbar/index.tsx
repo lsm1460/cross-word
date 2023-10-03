@@ -28,12 +28,18 @@ function FlowToolbar() {
 
   const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
 
-  const [panel, setPanel] = useState<'element' | 'function' | ''>('');
+  const [panel, setPanel] = useState<'element' | 'function' | 'variable' | ''>('');
 
   const makeItem = (_itemType: ChartItemType) => {
     const zoomArea = document.getElementById(ZOOM_AREA_ELEMENT_ID);
 
-    const [newFlowItem, pos, newItemId] = makeNewItem(zoomArea, selectedChartItem, itemsPos, _itemType);
+    const [newFlowItem, pos, newItemId] = makeNewItem(
+      zoomArea,
+      selectedChartItem,
+      itemsPos,
+      _itemType,
+      selectedSceneId
+    );
 
     const operations: Operation[] = [
       {
@@ -73,6 +79,9 @@ function FlowToolbar() {
         </li>
         <li className={cx('toolbar-item', 'function', { active: panel === 'function' })}>
           <button onClick={() => setPanel((_prev) => (_prev !== 'function' ? 'function' : ''))}>Script</button>
+        </li>
+        <li className={cx('toolbar-item', 'variable', { active: panel === 'variable' })}>
+          <button onClick={() => setPanel((_prev) => (_prev !== 'variable' ? 'variable' : ''))}>Variable</button>
         </li>
       </ul>
 

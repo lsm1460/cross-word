@@ -66,10 +66,11 @@
       align-items: center;
       justify-content: center;
       cursor: grab;
+      z-index: 1;
 
       & > i {
         display: block;
-        color: #888;
+        color: #2c2c2c;
         font-size: 16px;
       }
 
@@ -183,6 +184,10 @@
           &.trigger-function::before,
           &.function-trigger::before {
             background-color: $trigger-function-point-color;
+          }
+
+          &.variable-variable::before {
+            background-color: $variable-point-color;
           }
         }
       }

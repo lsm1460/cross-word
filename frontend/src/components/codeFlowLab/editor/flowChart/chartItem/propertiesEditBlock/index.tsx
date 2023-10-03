@@ -36,7 +36,7 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
           />
         );
       case ChartItemType.variable:
-        return <VariableEditBlock id={chartItem.id} isGlobal={!!chartItem.sceneId} variable={chartItem.var} />;
+        return <VariableEditBlock id={chartItem.id} isGlobal={!chartItem.sceneId} variable={chartItem.var} />;
       case ChartItemType.loop:
         return (
           <LoopEditBlock

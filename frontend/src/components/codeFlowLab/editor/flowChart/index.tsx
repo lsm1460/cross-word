@@ -40,10 +40,11 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   const multiSelectBoxStartPos = useRef<[number, number]>(null);
   const multiSelectBoxEndPos = useRef<[number, number]>(null);
 
-  const { chartItems, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
+  const { selectedSceneId, chartItems, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
+      selectedSceneId,
       chartItems: state.mainDocument.contentDocument.items,
       itemsPos: state.mainDocument.contentDocument.itemsPos,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
@@ -103,7 +104,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const adjustedMovePosItems = _.mapValues(selectedChartItem, (_v, _kId) => ({
       ..._v,
       pos: {
-        ...itemsPos[_v.id],
+        ...itemsPos[_v.id][selectedSceneId],
         ...(selectedIdList.includes(_kId) && {
           left: multiSelectedItemList[_kId].x,
           top: multiSelectedItemList[_kId].y,
@@ -260,6 +261,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     _origin: PointPos,
     _next?: PointPos
   ) => {
+    console.log('_type', _type);
     const GAP = 20;
 
     const isSkip =
@@ -268,7 +270,9 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       ((_origin.id === disconnectionPoint.current.id && _origin.typeIndex === disconnectionPoint.current.typeIndex) ||
         (_next?.id === disconnectionPoint.current.id && _next?.typeIndex === disconnectionPoint.current.typeIndex));
 
+    _type === 'connected' && console.log('isSkip', isSkip);
     if (!isSkip) {
+      _type === 'connected' && console.log('dj?', _origin);
       _ctx.beginPath();
       _ctx.moveTo(_origin.left + transX, _origin.top + transY);
     }
@@ -319,6 +323,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       }
       _ctx.lineTo(_next.left + transX, _next.top + transY);
     } else if (selectedConnectionPoint.current) {
+      _type === 'connected' && console.log('here?', selectedConnectionPoint.current);
       _ctx.lineTo(selectedConnectionPoint.current.left + transX, selectedConnectionPoint.current.top + transY);
     }
 
@@ -555,8 +560,8 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const _ids = _.mapKeys(_itemIdList, (_id) => _id);
 
     return _.mapValues(_ids, (__, _itemId) => ({
-      x: itemsPos[_itemId].left,
-      y: itemsPos[_itemId].top,
+      x: itemsPos[_itemId][selectedSceneId].left,
+      y: itemsPos[_itemId][selectedSceneId].top,
     }));
   };
 

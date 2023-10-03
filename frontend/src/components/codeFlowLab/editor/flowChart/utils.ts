@@ -4,8 +4,9 @@ import {
   FLOW_CHART_ITEMS_STYLE,
   FLOW_ITEM_ADDITIONAL_INFO,
   FLOW_ITEM_DEFAULT_INFO,
+  ROOT_BLOCK_ID,
 } from '@/consts/codeFlowLab/items';
-import { ChartItemPos, ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
+import { ChartBodyItem, ChartItemPos, ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
 import { getRandomId } from '@/src/utils/content';
 import _ from 'lodash';
 
@@ -142,7 +143,8 @@ export const makeNewItem = (
   zoomArea: HTMLElement,
   selectedChartItems: CodeFlowChartDoc['items'],
   itemsPos: CodeFlowChartDoc['itemsPos'],
-  itemType: ChartItemType
+  itemType: ChartItemType,
+  sceneId: string
 ): [ChartItems, ChartItemPos, string] => {
   const { scale, transX, transY } = zoomArea.dataset;
   const { width, height } = zoomArea.parentElement.getBoundingClientRect();
@@ -153,15 +155,15 @@ export const makeNewItem = (
   const lastEl = itemList[itemList.length - 1];
   const itemSize = _.filter(itemList, (_item) => _item.elType === itemType).length;
 
-  let pos = {
+  let _pos = {
     left: width / parseFloat(scale) / 2 - parseFloat(transX),
     top: height / parseFloat(scale) / 2 - parseFloat(transY),
   };
 
-  if (lastEl && itemsPos[lastEl.id].left === pos.left && itemsPos[lastEl.id].top === pos.top) {
-    pos = {
-      left: pos.left + 10,
-      top: pos.top + 10,
+  if (lastEl && itemsPos[lastEl.id][sceneId].left === _pos.left && itemsPos[lastEl.id][sceneId].top === _pos.top) {
+    _pos = {
+      left: _pos.left + 10,
+      top: _pos.top + 10,
     };
   }
 
@@ -175,7 +177,19 @@ export const makeNewItem = (
       connectionIds: _.mapValues(FLOW_CHART_ITEMS_STYLE[itemType].connectionTypeList, () => []),
       ...(FLOW_ITEM_ADDITIONAL_INFO[itemType] && FLOW_ITEM_ADDITIONAL_INFO[itemType]),
     },
-    pos,
+    { [sceneId]: _pos },
     newItemId,
   ];
+};
+
+export const makeNewRoot = (_sceneOrder: number): ChartBodyItem => {
+  return {
+    id: `${ROOT_BLOCK_ID}-${_sceneOrder}`,
+    name: 'root-name',
+    elType: ChartItemType.body,
+    zIndex: 1,
+    connectionIds: {
+      right: [],
+    },
+  };
 };

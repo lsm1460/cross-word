@@ -8,8 +8,9 @@ import { ChartItemType } from '@/consts/types/codeFlowLab';
 
 interface Props {
   itemList: ChartItemType[];
+  ableSearch?: boolean;
 }
-function PanelItemList({ itemList }: Props) {
+function PanelItemList({ itemList, ableSearch = true }: Props) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearch = (e) => {
@@ -22,13 +23,15 @@ function PanelItemList({ itemList }: Props) {
 
   return (
     <div className={cx('panel-wrap')}>
-      <input
-        className={cx('search-input')}
-        type="text"
-        placeholder="Search"
-        value={searchTerm}
-        onChange={handleSearch}
-      />
+      {ableSearch && (
+        <input
+          className={cx('search-input')}
+          type="text"
+          placeholder="Search"
+          value={searchTerm}
+          onChange={handleSearch}
+        />
+      )}
       <ul className={cx('panel-item-list')}>
         {filteredList.map((_type) => (
           <li key={_type}>

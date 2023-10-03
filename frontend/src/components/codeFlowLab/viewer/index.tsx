@@ -13,10 +13,11 @@ import ViewerElBlock from './viewerElBlock';
 
 interface Props {}
 function FlowChartViewer({}: Props) {
-  const { chartItems, sceneItemIds } = useSelector((state: RootState) => {
+  const { sceneOrder, chartItems, sceneItemIds } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
+      sceneOrder: state.mainDocument.sceneOrder,
       chartItems: state.mainDocument.contentDocument.items,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
     };
@@ -66,8 +67,8 @@ function FlowChartViewer({}: Props) {
   };
 
   const templateDocument: ViewerItem = useMemo(
-    () => makeViewerDocument(selectedChartItem[ROOT_BLOCK_ID]),
-    [selectedChartItem]
+    () => makeViewerDocument(selectedChartItem[`${ROOT_BLOCK_ID}-${sceneOrder}`]),
+    [selectedChartItem, sceneOrder]
   );
 
   return (

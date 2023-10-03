@@ -45,7 +45,7 @@ function PanelItem({ itemType }: Props) {
   const handleMakeItem = () => {
     const zoomArea = document.getElementById(ZOOM_AREA_ELEMENT_ID);
 
-    const [newFlowItem, pos, newItemId] = makeNewItem(zoomArea, selectedChartItem, itemsPos, itemType);
+    const [newFlowItem, pos, newItemId] = makeNewItem(zoomArea, selectedChartItem, itemsPos, itemType, selectedSceneId);
 
     const operations: Operation[] = [
       {

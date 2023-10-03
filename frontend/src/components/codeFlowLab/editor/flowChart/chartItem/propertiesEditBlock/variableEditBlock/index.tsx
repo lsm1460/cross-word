@@ -21,7 +21,7 @@ function VariableEditBlock({ id, isGlobal, variable }: Props) {
   const toggleCallback = (_toggle: boolean) => {
     let value = '';
 
-    if (_toggle) {
+    if (!_toggle) {
       value = sceneId;
     }
 

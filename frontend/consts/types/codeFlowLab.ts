@@ -45,8 +45,10 @@ export interface ChartItem {
 }
 
 export interface ChartItemPos {
-  left: number;
-  top: number;
+  [sceneId: string]: {
+    left: number;
+    top: number;
+  };
 }
 
 export interface ChartBodyItem extends ChartItem {

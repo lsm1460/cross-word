@@ -1,18 +1,29 @@
 import classNames from 'classnames/bind';
 import styles from './panel.module.scss';
-import ElementPanel from './elementPanel';
-import FunctionPanel from './functionPanel';
 const cx = classNames.bind(styles);
 //
+import ElementPanel from './elementPanel';
+import FunctionPanel from './functionPanel';
+import VariablePanel from './variablePanel';
+import { useState } from 'react';
+
 interface Props {
-  activePanel: 'element' | 'function' | '';
+  activePanel: 'element' | 'function' | 'variable' | '';
   handleClosePanel: () => void;
 }
 function ToolbarPanel({ activePanel, handleClosePanel }: Props) {
+  const [isSubOpen, setIsSubOpen] = useState(false);
+
   return (
     <>
       <div className={cx('toolbar-panel-wrap', { active: activePanel })}>
-        {{ element: <ElementPanel />, function: <FunctionPanel /> }[activePanel]}
+        {
+          {
+            element: <ElementPanel />,
+            function: <FunctionPanel />,
+            variable: <VariablePanel isSubOpen={isSubOpen} setIsSubOpen={setIsSubOpen} />,
+          }[activePanel]
+        }
       </div>
       <div className={cx('panel-dim', { active: activePanel })} onClick={handleClosePanel}></div>
     </>

@@ -25,7 +25,7 @@ function FlowZoom({ children }: Props) {
   const [horizonPos, setHorizonPos] = useState<number>(50);
   const [verticalPos, setVerticalPos] = useState<number>(50);
 
-  const { chartItems, itemsPos, sceneItemIds } = useSelector((state: RootState) => {
+  const { chartItems, itemsPos, sceneItemIds, selectedSceneId } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
@@ -67,12 +67,12 @@ function FlowZoom({ children }: Props) {
       const _item = selectedChartItem[_id];
 
       const _maxX = Math.max(
-        Math.abs(itemsPos[_item.id].left - xCenter),
-        FLOW_CHART_ITEMS_STYLE[_item.elType].width + itemsPos[_item.id].left - xCenter
+        Math.abs(itemsPos[_item.id][selectedSceneId].left - xCenter),
+        FLOW_CHART_ITEMS_STYLE[_item.elType].width + itemsPos[_item.id][selectedSceneId].left - xCenter
       );
       const _maxY = Math.max(
-        Math.abs(itemsPos[_item.id].top - yCenter),
-        FLOW_CHART_ITEMS_STYLE[_item.elType].height + itemsPos[_item.id].top - yCenter
+        Math.abs(itemsPos[_item.id][selectedSceneId].top - yCenter),
+        FLOW_CHART_ITEMS_STYLE[_item.elType].height + itemsPos[_item.id][selectedSceneId].top - yCenter
       );
 
       maxX = maxX > _maxX ? maxX : _maxX;
@@ -83,7 +83,7 @@ function FlowZoom({ children }: Props) {
     const scrollY = Math.max(maxY * 2 - height / scale, 0);
 
     return [scrollX + SCROLL_AREA_PADDING, scrollY + SCROLL_AREA_PADDING];
-  }, [originSize, selectedChartItem, scale]);
+  }, [originSize, selectedChartItem, scale, itemsPos]);
 
   const scrollBarX = useMemo(() => {
     const fullSize = scrollArea[0] + originSize[0];

@@ -13,7 +13,7 @@ export const CHART_SCRIPT_ITEMS = [
   ChartItemType.function,
   ChartItemType.console,
   ChartItemType.loop,
-  ChartItemType.variable,
+  // ChartItemType.variable,
 ];
 
 export const FLOW_CHART_ITEMS_STYLE: {

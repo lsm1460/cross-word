@@ -23,6 +23,7 @@
     color: #cccccc;
     border: none;
     font-size: 15px;
+    width: 100%;
 
     &:read-only {
       text-decoration: line-through;
@@ -50,7 +51,7 @@
     height: 6px;
     border-radius: 50%;
     transition: 0.3s width, 0.3s height;
-    background-color: $other-point-color;
+    background-color: $variable-point-color;
 
     &:hover {
       width: 10px;

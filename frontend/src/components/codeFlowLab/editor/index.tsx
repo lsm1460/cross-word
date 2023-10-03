@@ -4,15 +4,18 @@ const cx = classNames.bind(styles);
 //
 import { ChartItemType, ChartItems, PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
-import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { Operation, setDocumentValueAction, setFlowLogAction } from '@/reducers/contentWizard/mainDocument';
 import { getChartItem, getSceneId } from '@/src/utils/content';
 import { clearHistory } from '@/src/utils/history';
+import dayjs from 'dayjs';
 import _ from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import FlowChartViewer from '../viewer';
 import FlowChart from './flowChart';
 import FlowHeader from './flowHeader';
+import FlowLog from './flowLog';
+import FlowTabs from './flowTabs';
 import FlowToolbar from './flowToolbar';
 import FlowZoom from './flowZoom';
 
@@ -24,7 +27,7 @@ function CodeFlowLabEditor() {
 
   const [moveItemInfo, setMoveItemInfo] = useState<{ ids: string[]; deltaX: number; deltaY: number }>(null);
 
-  const { chartItems, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
+  const { selectedSceneId, chartItems, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
@@ -39,6 +42,10 @@ function CodeFlowLabEditor() {
 
   useEffect(() => {
     clearHistory();
+
+    const _date = dayjs().format('HH:mm ss');
+
+    dispatch(setFlowLogAction({ date: _date, text: '코드 플로우 랩에 오신 여러분을 환영합니다.', type: 'system' }));
   }, []);
 
   useEffect(() => {
@@ -47,10 +54,10 @@ function CodeFlowLabEditor() {
 
       const operations: Operation[] = Object.values(targetItems).map((_item) => {
         return {
-          key: `itemsPos.${_item.id}`,
+          key: `itemsPos.${_item.id}.${selectedSceneId}`,
           value: {
-            left: itemsPos[_item.id].left + moveItemInfo.deltaX,
-            top: itemsPos[_item.id].top + moveItemInfo.deltaY,
+            left: itemsPos[_item.id][selectedSceneId].left + moveItemInfo.deltaX,
+            top: itemsPos[_item.id][selectedSceneId].top + moveItemInfo.deltaY,
           },
         };
       });
@@ -381,9 +388,11 @@ function CodeFlowLabEditor() {
       <div className={cx('editor-wrap')}>
         <FlowToolbar />
         <div className={cx('canvas-area')}>
+          <FlowTabs />
           <FlowZoom>
             <FlowChart moveItems={moveItems} connectPoints={connectPoints} />
           </FlowZoom>
+          <FlowLog />
         </div>
         <FlowChartViewer />
       </div>

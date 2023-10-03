@@ -22,7 +22,7 @@
   z-index: 1;
 
   & > * {
-    color: #d8d8d8;
+    color: #ffffff;
     font-family: sans-serif;
     font-size: 13px;
     user-select: none;
@@ -30,6 +30,7 @@
     border: none;
     text-align: center;
     width: 100%;
+    position: relative;
   }
 
   &::before {
@@ -42,7 +43,7 @@
     bottom: 3px;
     border-radius: 3px;
     display: block;
-    opacity: 0.3;
+    opacity: 0.5;
     background-color: $other-point-color;
   }
 
@@ -60,6 +61,14 @@
 
   &.trigger::before {
     background-color: $trigger-point-color;
+  }
+
+  &.function::before {
+    background-color: $function-point-color;
+  }
+
+  &.variable::before {
+    background-color: $variable-point-color;
   }
 }
 
