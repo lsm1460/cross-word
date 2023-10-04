@@ -33,7 +33,7 @@
     border-bottom: 1px solid #555;
     border-radius: 7px 7px 0 0;
 
-    & > div:nth-child(2) {
+    & > div {
       width: 100%;
       background-color: transparent;
       border: none;
@@ -46,10 +46,10 @@
     span {
       display: none;
     }
-  }
 
-  p.property-header {
-    padding: 2px 8px;
+    p {
+      padding: 2px 8px;
+    }
   }
 
   .value-input {

@@ -24,7 +24,7 @@ function PropertyBlock({ id, propertyKey, value, propertyKeyList, valueList, onC
   const valueInputRef = useRef<HTMLInputElement>(null);
 
   const handleChangeKey = (_afterKey) => {
-    propertyKeyList.onChangeKey(propertyKey, _afterKey.value);
+    propertyKeyList.onChangeKey(propertyKey, _afterKey);
   };
 
   const changeValue = (_val: string | number) => {
@@ -61,16 +61,18 @@ function PropertyBlock({ id, propertyKey, value, propertyKeyList, valueList, onC
           <i className="material-symbols-outlined">close</i>
         </button>
       )}
-      {propertyKeyList ? (
-        <OptionSelector
-          options={propertyKeyList.options}
-          defaultValue={propertyKey}
-          isSearchable
-          onChange={handleChangeKey}
-        />
-      ) : (
-        <p className={cx('property-header')}>{propertyKey}</p>
-      )}
+      <div className={cx('property-header')}>
+        {propertyKeyList ? (
+          <OptionSelector
+            options={propertyKeyList.options}
+            defaultValue={propertyKey}
+            isSearchable
+            onChange={handleChangeKey}
+          />
+        ) : (
+          <p>{propertyKey}</p>
+        )}
+      </div>
       {valueList ? (
         <OptionSelector options={valueList} defaultValue={value} isSearchable onChange={(_val) => changeValue(_val)} />
       ) : (
