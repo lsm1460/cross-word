@@ -17,6 +17,7 @@ export enum ChartItemType {
   loop = 'loop',
   script = 'script',
   variable = 'variable',
+  if = 'if',
 }
 
 interface FlowScene {
@@ -90,13 +91,20 @@ export interface ChartLoopItem extends ChartItem {
     end: number;
     increase: number;
   };
-  functionId: string;
 }
 
 export interface ChartVariableItem extends ChartItem {
   elType: ChartItemType.variable;
   var: string;
   sceneId: string;
+}
+
+export interface ChartIfItem extends ChartItem {
+  elType: ChartItemType.if;
+  conditionList: {
+    condition: { point: ConnectPoint; logical: '' }[];
+    functionPoint: ConnectPoint;
+  }[];
 }
 
 export type ChartItems =
@@ -108,7 +116,8 @@ export type ChartItems =
   | ChartSpanItem
   | ChartConsoleItem
   | ChartLoopItem
-  | ChartVariableItem;
+  | ChartVariableItem
+  | ChartIfItem;
 
 export interface CodeFlowChartDoc {
   items: {

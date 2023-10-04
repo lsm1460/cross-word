@@ -36,10 +36,11 @@ function PanelItem({ itemType }: Props) {
     [ChartItemType.span]: '텍스트를 입력하는 가장 작은 단위 입니다.',
     [ChartItemType.button]: '스크립트 기능을 실행하기 위한 플로우 박스 입니다.',
     [ChartItemType.image]: '이미지를 불러올 수 있는 플로우 박스 입니다.',
-    [ChartItemType.function]: '스크립트 블럭을 만들기 위한 단위입니다.',
+    [ChartItemType.function]: '스크립트를 작성하기 위한 기본 단위입니다.',
     [ChartItemType.loop]: '연결된 Function 블럭을 지정된 횟수 만큼 반복 실행합니다.',
     [ChartItemType.console]: '변수와 함수의 실행 여부 확인을 위해 디버깅 용도로 사용됩니다.',
     [ChartItemType.variable]: '페이지 또는 프로젝트에서 사용할 변수를 담아 놓은 박스 입니다.',
+    [ChartItemType.if]: 'Condition 블럭과 조합하여 특정 함수를 실행하는 분기를 설정 합니다.',
   };
 
   const handleMakeItem = () => {

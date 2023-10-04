@@ -14,6 +14,7 @@ export const CHART_SCRIPT_ITEMS = [
   ChartItemType.console,
   ChartItemType.loop,
   // ChartItemType.variable,
+  ChartItemType.if,
 ];
 
 export const FLOW_CHART_ITEMS_STYLE: {
@@ -24,7 +25,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       right?: ChartItemType[];
       left?: ChartItemType[];
     };
-    backgroundColor: string;
   };
 } = {
   [ChartItemType.body]: {
@@ -33,7 +33,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
     connectionTypeList: {
       right: [ChartItemType.el, ChartItemType.style, ChartItemType.trigger],
     },
-    backgroundColor: '#7b7be8',
   },
   [ChartItemType.button]: {
     width: 200,
@@ -42,7 +41,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.el],
       right: [ChartItemType.span, ChartItemType.style, ChartItemType.trigger],
     },
-    backgroundColor: '#7b7be8',
   },
   [ChartItemType.div]: {
     width: 200,
@@ -51,7 +49,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.el],
       right: [ChartItemType.el, ChartItemType.style, ChartItemType.trigger],
     },
-    backgroundColor: '#7b7be8',
   },
   [ChartItemType.paragraph]: {
     width: 200,
@@ -60,7 +57,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.el],
       right: [ChartItemType.span, ChartItemType.style, ChartItemType.trigger],
     },
-    backgroundColor: '#7b7be8',
   },
   [ChartItemType.span]: {
     width: 200,
@@ -69,7 +65,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.el],
       right: [ChartItemType.style, ChartItemType.trigger],
     },
-    backgroundColor: '#7b7be8',
   },
   [ChartItemType.note]: {
     width: 200,
@@ -78,7 +73,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [],
       right: [],
     },
-    backgroundColor: '#ffe980',
   },
   [ChartItemType.el]: {
     //dummy
@@ -88,7 +82,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [],
       right: [],
     },
-    backgroundColor: '#7b7be8',
   },
   [ChartItemType.image]: {
     width: 200,
@@ -97,7 +90,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.el],
       right: [ChartItemType.style, ChartItemType.trigger],
     },
-    backgroundColor: '#7b7be8',
   },
   [ChartItemType.style]: {
     width: 200,
@@ -106,7 +98,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.el, ChartItemType.style],
       right: [ChartItemType.style],
     },
-    backgroundColor: '#2ec438',
   },
   [ChartItemType.trigger]: {
     width: 200,
@@ -115,7 +106,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.el],
       right: [ChartItemType.function],
     },
-    backgroundColor: '#e36775',
   },
   [ChartItemType.script]: {
     //dummy
@@ -125,7 +115,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [],
       right: [],
     },
-    backgroundColor: '#7b7be8',
   },
   [ChartItemType.function]: {
     width: 200,
@@ -134,7 +123,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.trigger, ChartItemType.function],
       right: [ChartItemType.script],
     },
-    backgroundColor: '#dadada',
   },
   [ChartItemType.console]: {
     width: 200,
@@ -143,7 +131,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.script],
       right: [],
     },
-    backgroundColor: '#dadada',
   },
   [ChartItemType.loop]: {
     width: 200,
@@ -152,7 +139,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.function],
       right: [ChartItemType.function],
     },
-    backgroundColor: '#dadada',
   },
   [ChartItemType.variable]: {
     width: 200,
@@ -161,7 +147,14 @@ export const FLOW_CHART_ITEMS_STYLE: {
       left: [ChartItemType.variable],
       right: [],
     },
-    backgroundColor: '#dadada',
+  },
+  [ChartItemType.if]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.function],
+      right: [],
+    },
   },
 };
 
@@ -204,6 +197,14 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     var: '',
     sceneId: '',
   },
+  [ChartItemType.if]: {
+    conditionList: [
+      {
+        condition: [],
+        functionPoint: null,
+      },
+    ],
+  },
 };
 
 export const CONNECT_POINT_START = 15;
@@ -215,7 +216,7 @@ export const POINT_LIST_PADDING = 0;
 export const TRIGGER_TYPE = ['click', 'hover', 'mouseup', 'mousedown', 'mouseenter', 'mouseleave'];
 
 export const ZOOM_AREA_ELEMENT_ID = 'flowZoomArea';
-export const SELECTOR_CLASS_PREFIX = 'property-select';
+export const SCROLL_CLASS_PREFIX = 'property-scroll';
 export const CONNECT_POINT_CLASS = 'connect-draw-point';
 
 export const ROOT_BLOCK_ID = 'root';

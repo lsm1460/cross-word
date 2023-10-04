@@ -9,6 +9,7 @@ import TextEditBlock from './textEditBlock';
 import VariableEditBlock from './variableEditBlock';
 import { MouseEventHandler, useEffect } from 'react';
 import LoopEditBlock from './loopEditBlock';
+import IfEditBlock from './ifEditBlock';
 
 interface Props {
   chartItem: ChartItems;
@@ -43,6 +44,14 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
             id={chartItem.id}
             loop={chartItem.loop}
             connectionVariables={chartItem.connectionVariables}
+            handlePointConnectStart={handlePointConnectStart}
+          />
+        );
+      case ChartItemType.if:
+        return (
+          <IfEditBlock
+            id={chartItem.id}
+            conditionList={chartItem.conditionList}
             handlePointConnectStart={handlePointConnectStart}
           />
         );

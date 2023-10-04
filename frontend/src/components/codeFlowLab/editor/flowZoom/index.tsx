@@ -2,7 +2,7 @@ import classNames from 'classnames/bind';
 import styles from './flowZoom.module.scss';
 const cx = classNames.bind(styles);
 //
-import { FLOW_CHART_ITEMS_STYLE, SELECTOR_CLASS_PREFIX, ZOOM_AREA_ELEMENT_ID } from '@/consts/codeFlowLab/items';
+import { FLOW_CHART_ITEMS_STYLE, SCROLL_CLASS_PREFIX, ZOOM_AREA_ELEMENT_ID } from '@/consts/codeFlowLab/items';
 import { RootState } from '@/reducers';
 import { getChartItem, getSceneId } from '@/src/utils/content';
 import React, { MouseEventHandler, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
@@ -122,7 +122,7 @@ function FlowZoom({ children }: Props) {
 
   const handleOnScroll = (_event: WheelEvent) => {
     _event.stopPropagation();
-    if ((_event.target as HTMLDivElement).className.includes(SELECTOR_CLASS_PREFIX)) {
+    if ((_event.target as HTMLDivElement).className.includes(SCROLL_CLASS_PREFIX)) {
       return;
     }
 

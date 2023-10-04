@@ -3,7 +3,7 @@ import styles from './optionSelector.module.scss';
 const cx = classNames.bind(styles);
 //
 import { useEffect, useRef, useState } from 'react';
-import { SELECTOR_CLASS_PREFIX } from '@/consts/codeFlowLab/items';
+import { SCROLL_CLASS_PREFIX } from '@/consts/codeFlowLab/items';
 
 interface Option {
   value: string | number;
@@ -59,11 +59,11 @@ function OptionSelector({ options, onChange, defaultValue, isSearchable }: Props
         {selectedOption || '--선택하세요--'}
       </div>
       {isOpen && (
-        <div className={cx('options-container', { [SELECTOR_CLASS_PREFIX]: true })}>
+        <div className={cx('options-container', { [SCROLL_CLASS_PREFIX]: true })}>
           {isSearchable && (
             <input
               ref={searchInputRef}
-              className={cx('search-input', { [SELECTOR_CLASS_PREFIX]: true })}
+              className={cx('search-input', { [SCROLL_CLASS_PREFIX]: true })}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
@@ -71,7 +71,7 @@ function OptionSelector({ options, onChange, defaultValue, isSearchable }: Props
           {filteredOptions.map((option) => (
             <div
               key={option.value}
-              className={cx('option', { [SELECTOR_CLASS_PREFIX]: true })}
+              className={cx('option', { [SCROLL_CLASS_PREFIX]: true })}
               onClick={() => handleOptionClick(option)}
             >
               {option.label}
