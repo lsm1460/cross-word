@@ -49,44 +49,6 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
         const _connectPoint = variableList[_i];
 
         if (_connectPoint) {
-          const [connectType, index] = _connectPoint.id.split('condition-')[1].split('-');
-
-          if (_acc[parseInt(index, 10)]) {
-            return _acc.map((_item, _i) => {
-              if (_i === parseInt(index, 10)) {
-                if (connectType === 'logic') {
-                  return {
-                    ..._item,
-                    condition: [
-                      ..._item.condition,
-                      {
-                        point: _connectPoint,
-                        logical: conditions[_connectPoint.id] || '',
-                      },
-                    ],
-                  };
-                } else {
-                  return {
-                    ..._item,
-                    functionPoint: _connectPoint,
-                  };
-                }
-              }
-
-              return _item;
-            });
-          } else {
-            return [
-              ..._acc,
-              {
-                condition:
-                  connectType === 'logic'
-                    ? [{ point: _connectPoint, logical: conditions[_connectPoint.id] || '' }]
-                    : [],
-                functionPoint: connectType === 'logic' ? null : _connectPoint,
-              },
-            ];
-          }
         } else {
           return _acc;
         }
@@ -118,20 +80,18 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
                     </span>
 
                     <ConnectDot
-                      id={`${id}-condition-logic-${_i}-${_j}`}
                       parentId={id}
                       connectDir={'right'}
                       connectType={ChartItemType.variable}
                       index={_i}
                       typeIndex={_i + _j + 1}
-                      connectId={_conditionItem.point?.connectId}
+                      connectParentId={_conditionItem.point?.connectParentId}
                       handlePointConnectStart={handlePointConnectStart}
                     />
                   </li>
                 ))}
                 <li>
                   <ConnectDot
-                    id={`${id}-condition-logic-${_i}-${_conditionBlock.condition.length}`}
                     parentId={id}
                     connectDir={'right'}
                     connectType={ChartItemType.variable}
@@ -150,14 +110,13 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
                   : ''}
               </span>
               <ConnectDot
-                id={`${id}-condition-func-${_i}-0`}
                 parentId={id}
                 connectDir={'right'}
                 connectType={ChartItemType.function}
                 index={_i}
                 typeIndex={0}
                 handlePointConnectStart={handlePointConnectStart}
-                connectId={_conditionBlock.functionPoint?.id}
+                connectParentId={_conditionBlock.functionPoint?.connectParentId}
               />
             </p>
           </div>

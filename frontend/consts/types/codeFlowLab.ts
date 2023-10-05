@@ -26,9 +26,7 @@ interface FlowScene {
 }
 
 export type ConnectPoint = {
-  id: string;
   parentId: string;
-  connectId: string;
   connectParentId: string;
 };
 
@@ -131,7 +129,7 @@ export interface CodeFlowChartDoc {
 }
 
 export type PointPos = {
-  id: string;
+  el: HTMLElement;
   parentId: string;
   left: number;
   top: number;

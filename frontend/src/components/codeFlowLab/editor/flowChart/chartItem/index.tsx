@@ -11,7 +11,7 @@ import {
   FLOW_CHART_ITEMS_STYLE,
   POINT_LIST_PADDING,
 } from '@/consts/codeFlowLab/items';
-import { ChartItemType, ChartItems, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
+import { ChartItemType, ChartItems, CodeFlowChartDoc, ConnectPoint } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { setDeleteTargetIdListAction, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { useDebounceSubmitText } from '@/src/utils/content';
@@ -89,7 +89,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
             return Array(_pointSize + 1)
               .fill(undefined)
               .map((__, _k) => {
-                const _point = typeGroup[getBlockType(_type, checkDeep)]?.[_k];
+                const _point: ConnectPoint = typeGroup[getBlockType(_type, checkDeep)]?.[_k];
                 const _itemName = _point ? chartItems[_point.connectParentId].name : '';
 
                 return (
@@ -108,14 +108,13 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
                       className={cx('dot', `${getBlockType(itemInfo.elType, true)}-${_type}`, {
                         [CONNECT_POINT_CLASS]: true,
                       })}
-                      id={`${itemInfo.id}-dot-${_x}-${_j}-${_k}`}
                       data-connect-dir={_x}
                       data-parent-id={itemInfo.id}
                       data-index={_j}
                       data-type-index={_k}
                       data-connect-type={_type}
                       {...(_point && {
-                        'data-connect-id': _point.connectId,
+                        'data-connect-parent-id': _point.connectParentId,
                       })}
                       style={{
                         width: CONNECT_POINT_SIZE,

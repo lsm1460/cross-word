@@ -89,7 +89,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const { x: convertedX, y: convertedY } = convertClientPosToLocalPos({ x: left + width / 2, y: top + width / 2 });
 
     return {
-      id: _el.id,
+      el: _el,
       parentId: _el.dataset.parentId,
       left: convertedX - _transX,
       top: convertedY - _transY,
@@ -119,19 +119,22 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const connected = [],
       result = [];
 
-    const pointList = document.querySelectorAll(`.${CONNECT_POINT_CLASS}[data-connect-id]`);
+    const pointList = document.querySelectorAll(`.${CONNECT_POINT_CLASS}[data-connect-parent-id]`);
 
     for (let _i = 0; _i < pointList.length; _i++) {
       const pointEl = pointList[_i] as HTMLElement;
 
-      const connedtedIds = [pointEl.id, pointEl.dataset.connectId].sort().join('-');
+      const connedtedIds = [pointEl.dataset.parentId, pointEl.dataset.connectParentId].sort().join('-');
 
       if (connected.includes(connedtedIds)) {
         continue;
       } else {
         connected.push(connedtedIds);
 
-        result.push([makePointPosByEl(pointEl), makePointPosByEl(document.getElementById(pointEl.dataset.connectId))]);
+        const connectedEl = document.querySelector(
+          `[data-parent-id=${pointEl.dataset.connectParentId}][data-connect-parent-id=${pointEl.dataset.parentId}]`
+        ) as HTMLElement;
+        result.push([makePointPosByEl(pointEl), makePointPosByEl(connectedEl)]);
       }
     }
 
@@ -224,14 +227,14 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
       lineCanvasCtx.clearRect(0, 0, lineCanvasRef.current.width, lineCanvasRef.current.height);
 
-      const originPoint = makePointPosByEl(document.getElementById(selectedConnectionPoint.current.id));
+      const originPoint = makePointPosByEl(selectedConnectionPoint.current.el);
 
       let connectedPoint;
 
       if (pointMove.el) {
         const targetPoint = makePointPosByEl(pointMove.el);
 
-        const isAbleConnect = checkConnectable(selectedConnectionPoint.current.id, targetPoint.id);
+        const isAbleConnect = checkConnectable(selectedConnectionPoint.current.el, targetPoint.el);
         if (isAbleConnect) {
           connectedPoint = targetPoint;
         }
@@ -266,15 +269,15 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const isSkip =
       disconnectionPoint.current &&
       _type === 'connected' &&
-      ((_origin.id === disconnectionPoint.current.id && _origin.typeIndex === disconnectionPoint.current.typeIndex) ||
-        (_next?.id === disconnectionPoint.current.id && _next?.typeIndex === disconnectionPoint.current.typeIndex));
+      ((_origin.el === disconnectionPoint.current.el && _origin.typeIndex === disconnectionPoint.current.typeIndex) ||
+        (_next?.el === disconnectionPoint.current.el && _next?.typeIndex === disconnectionPoint.current.typeIndex));
 
     if (!isSkip) {
       _ctx.beginPath();
       _ctx.moveTo(_origin.left + transX, _origin.top + transY);
     }
 
-    if (_next && _next.id !== _origin.id) {
+    if (_next && _next.el !== _origin.el) {
       let horDir: 'right' | 'left' = null;
 
       if (_next.left - _origin.left > 0) {
@@ -368,29 +371,30 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     return isLoop;
   };
 
-  const checkConnectable = (_originId: string, _targetId: string): boolean => {
-    if (!_targetId || !_originId) {
+  const checkConnectable = (_originEl: HTMLElement, _targetEl: HTMLElement): boolean => {
+    if (!(_originEl.classList.contains(CONNECT_POINT_CLASS) && _targetEl.classList.contains(CONNECT_POINT_CLASS))) {
       // 아이디 유무확인
       return false;
     }
 
-    console.log('_originId', _originId);
-
     const {
       parentId: originParentId,
       connectDir: originConnectDir,
-      connectId: originConnectId,
       connectType: originConnectType,
-    } = document.getElementById(_originId).dataset;
+    } = _originEl.dataset;
 
     const {
       parentId: targetParentId,
       connectDir: targetConnectDir,
       connectType: targetConnectType,
-    } = document.getElementById(_targetId).dataset;
+    } = _targetEl.dataset;
 
     // 이미 연결된 점 확인
-    if (originConnectId === _targetId) {
+    const connectedIdList = selectedChartItem[originParentId].connectionIds[originConnectDir as 'left' | 'right'].map(
+      (_point) => _point.connectParentId
+    );
+
+    if (connectedIdList.includes(targetParentId)) {
       return false;
     }
 
@@ -613,7 +617,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     if (selectedConnectionPoint.current) {
       const { x: _transX, y: _transY } = scrollTransRef.current;
 
-      const _connected = checkConnectable(selectedConnectionPoint.current.id, _upEl.id);
+      const _connected = checkConnectable(selectedConnectionPoint.current.el, _upEl);
 
       let connectPoint: PointPos;
 

@@ -8,9 +8,7 @@ const getConnectionIds = (_connectionIds: ChartItem['connectionIds'], _aPos: Poi
     [_aPos.connectDir]: [
       ..._connectionIds[_aPos.connectDir],
       {
-        id: _aPos.id,
         parentId: _aPos.parentId,
-        connectId: _bPos.id,
         connectParentId: _bPos.parentId,
       },
     ],
@@ -20,7 +18,7 @@ const getConnectionIds = (_connectionIds: ChartItem['connectionIds'], _aPos: Poi
 const getDisconnectIds = (_connectionIds: ChartItem['connectionIds'], _aPos: PointPos, _bPos: PointPos) => {
   return {
     ..._connectionIds,
-    [_aPos.connectDir]: _connectionIds[_aPos.connectDir].filter((_point) => _point.connectId !== _bPos.id),
+    [_aPos.connectDir]: _connectionIds[_aPos.connectDir].filter((_point) => _point.connectParentId !== _bPos.parentId),
   };
 };
 
@@ -30,16 +28,14 @@ const getChangeConnectIds = (
   _bPos: PointPos,
   _cPos: PointPos
 ) => {
-  const deletedIdList = _connectionIds[_aPos.connectDir].filter((_point) => _point.connectId !== _cPos.id);
+  const deletedIdList = _connectionIds[_aPos.connectDir].filter((_point) => _point.connectParentId !== _cPos.parentId);
 
   return {
     ..._connectionIds,
     [_aPos.connectDir]: [
       ...deletedIdList,
       {
-        id: _aPos.id,
         parentId: _aPos.parentId,
-        connectId: _bPos.id,
         connectParentId: _bPos.parentId,
       },
     ],
@@ -51,7 +47,7 @@ const getConnectionVariables = (
   _aPos: PointPos,
   _bPos: PointPos
 ) => {
-  const { typeIndex: variableIndex } = document.getElementById(_aPos.id).dataset;
+  const { typeIndex: variableIndex } = _aPos.el.dataset;
   const _variableIndex = parseInt(variableIndex);
 
   const _variablesSize =
@@ -60,9 +56,7 @@ const getConnectionVariables = (
   return new Array(_variablesSize).fill(undefined).map((_v, _i) => {
     if (_variableIndex === _i) {
       return {
-        id: _aPos.id,
         parentId: _aPos.parentId,
-        connectId: _bPos.id,
         connectParentId: _bPos.parentId,
       };
     } else {
@@ -72,7 +66,7 @@ const getConnectionVariables = (
 };
 
 const getDisconnectVariables = (_connectionVariables: ChartItem['connectionVariables'], _variablePos: PointPos) => {
-  return _connectionVariables.map((_point) => (_point?.connectId === _variablePos.id ? undefined : _point));
+  return _connectionVariables.map((_point) => (_point?.connectParentId === _variablePos.parentId ? undefined : _point));
 };
 
 const getChangeConnectVariables = (
@@ -81,21 +75,19 @@ const getChangeConnectVariables = (
   _bPos: PointPos,
   _cPos: PointPos
 ) => {
-  const { index: variableIndex } = document.getElementById(_aPos.id).dataset;
+  const { index: variableIndex } = _aPos.el.dataset;
   const _variableIndex = parseInt(variableIndex);
 
   const _variablesSize =
     _connectionVariables.length > _variableIndex + 1 ? _connectionVariables.length : _variableIndex + 1;
 
-  const { index: deletePosIndex } = document.getElementById(_cPos.id).dataset;
+  const { index: deletePosIndex } = _cPos.el.dataset;
   const _deletePosIndex = parseInt(deletePosIndex);
 
   return new Array(_variablesSize).fill(undefined).map((__, _i) => {
     if (_i === _variableIndex) {
       return {
-        id: _aPos.id,
         parentId: _aPos.parentId,
-        connectId: _bPos.id,
         connectParentId: _bPos.parentId,
       };
     } else if (_i === _deletePosIndex) {

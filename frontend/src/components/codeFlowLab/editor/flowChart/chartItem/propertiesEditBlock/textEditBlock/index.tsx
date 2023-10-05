@@ -89,7 +89,7 @@ function TextEditBlock({ id, text, propertyKey, pointInfo, label, inputType = 't
           data-index={0}
           data-type-index={pointInfo?.pointIndex || 0}
           {...(pointInfo.connectPoint && {
-            'data-connect-id': pointInfo.connectPoint.connectId,
+            'data-connect-parent-id': pointInfo.connectPoint.connectParentId,
           })}
           onMouseDown={pointInfo.handlePointConnectStart}
         />
