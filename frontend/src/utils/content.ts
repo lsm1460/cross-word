@@ -5,6 +5,7 @@ import { ChartItemType, ChartVariableItem, CodeFlowChartDoc } from '@/consts/typ
 import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { nanoid } from 'nanoid';
 import { useDispatch } from 'react-redux';
+export * from './connect-point';
 
 interface imageSize {
   width: number;

@@ -6,13 +6,17 @@
   text-transform: capitalize;
 }
 
-.property-scroll-area {
-  max-height: 250px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  width: calc(100% + 10px);
+.condition-title {
+  color: #9a9a9a;
+  font-size: 13px;
+}
 
-  @include scroll-bar;
+.condition-title + .property-wrap {
+  margin-top: 5px;
+}
+
+.property-wrap + .condition-title {
+  margin-top: 15px;
 }
 
 .property-wrap {
@@ -21,18 +25,47 @@
   border-left: 1px solid #4c4c4c;
   pointer-events: none;
 
-  + .property-wrap {
-    margin-top: 15px;
-  }
-
   .condition-list {
     margin-bottom: 15px;
 
     li {
-      margin-right: 10px;
+      padding-left: 10px;
       position: relative;
       height: 25px;
+
+      .item-name {
+        white-space: nowrap;
+        font-size: 13px;
+        color: #a1a1a1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-family: sans-serif;
+        display: inline-block;
+        width: 100px;
+        vertical-align: middle;
+      }
+
+      .logical {
+        border: none;
+        border-radius: 3px;
+        padding: 2px 5px;
+        pointer-events: all;
+        background-color: #2a6bc8;
+        color: #ffffff;
+        font-size: 12px;
+        margin-right: 6px;
+        cursor: pointer;
+
+        &:hover,
+        &:active {
+          background-color: #235397;
+        }
+      }
     }
+  }
+
+  .function-connector {
+    position: relative;
   }
 }
 

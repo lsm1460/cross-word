@@ -101,9 +101,8 @@ export interface ChartVariableItem extends ChartItem {
 
 export interface ChartIfItem extends ChartItem {
   elType: ChartItemType.if;
-  conditionList: {
-    condition: { point: ConnectPoint; logical: '' }[];
-    functionPoint: ConnectPoint;
+  conditions: {
+    [_posId: string]: '' | '&&' | '||';
   }[];
 }
 

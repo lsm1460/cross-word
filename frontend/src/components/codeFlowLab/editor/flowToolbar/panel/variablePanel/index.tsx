@@ -44,7 +44,7 @@ function VariablePanel({ isSubOpen, setIsSubOpen }: Props) {
         </label>
         <ul>
           {Object.values(globalVariables).map((_item: ChartVariableItem) => (
-            <li>
+            <li key={_item.id}>
               <VariablePanelItem chartItem={_item} />
             </li>
           ))}

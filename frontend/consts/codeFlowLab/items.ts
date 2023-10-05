@@ -198,12 +198,8 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     sceneId: '',
   },
   [ChartItemType.if]: {
-    conditionList: [
-      {
-        condition: [],
-        functionPoint: null,
-      },
-    ],
+    connectionVariables: [],
+    conditions: {},
   },
 };
 

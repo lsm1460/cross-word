@@ -75,7 +75,7 @@ function* handleDeleteBlock({ payload }: { type: string; payload: string[] }) {
     },
     ...(_item.connectionVariables && {
       connectionVariables: _item.connectionVariables.map((_point) =>
-        payload.includes(_point.connectParentId) ? undefined : _point
+        payload.includes(_point?.connectParentId) ? undefined : _point
       ),
     }),
   }));

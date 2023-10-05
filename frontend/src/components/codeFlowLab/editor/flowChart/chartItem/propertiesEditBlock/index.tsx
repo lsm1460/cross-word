@@ -51,7 +51,8 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
         return (
           <IfEditBlock
             id={chartItem.id}
-            conditionList={chartItem.conditionList}
+            conditions={chartItem.conditions}
+            connectionVariables={chartItem.connectionVariables}
             handlePointConnectStart={handlePointConnectStart}
           />
         );

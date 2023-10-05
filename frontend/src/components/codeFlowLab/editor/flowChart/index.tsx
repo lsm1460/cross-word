@@ -319,8 +319,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         _ctx.lineTo(rightPos + GAP + transX, _next.top + transY);
       }
       _ctx.lineTo(_next.left + transX, _next.top + transY);
-    } else if (selectedConnectionPoint.current) {
-      _type === 'connected' && console.log('here?', selectedConnectionPoint.current);
+    } else if (_type === 'line' && selectedConnectionPoint.current) {
       _ctx.lineTo(selectedConnectionPoint.current.left + transX, selectedConnectionPoint.current.top + transY);
     }
 
@@ -374,6 +373,8 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       // 아이디 유무확인
       return false;
     }
+
+    console.log('_originId', _originId);
 
     const {
       parentId: originParentId,
@@ -471,12 +472,10 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         // 다중 선택이 있을 때 컨트롤 키가 눌러져 있다면 그 아이템을 선택취소한다.
         setMultiSelectedItemList((_prev) => _.pickBy(_prev, (_v, _itemId) => _itemId !== _selectedItem.id));
       } else {
-        console.log('dma');
         // 다중 선택일 때 컨트롤 키가 눌러져 있지 않다면 그 아이템을 기준으로 움직인다.
         selectedItemId.current = _selectedItem.id;
       }
     } else {
-      console.log('dj?', multiSelectedIdListClone.current);
       // 다중 선택된 아이템이 없을 때
       setMultiSelectedItemList((_prev) => {
         if (_event.ctrlKey) {
