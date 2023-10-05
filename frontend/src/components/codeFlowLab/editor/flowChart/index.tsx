@@ -511,11 +511,15 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       const dotEl = _event.target as HTMLSpanElement;
       const selectedPoint = makePointPosByEl(dotEl);
 
-      const _connectId = dotEl.dataset.connectId;
+      const _connect = dotEl.dataset.connectParentId;
 
-      if (_connectId) {
+      if (_connect) {
         // 이미 연결된 포인트를 분리시켜야 함
-        selectedConnectionPoint.current = makePointPosByEl(document.getElementById(_connectId));
+        const connectedEl = document.querySelector(
+          `[data-parent-id=${dotEl.dataset.connectParentId}][data-connect-parent-id=${dotEl.dataset.parentId}]`
+        ) as HTMLElement;
+
+        selectedConnectionPoint.current = makePointPosByEl(connectedEl);
         disconnectionPoint.current = selectedPoint;
 
         setPointMove({ x: _event.clientX, y: _event.clientY });
