@@ -276,14 +276,36 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       _ctx.moveTo(_origin.left + transX, _origin.top + transY);
     }
 
+    _ctx.strokeStyle = '#ff0000';
+
     if (_next && _next.el !== _origin.el) {
+      const _sortedType = _.sortBy([_next.connectType, _origin.connectType]);
+
+      if (_sortedType.includes(ChartItemType.style)) {
+        _ctx.strokeStyle = '#2ec438';
+      } else if (_sortedType.includes(ChartItemType.span)) {
+        _ctx.strokeStyle = '#a764db';
+      } else if (_sortedType.includes(ChartItemType.variable)) {
+        _ctx.strokeStyle = '#ffc95c';
+      } else if (
+        _sortedType.includes(ChartItemType.script) ||
+        _.isEqual(_sortedType, [ChartItemType.function, ChartItemType.function])
+      ) {
+        _ctx.strokeStyle = '#dadada';
+      } else if (_sortedType.includes(ChartItemType.function)) {
+        _ctx.strokeStyle = '#cd823d';
+      } else if (_sortedType.includes(ChartItemType.trigger)) {
+        _ctx.strokeStyle = '#e36775';
+      } else if (_sortedType.includes(ChartItemType.el)) {
+        _ctx.strokeStyle = '#7b7be8';
+      }
+
       _ctx.lineTo(_next.left + transX, _next.top + transY);
     } else if (_type === 'line' && selectedConnectionPoint.current) {
       _ctx.lineTo(selectedConnectionPoint.current.left + transX, selectedConnectionPoint.current.top + transY);
     }
 
     if (!isSkip) {
-      _ctx.strokeStyle = '#ff0000';
       _ctx.stroke();
     }
   };
@@ -548,12 +570,16 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
       lineCanvasCtx.beginPath();
 
+      lineCanvasCtx.save();
+
       lineCanvasCtx.fillStyle = 'red';
       lineCanvasCtx.globalAlpha = 0.2;
 
       const _endPos = _multiSelectEndPos.map((_p, _i) => _p - multiSelectBoxStartPos.current[_i]) as [number, number];
 
       lineCanvasCtx.fillRect(...multiSelectBoxStartPos.current, ..._endPos);
+
+      lineCanvasCtx.restore();
     }
   };
 

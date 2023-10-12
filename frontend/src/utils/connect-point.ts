@@ -239,7 +239,9 @@ export const getConnectOperationsForVariable = (
   ]);
 
   // 블록과 변수 간 연결상황일 때
-  const variablePosIndex = targetEltypeList.indexOf(ChartItemType.variable);
+  let variablePosIndex = targetEltypeList.indexOf(ChartItemType.variable);
+  variablePosIndex = variablePosIndex === -1 ? targetEltypeList.indexOf(ChartItemType.condition) : variablePosIndex;
+
   const _targetPosList = _.compact([_prevPos, _nextPos, _deletePos]);
   const variablePos = _targetPosList[variablePosIndex];
   const targetPos = _targetPosList[Number(!variablePosIndex)];
@@ -248,6 +250,8 @@ export const getConnectOperationsForVariable = (
     const targetItems = _.pickBy(selectedChartItem, (_item) =>
       [_prevPos.parentId, _nextPos.parentId].includes(_item.id)
     );
+
+    console.log('??', variablePos);
 
     // 변수 아이템은 connectionIds에 할당
     newTargetItems = _.mapValues(targetItems, (_item) => ({
@@ -310,7 +314,15 @@ export const getConnectOperationsForVariable = (
 
   if (newTargetItems) {
     return Object.values(newTargetItems).map((_item) => {
-      const _changeKey = _item.connectionVariables ? 'connectionVariables' : 'connectionIds';
+      let _changeKey;
+
+      if (_item.id === variablePos.parentId) {
+        _changeKey = 'connectionIds';
+      } else if (_item.connectionVariables) {
+        _changeKey = 'connectionVariables';
+      } else {
+        _changeKey = 'connectionIds';
+      }
 
       return {
         key: `items.${_item.id}.${_changeKey}`,

@@ -3,13 +3,14 @@ import styles from './propertiesEditBlock.module.scss';
 const cx = classNames.bind(styles);
 //
 import { ChartItemType, ChartItems } from '@/consts/types/codeFlowLab';
-import StyleEditBlock from './styleEditBlock';
-import TriggerEditBlock from './triggerEditBlock';
-import TextEditBlock from './textEditBlock';
-import VariableEditBlock from './variableEditBlock';
-import { MouseEventHandler, useEffect } from 'react';
-import LoopEditBlock from './loopEditBlock';
+import { MouseEventHandler } from 'react';
+import ConditionEditBlock from './conditionEditBlock';
 import IfEditBlock from './ifEditBlock';
+import LoopEditBlock from './loopEditBlock';
+import StyleEditBlock from './styleEditBlock';
+import TextEditBlock from './textEditBlock';
+import TriggerEditBlock from './triggerEditBlock';
+import VariableEditBlock from './variableEditBlock';
 
 interface Props {
   chartItem: ChartItems;
@@ -51,6 +52,16 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
         return (
           <IfEditBlock
             id={chartItem.id}
+            conditions={chartItem.conditions}
+            connectionVariables={chartItem.connectionVariables}
+            handlePointConnectStart={handlePointConnectStart}
+          />
+        );
+      case ChartItemType.condition:
+        return (
+          <ConditionEditBlock
+            id={chartItem.id}
+            textList={chartItem.textList}
             conditions={chartItem.conditions}
             connectionVariables={chartItem.connectionVariables}
             handlePointConnectStart={handlePointConnectStart}

@@ -88,7 +88,9 @@ function CodeFlowLabEditor() {
     ]);
     //_prevPos, _nextPos, _deletePos의 id로 elType을 가져온 후 변수일 경우
     const isIfFlog = targetEltypeList.includes(ChartItemType.if);
-    const isVariableFlag = targetEltypeList.includes(ChartItemType.variable);
+    const isVariableFlag = !_.isEmpty(
+      _.intersection(targetEltypeList, [ChartItemType.variable, ChartItemType.condition])
+    );
 
     if (isIfFlog) {
       operations = getConnectOperationsForCondition(selectedChartItem, _prevPos, _nextPos, _deletePos);

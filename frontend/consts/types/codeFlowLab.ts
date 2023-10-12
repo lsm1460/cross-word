@@ -109,9 +109,8 @@ export interface ChartIfItem extends ChartItem {
 
 export interface ChartConditionItem extends ChartItem {
   elType: ChartItemType.condition;
-  conditions: {
-    [_posId: string]: '' | '==' | '!=';
-  }[];
+  textList: string[];
+  conditions: '==' | '!=' | '&&' | '||';
 }
 
 export type ChartItems =
