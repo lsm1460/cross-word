@@ -104,8 +104,12 @@ export function getRectPoints(element: HTMLElement): IPoint[] {
   ];
 }
 
+export const checkVariableBlock = (_elType: ChartItemType) => {
+  return [ChartItemType.variable, ChartItemType.condition].includes(_elType);
+};
+
 export const getBlockType = (_elType, _isDeep = false) => {
-  if (_elType === ChartItemType.variable) {
+  if (checkVariableBlock(_elType)) {
     return _elType;
   }
 

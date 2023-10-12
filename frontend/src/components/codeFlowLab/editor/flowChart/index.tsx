@@ -96,6 +96,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       index: parseInt(_el.dataset.index, 10),
       typeIndex: parseInt(_el.dataset.typeIndex, 10),
       connectDir: _el.dataset.connectDir as 'left' | 'right',
+      connectType: _el.dataset.connectType as ChartItemType,
     };
   };
 
@@ -264,8 +265,6 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     _origin: PointPos,
     _next?: PointPos
   ) => {
-    const GAP = 20;
-
     const isSkip =
       disconnectionPoint.current &&
       _type === 'connected' &&
@@ -278,49 +277,6 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     }
 
     if (_next && _next.el !== _origin.el) {
-      let horDir: 'right' | 'left' = null;
-
-      if (_next.left - _origin.left > 0) {
-        // right
-        horDir = 'right';
-      } else if (_next.left - _origin.left < 0) {
-        // left
-        horDir = 'left';
-      } else {
-        // fixed x
-      }
-
-      if (isSkip) {
-        // do noting..
-      } else if (_origin.connectDir === 'right' && horDir === 'right' && _next.connectDir === 'right') {
-        _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _origin.top);
-        _ctx.lineTo(_origin.left + Math.max(_next.left - _origin.left, 0) + GAP, _next.top);
-      } else if (
-        (_origin.connectDir === 'right' && horDir === 'right' && _next.connectDir === 'left') ||
-        (_origin.connectDir === 'left' && horDir === 'left' && _next.connectDir === 'right')
-      ) {
-        const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
-        const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
-
-        _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0) + transX, _origin.top + transY);
-        _ctx.lineTo(leftPos + Math.max((rightPos - leftPos) / 2, 0) + transX, _next.top + transY);
-      } else if (_origin.connectDir === 'right' && horDir === 'left' && _next.connectDir === 'left') {
-        const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
-        const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
-
-        _ctx.lineTo(rightPos + GAP, _origin.top);
-        _ctx.lineTo(rightPos + GAP, Math.max((_next.top + _origin.top) / 2, 0));
-        _ctx.lineTo(leftPos - GAP, Math.max((_next.top + _origin.top) / 2, 0));
-        _ctx.lineTo(leftPos - GAP, _next.top);
-      } else if (_origin.connectDir === 'left' && horDir === 'right' && _next.connectDir === 'right') {
-        const rightPos = _next.left > _origin.left ? _next.left : _origin.left;
-        const leftPos = _next.left <= _origin.left ? _next.left : _origin.left;
-
-        _ctx.lineTo(leftPos - GAP + transX, _origin.top + transY);
-        _ctx.lineTo(leftPos - GAP + transX, Math.max((_next.top + _origin.top) / 2, 0) + transY);
-        _ctx.lineTo(rightPos + GAP + transX, Math.max((_next.top + _origin.top) / 2, 0) + transY);
-        _ctx.lineTo(rightPos + GAP + transX, _next.top + transY);
-      }
       _ctx.lineTo(_next.left + transX, _next.top + transY);
     } else if (_type === 'line' && selectedConnectionPoint.current) {
       _ctx.lineTo(selectedConnectionPoint.current.left + transX, selectedConnectionPoint.current.top + transY);
@@ -502,6 +458,10 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   const handlePointConnectStart: MouseEventHandler<HTMLSpanElement> = useCallback(
     (_event) => {
+      if (_event.button !== 0) {
+        return;
+      }
+
       _event.stopPropagation();
 
       // 초기화

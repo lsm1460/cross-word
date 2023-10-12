@@ -8,7 +8,7 @@
 
   &.selected {
     border: 1px solid $other-point-color;
-    transform: scale(1.1);
+    transform: scale(1.05);
     z-index: 999 !important;
 
     &.element {
@@ -186,7 +186,8 @@
             background-color: $trigger-function-point-color;
           }
 
-          &.variable-variable::before {
+          &.variable-variable::before,
+          &.condition-variable::before {
             background-color: $variable-point-color;
           }
         }

@@ -41,6 +41,7 @@ function PanelItem({ itemType }: Props) {
     [ChartItemType.console]: '변수와 함수의 실행 여부 확인을 위해 디버깅 용도로 사용됩니다.',
     [ChartItemType.variable]: '페이지 또는 프로젝트에서 사용할 변수를 담아 놓은 박스 입니다.',
     [ChartItemType.if]: 'Condition 블럭과 조합하여 특정 함수를 실행하는 분기를 설정 합니다.',
+    [ChartItemType.condition]: '변수 블럭과 조합하여 참/거짓을 반환합니다.',
   };
 
   const handleMakeItem = () => {

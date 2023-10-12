@@ -15,7 +15,7 @@ interface Props {
   setIsSubOpen: Dispatch<SetStateAction<boolean>>;
 }
 function VariablePanel({ isSubOpen, setIsSubOpen }: Props) {
-  const itemList = [ChartItemType.variable];
+  const itemList = [ChartItemType.variable, ChartItemType.condition];
 
   const globalVariables = useSelector(
     (state: RootState) =>

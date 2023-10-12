@@ -18,6 +18,7 @@ export enum ChartItemType {
   script = 'script',
   variable = 'variable',
   if = 'if',
+  condition = 'condition',
 }
 
 interface FlowScene {
@@ -28,6 +29,8 @@ interface FlowScene {
 export type ConnectPoint = {
   parentId: string;
   connectParentId: string;
+  connectType: ChartItemType;
+  index: number;
 };
 
 export interface ChartItem {
@@ -101,6 +104,13 @@ export interface ChartIfItem extends ChartItem {
   elType: ChartItemType.if;
   conditions: {
     [_posId: string]: '' | '&&' | '||';
+  };
+}
+
+export interface ChartConditionItem extends ChartItem {
+  elType: ChartItemType.condition;
+  conditions: {
+    [_posId: string]: '' | '==' | '!=';
   }[];
 }
 
@@ -114,7 +124,8 @@ export type ChartItems =
   | ChartConsoleItem
   | ChartLoopItem
   | ChartVariableItem
-  | ChartIfItem;
+  | ChartIfItem
+  | ChartConditionItem;
 
 export interface CodeFlowChartDoc {
   items: {
@@ -136,8 +147,8 @@ export type PointPos = {
   index: number;
   typeIndex: number;
   connectDir: 'right' | 'left';
+  connectType: ChartItemType;
   // connectionIds: string[];
-  // connectElType: ChartItemType;
 };
 
 export interface ScriptTriggerItem extends ChartTriggerItem {
@@ -151,11 +162,7 @@ export interface ScriptConsoleItem extends ChartConsoleItem {
   script: ScriptItem[];
 }
 
-export interface ScriptVariableItem extends ChartVariableItem {
-  script: ScriptItem[];
-}
-
-export type ScriptItem = ScriptTriggerItem | ScriptLoopItem | ScriptConsoleItem | ScriptVariableItem;
+export type ScriptItem = ScriptTriggerItem | ScriptLoopItem | ScriptConsoleItem;
 
 export interface ViewerItem extends ChartItem {
   children: ViewerItem[];

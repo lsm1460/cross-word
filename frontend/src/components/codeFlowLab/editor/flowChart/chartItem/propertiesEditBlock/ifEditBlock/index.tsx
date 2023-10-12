@@ -5,11 +5,11 @@ const cx = classNames.bind(styles);
 import { SCROLL_CLASS_PREFIX } from '@/consts/codeFlowLab/items';
 import { ChartIfItem, ChartItemType, ConnectPoint } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
-import { MouseEventHandler, useEffect, useMemo } from 'react';
+import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import _ from 'lodash';
+import { MouseEventHandler, useMemo, useState } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import ConnectDot from '../../connectDot';
-import _ from 'lodash';
-import React from 'react';
 
 interface Props {
   id: string;
@@ -22,47 +22,94 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
 
   const chartItems = useSelector((state: RootState) => state.mainDocument.contentDocument.items, shallowEqual);
 
-  const conditionList: {
-    condition: { point: ConnectPoint; logical: '' }[];
-    functionPoint: ConnectPoint;
-  }[] = useMemo(() => {
+  const [isActiveElse, setIsActiveElse] = useState(false);
+
+  const conditionList = useMemo(() => {
     const variableList = _.compact(connectionVariables);
 
-    return new Array(variableList.length + 1).fill(undefined).reduce(
-      (
-        _acc: {
-          condition: { point: ConnectPoint; logical: '' }[];
-          functionPoint: ConnectPoint;
-        }[],
-        _cur: ConnectPoint,
-        _i
-      ) => {
-        if (variableList.length < 1) {
-          return [
-            {
-              condition: [],
-              functionPoint: null,
-            },
-          ];
-        }
-
-        const _connectPoint = variableList[_i];
-
-        if (_connectPoint) {
-        } else {
-          return _acc;
-        }
-      },
-      []
+    const _indexGroup = _.groupBy(variableList, (_var) => _var.index);
+    const _typeGroup = _.mapValues(_indexGroup, (_indexGroupVar) =>
+      _.groupBy(_indexGroupVar, (__var) => __var.connectType)
     );
-  }, [conditions, connectionVariables]);
 
-  const handleAddProperty = () => {};
+    return new Array(1 + (isActiveElse ? 1 : 0)).fill(undefined).map((__, _i) => {
+      const condition = (_typeGroup[_i]?.[ChartItemType.variable] || []).map((_point) => ({
+        point: _point,
+        logical: conditions[_point.connectParentId],
+      }));
+
+      if (_typeGroup[_i]) {
+        return {
+          condition,
+          functionPoint: _typeGroup[_i][ChartItemType.function]?.[0],
+        };
+      } else {
+        return {
+          condition: [],
+          functionPoint: null,
+        };
+      }
+    });
+  }, [conditions, connectionVariables, isActiveElse]);
+
+  const handleAddProperty = () => {
+    setIsActiveElse(true);
+  };
+
+  const handleInactiveElse = () => {
+    if (!conditionList[1]) {
+      return;
+    }
+
+    const connectedIdList = [
+      ...conditionList[1].condition.map(({ point }) => point.connectParentId),
+      conditionList[1].functionPoint.connectParentId,
+    ];
+
+    let operations: Operation[] = [
+      {
+        key: `items.${id}.connectionVariables`,
+        value: _.compact(connectionVariables).filter((_var) => !connectedIdList.includes(_var.connectParentId)),
+      },
+      {
+        key: `items.${id}.conditions`,
+        value: _.pickBy(conditions, (_val, _key) => !connectedIdList.includes(_key)),
+      },
+    ];
+
+    const itemDisconnectOperations: Operation[] = connectedIdList.map((_id) => ({
+      key: `items.${_id}.connectionIds.left`,
+      value: chartItems[_id].connectionIds['left'].filter((_pos) => _pos.connectParentId !== id),
+    }));
+
+    operations = [...operations, ...itemDisconnectOperations];
+
+    dispatch(setDocumentValueAction(operations));
+  };
+
+  const toggleLogical = (_connectedId: string, _logical = '&&') => {
+    const logical = _logical === '&&' ? '||' : '&&';
+
+    let operation: Operation = {
+      key: `items.${id}.conditions`,
+      value: {
+        ...conditions,
+        [_connectedId]: logical,
+      },
+    };
+
+    dispatch(setDocumentValueAction(operation));
+  };
 
   return (
     <div>
       {(conditionList || []).map((_conditionBlock, _i) => (
-        <React.Fragment key={_i}>
+        <div key={_i} className={cx('condition-box')}>
+          {_i !== 0 && (
+            <button className={cx('delete-button')} onClick={handleInactiveElse}>
+              <i className="material-symbols-outlined">close</i>
+            </button>
+          )}
           <p className={cx('condition-title')}>{_i === 0 ? 'IF' : 'ELSE'}</p>
           <div key={_i} className={cx('property-wrap')}>
             <div className={cx('condition-list')}>
@@ -71,8 +118,11 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
                 {_conditionBlock.condition.map((_conditionItem, _j) => (
                   <li key={_j}>
                     {_j !== 0 && (
-                      <button className={cx('logical', { [SCROLL_CLASS_PREFIX]: true })}>
-                        {_conditionItem.logical}
+                      <button
+                        className={cx('logical', { [SCROLL_CLASS_PREFIX]: true })}
+                        onClick={() => toggleLogical(_conditionItem.point.connectParentId, _conditionItem.logical)}
+                      >
+                        {_conditionItem.logical || '&&'}
                       </button>
                     )}
                     <span className={cx('item-name')}>
@@ -120,7 +170,7 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
               />
             </p>
           </div>
-        </React.Fragment>
+        </div>
       ))}
 
       {(conditionList || []).length < 2 && (

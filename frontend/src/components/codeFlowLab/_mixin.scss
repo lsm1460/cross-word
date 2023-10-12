@@ -67,7 +67,8 @@
     background-color: $function-point-color;
   }
 
-  &.variable::before {
+  &.variable::before,
+  &.condition::before {
     background-color: $variable-point-color;
   }
 }

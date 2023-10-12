@@ -18,7 +18,7 @@ import { useDebounceSubmitText } from '@/src/utils/content';
 import _ from 'lodash';
 import { KeyboardEventHandler, MouseEventHandler, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getBlockType, getConnectSizeByType } from '../utils';
+import { checkVariableBlock, getBlockType, getConnectSizeByType } from '../utils';
 import PropertiesEditBlock from './propertiesEditBlock';
 
 interface Props {
@@ -69,7 +69,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
     return Object.keys(FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectionTypeList).map((_x, _i) => {
       const typeGroup = _.groupBy(itemInfo.connectionIds[_x], (_point) => {
         // 일반적으로는 그룹 별로 묶지만, 변수의 경우 다양한 블록들과 그룹지어 연결하지 않기 때문에 분기처리 추가
-        if (itemInfo.elType === ChartItemType.variable) {
+        if (checkVariableBlock(itemInfo.elType)) {
           return ChartItemType.variable;
         }
 
@@ -82,7 +82,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
             let _pointSize = connectSizeByType[_x][getBlockType(_type, checkDeep)] || 0;
 
             // 일반적으로는 그룹 별로 묶인 수 + 1로 연결점의 수 정의되지만, 변수의 경우 다양한 블록들과 그룹지어 연결하지 않기 때문에 분기처리 추가
-            if (itemInfo.elType === ChartItemType.variable) {
+            if (checkVariableBlock(itemInfo.elType)) {
               _pointSize = (Object.values(connectSizeByType[_x]) as number[]).reduce((_acc, _cur) => _acc + _cur, 0);
             }
 

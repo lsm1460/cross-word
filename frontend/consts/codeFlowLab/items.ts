@@ -156,6 +156,14 @@ export const FLOW_CHART_ITEMS_STYLE: {
       right: [],
     },
   },
+  [ChartItemType.condition]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.variable],
+      right: [],
+    },
+  },
 };
 
 export const FLOW_ITEM_DEFAULT_INFO = {
@@ -198,6 +206,10 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     sceneId: '',
   },
   [ChartItemType.if]: {
+    connectionVariables: [],
+    conditions: {},
+  },
+  [ChartItemType.condition]: {
     connectionVariables: [],
     conditions: {},
   },

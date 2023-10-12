@@ -95,7 +95,7 @@ export const useDebounceSubmitText = (_dispatchKey, _debounceCallbak = undefined
 };
 
 export const getRandomId = (_length = 8) => {
-  return nanoid(_length);
+  return 'fI_' + nanoid(_length);
 };
 
 export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items']) => {

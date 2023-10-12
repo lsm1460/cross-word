@@ -26,7 +26,7 @@ function ConnectDot({
 }: Props) {
   return (
     <span
-      className={cx('dot', {
+      className={cx('dot', connectType, {
         [CONNECT_POINT_CLASS]: true,
       })}
       data-parent-id={parentId}

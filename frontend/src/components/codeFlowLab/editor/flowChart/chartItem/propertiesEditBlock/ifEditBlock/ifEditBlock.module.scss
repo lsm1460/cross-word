@@ -19,53 +19,77 @@
   margin-top: 15px;
 }
 
-.property-wrap {
-  margin-left: 5px;
-  padding: 0 0 0 8px;
-  border-left: 1px solid #4c4c4c;
-  pointer-events: none;
+.condition-box {
+  border: 1px solid #2e2e2e;
+  background-color: #1f1f1f;
+  border-radius: 5px;
+  padding: 5px;
+  position: relative;
 
-  .condition-list {
-    margin-bottom: 15px;
+  + .condition-box {
+    margin-top: 15px;
+  }
 
-    li {
-      padding-left: 10px;
-      position: relative;
-      height: 25px;
+  .delete-button {
+    @include delete;
+  }
 
-      .item-name {
-        white-space: nowrap;
-        font-size: 13px;
-        color: #a1a1a1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-family: sans-serif;
-        display: inline-block;
-        width: 100px;
-        vertical-align: middle;
-      }
-
-      .logical {
-        border: none;
-        border-radius: 3px;
-        padding: 2px 5px;
-        pointer-events: all;
-        background-color: #2a6bc8;
-        color: #ffffff;
-        font-size: 12px;
-        margin-right: 6px;
-        cursor: pointer;
-
-        &:hover,
-        &:active {
-          background-color: #235397;
-        }
-      }
+  &:hover {
+    .delete-button {
+      @include delete-active;
     }
   }
 
-  .function-connector {
-    position: relative;
+  .property-wrap {
+    width: 100%;
+    margin-left: 5px;
+    padding: 0 0 0 8px;
+    pointer-events: none;
+
+    .condition-list {
+      margin-bottom: 15px;
+
+      li {
+        padding-left: 10px;
+        position: relative;
+        height: 25px;
+
+        .item-name {
+          white-space: nowrap;
+          font-size: 13px;
+          color: #a1a1a1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-family: sans-serif;
+          display: inline-block;
+          width: 100px;
+          vertical-align: middle;
+        }
+
+        .logical {
+          border: none;
+          border-radius: 3px;
+          padding: 2px 5px;
+          pointer-events: all;
+          background-color: #2a6bc8;
+          color: #ffffff;
+          font-size: 12px;
+          margin-right: 6px;
+          cursor: pointer;
+          width: 28px;
+          text-align: center;
+
+          &:hover,
+          &:active {
+            background-color: #235397;
+          }
+        }
+      }
+    }
+
+    .function-connector {
+      position: relative;
+    }
   }
 }
 
