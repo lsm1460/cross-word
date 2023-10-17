@@ -210,7 +210,7 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     conditions: {},
   },
   [ChartItemType.condition]: {
-    textList: [],
+    textList: ['', ''],
     connectionVariables: [],
     conditions: '==',
   },

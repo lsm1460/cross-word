@@ -132,7 +132,7 @@ export const getConnectOperationsForCondition = (
       {
         key: `items.${ifPos.parentId}.connectionVariables`,
         value: [
-          ...selectedChartItem[ifPos.parentId].connectionVariables,
+          ..._.compact(selectedChartItem[ifPos.parentId].connectionVariables),
           {
             parentId: ifPos.parentId,
             connectParentId: targetPos.parentId,
@@ -150,7 +150,7 @@ export const getConnectOperationsForCondition = (
       },
       {
         key: `items.${ifPos.parentId}.connectionVariables`,
-        value: selectedChartItem[ifPos.parentId].connectionVariables.filter(
+        value: _.compact(selectedChartItem[ifPos.parentId].connectionVariables).filter(
           (_var) => _var.connectParentId !== targetPos.parentId
         ),
       },
@@ -250,8 +250,6 @@ export const getConnectOperationsForVariable = (
     const targetItems = _.pickBy(selectedChartItem, (_item) =>
       [_prevPos.parentId, _nextPos.parentId].includes(_item.id)
     );
-
-    console.log('??', variablePos);
 
     // 변수 아이템은 connectionIds에 할당
     newTargetItems = _.mapValues(targetItems, (_item) => ({

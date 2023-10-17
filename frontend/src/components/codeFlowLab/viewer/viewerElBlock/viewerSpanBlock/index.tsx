@@ -17,7 +17,9 @@ function ViewerSpanBlock({ viewerItem, triggerProps }: Props) {
   const variables = useSelector((state: RootState) => {
     const sceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
-    return getVariables(sceneId, state.mainDocument.contentDocument.items);
+    const sceneItemIds = state.mainDocument.contentDocument.scene[sceneId]?.itemIds || [];
+
+    return getVariables(sceneId, state.mainDocument.contentDocument.items, sceneItemIds);
   }, shallowEqual);
 
   const textVariable = useMemo(

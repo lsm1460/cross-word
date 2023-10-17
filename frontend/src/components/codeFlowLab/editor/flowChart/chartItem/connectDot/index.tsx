@@ -14,6 +14,7 @@ interface Props {
   typeIndex: number;
   handlePointConnectStart: MouseEventHandler<HTMLElement>;
   connectParentId?: string;
+  isSlave?: boolean;
 }
 function ConnectDot({
   parentId,
@@ -22,6 +23,7 @@ function ConnectDot({
   index,
   typeIndex,
   connectParentId,
+  isSlave,
   handlePointConnectStart,
 }: Props) {
   return (
@@ -36,6 +38,9 @@ function ConnectDot({
       data-type-index={typeIndex || 0}
       {...(connectParentId && {
         'data-connect-parent-id': connectParentId,
+      })}
+      {...(isSlave && {
+        'data-is-slave': 1,
       })}
       onMouseDown={handlePointConnectStart}
     />

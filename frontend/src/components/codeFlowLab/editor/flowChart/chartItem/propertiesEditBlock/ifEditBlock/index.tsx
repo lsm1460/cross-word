@@ -137,6 +137,7 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
                       typeIndex={_i + _j + 1}
                       connectParentId={_conditionItem.point?.connectParentId}
                       handlePointConnectStart={handlePointConnectStart}
+                      isSlave
                     />
                   </li>
                 ))}
@@ -148,6 +149,7 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
                     index={_i}
                     typeIndex={_i + _conditionBlock.condition.length + 1}
                     handlePointConnectStart={handlePointConnectStart}
+                    isSlave
                   />
                 </li>
               </ul>
@@ -167,6 +169,7 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
                 typeIndex={0}
                 handlePointConnectStart={handlePointConnectStart}
                 connectParentId={_conditionBlock.functionPoint?.connectParentId}
+                isSlave
               />
             </p>
           </div>

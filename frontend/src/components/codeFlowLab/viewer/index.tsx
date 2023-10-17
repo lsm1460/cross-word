@@ -39,11 +39,21 @@ function FlowChartViewer({}: Props) {
   };
 
   const makeScriptProps = (_chartItem: ChartItem) => {
+    let script = [];
+
+    if (_chartItem.elType === ChartItemType.if) {
+      script = _chartItem.connectionVariables
+        .filter((_var) => _var.connectType === 'function')
+        .map((_point) => makeScriptProps(selectedChartItem[_point.connectParentId]));
+    } else {
+      script = _chartItem.connectionIds.right.map((_point) =>
+        makeScriptProps(selectedChartItem[_point.connectParentId])
+      );
+    }
+
     return {
       ..._chartItem,
-      script: _chartItem.connectionIds.right.map((_point) =>
-        makeScriptProps(selectedChartItem[_point.connectParentId])
-      ),
+      script,
     };
   };
 
@@ -70,6 +80,8 @@ function FlowChartViewer({}: Props) {
     () => makeViewerDocument(selectedChartItem[`${ROOT_BLOCK_ID}-${sceneOrder}`]),
     [selectedChartItem, sceneOrder]
   );
+
+  console.log('templateDocument', templateDocument);
 
   return (
     <div className={cx('viewer-wrap')} style={templateDocument.styles}>

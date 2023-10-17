@@ -19,7 +19,9 @@ function ViewerElBlock({ viewerItem }: Props) {
   const variables = useSelector((state: RootState) => {
     const sceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
-    return getVariables(sceneId, state.mainDocument.contentDocument.items);
+    const sceneItemIds = state.mainDocument.contentDocument.scene[sceneId]?.itemIds || [];
+
+    return getVariables(sceneId, state.mainDocument.contentDocument.items, sceneItemIds);
   }, shallowEqual);
 
   const convertTriggerName = {
@@ -28,6 +30,29 @@ function ViewerElBlock({ viewerItem }: Props) {
 
   const executeScriptBlock = (_scriptBlock: ScriptItem) => {
     switch (_scriptBlock.elType) {
+      case ChartItemType.if:
+        const __code = _scriptBlock.connectionVariables
+          .filter((_var) => _var.connectType === 'variable')
+          .reduce((_acc, _cur, _index) => {
+            let _text = '';
+
+            if (_index !== 0) {
+              _text += _scriptBlock.conditions?.[_cur.connectParentId] || '&&';
+            }
+            _text += variables[_cur.connectParentId];
+
+            return _acc + _text;
+          }, '');
+
+        const conditionResult = new Function(`return ${__code}`)();
+
+        if (conditionResult) {
+          for (let scriptBlock of _scriptBlock.script) {
+            executeScriptBlock(scriptBlock);
+          }
+        }
+
+        break;
       case ChartItemType.loop:
         const _vStart = parseInt(variables[_scriptBlock.connectionVariables?.[0]?.connectParentId], 10);
         const _vEnd = parseInt(variables[_scriptBlock.connectionVariables?.[1]?.connectParentId], 10);
@@ -54,7 +79,7 @@ function ViewerElBlock({ viewerItem }: Props) {
         break;
     }
 
-    if (_scriptBlock.elType !== ChartItemType.loop) {
+    if (![ChartItemType.loop, ChartItemType.if].includes(_scriptBlock.elType)) {
       for (let scriptBlock of _scriptBlock.script) {
         executeScriptBlock(scriptBlock);
       }

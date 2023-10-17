@@ -147,6 +147,7 @@ export type PointPos = {
   typeIndex: number;
   connectDir: 'right' | 'left';
   connectType: ChartItemType;
+  isSlave: boolean;
   // connectionIds: string[];
 };
 
@@ -161,7 +162,11 @@ export interface ScriptConsoleItem extends ChartConsoleItem {
   script: ScriptItem[];
 }
 
-export type ScriptItem = ScriptTriggerItem | ScriptLoopItem | ScriptConsoleItem;
+export interface ScriptIfItem extends ChartIfItem {
+  script: ScriptItem[];
+}
+
+export type ScriptItem = ScriptTriggerItem | ScriptLoopItem | ScriptConsoleItem | ScriptIfItem;
 
 export interface ViewerItem extends ChartItem {
   children: ViewerItem[];

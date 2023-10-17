@@ -20,10 +20,6 @@ interface Props {
 function ConditionEditBlock({ id, textList, conditions, connectionVariables, handlePointConnectStart }: Props) {
   const dispatch = useDispatch();
 
-  const conditionList = useMemo(() => {
-    return new Array(2).fill(undefined).map((__, _i) => textList[_i] || connectionVariables[_i]);
-  }, [textList, connectionVariables]);
-
   const toggleLogical = (_index: number) => {
     const _list = ['==', '!=', '&&', '||'];
 
@@ -41,7 +37,7 @@ function ConditionEditBlock({ id, textList, conditions, connectionVariables, han
 
   return (
     <div>
-      {conditionList.map((_condi, _i) => (
+      {textList.map((_text, _i) => (
         <div className={cx('property-wrap')} key={_i}>
           {_i > 0 && (
             <button className={cx('logical', { [SCROLL_CLASS_PREFIX]: true })} onClick={() => toggleLogical(_i - 1)}>
@@ -51,15 +47,13 @@ function ConditionEditBlock({ id, textList, conditions, connectionVariables, han
 
           <TextEditBlock
             id={id}
-            propertyKey={'text'}
-            {...(typeof _condi === 'string' && { text: _condi })}
-            {...(typeof _condi !== 'string' && {
-              pointInfo: {
-                pointIndex: _i,
-                connectPoint: _condi,
-                handlePointConnectStart,
-              },
-            })}
+            propertyKey={`textList.${_i}`}
+            text={_text}
+            pointInfo={{
+              pointIndex: _i,
+              connectPoint: connectionVariables[_i],
+              handlePointConnectStart,
+            }}
           />
         </div>
       ))}

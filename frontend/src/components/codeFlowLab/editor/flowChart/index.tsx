@@ -97,6 +97,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       typeIndex: parseInt(_el.dataset.typeIndex, 10),
       connectDir: _el.dataset.connectDir as 'left' | 'right',
       connectType: _el.dataset.connectType as ChartItemType,
+      isSlave: _el.dataset.isSlave ? true : false,
     };
   };
 

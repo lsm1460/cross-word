@@ -98,11 +98,39 @@ export const getRandomId = (_length = 8) => {
   return 'fI_' + nanoid(_length);
 };
 
-export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items']) => {
-  const _variableItemList = _.pickBy(
-    _items,
-    (_item) => _item.elType === ChartItemType.variable && (_item.sceneId === _sceneId || !_item.sceneId)
-  );
+export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items'], sceneItemIdList: string[]) => {
+  const _variableItemList = _.pickBy(_items, (_item) => {
+    if (_item.elType === ChartItemType.variable) {
+      return _item.sceneId === _sceneId || !_item.sceneId;
+    } else if (sceneItemIdList.includes(_item.id) && _item.elType === ChartItemType.condition) {
+      return true;
+    }
 
-  return _.mapValues(_variableItemList, (_item: ChartVariableItem) => _item.var);
+    return false;
+  });
+
+  return _.mapValues(_variableItemList, (_item) => {
+    if (_item.elType === ChartItemType.variable) {
+      return _item.var;
+    } else if (_item.elType === ChartItemType.condition) {
+      const __code = _item.textList.reduce((_acc, _cur, _index) => {
+        let _text = '';
+
+        const _varId = _item.connectionVariables[_index]?.connectParentId;
+        const _var = (_items?.[_varId] as ChartVariableItem)?.var;
+
+        if (_index !== 0) {
+          _text += _item.conditions;
+        }
+
+        _text += JSON.stringify(_var || _cur);
+
+        return _acc + _text;
+      }, '');
+
+      const conditionResult = new Function(`return ${__code}`)();
+
+      return conditionResult ? '1' : '0';
+    }
+  });
 };
