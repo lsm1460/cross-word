@@ -19,6 +19,9 @@ export enum ChartItemType {
   variable = 'variable',
   if = 'if',
   condition = 'condition',
+  size = 'size',
+  includes = 'includes',
+  indexOf = 'indexOf',
 }
 
 interface FlowScene {
@@ -113,6 +116,21 @@ export interface ChartConditionItem extends ChartItem {
   conditions: '==' | '!=' | '&&' | '||';
 }
 
+export interface ChartSizeItem extends ChartItem {
+  elType: ChartItemType.size;
+  text: string;
+}
+
+export interface ChartIncludesItem extends ChartItem {
+  elType: ChartItemType.includes;
+  text: string;
+}
+
+export interface ChartIndexOfItem extends ChartItem {
+  elType: ChartItemType.indexOf;
+  text: string;
+}
+
 export type ChartItems =
   | ChartBodyItem
   | ChartButtonItem
@@ -124,7 +142,12 @@ export type ChartItems =
   | ChartLoopItem
   | ChartVariableItem
   | ChartIfItem
-  | ChartConditionItem;
+  | ChartConditionItem
+  | ChartSizeItem
+  | ChartIncludesItem
+  | ChartIndexOfItem;
+
+export type ChartUtilsItems = ChartSizeItem | ChartIncludesItem | ChartIndexOfItem;
 
 export interface CodeFlowChartDoc {
   items: {

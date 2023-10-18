@@ -1,6 +1,7 @@
 import {
   CHART_ELEMENT_ITEMS,
   CHART_SCRIPT_ITEMS,
+  CHART_VARIABLE_ITEMS,
   FLOW_CHART_ITEMS_STYLE,
   FLOW_ITEM_ADDITIONAL_INFO,
   FLOW_ITEM_DEFAULT_INFO,
@@ -105,7 +106,7 @@ export function getRectPoints(element: HTMLElement): IPoint[] {
 }
 
 export const checkVariableBlock = (_elType: ChartItemType) => {
-  return [ChartItemType.variable, ChartItemType.condition].includes(_elType);
+  return CHART_VARIABLE_ITEMS.includes(_elType);
 };
 
 export const getBlockType = (_elType, _isDeep = false) => {

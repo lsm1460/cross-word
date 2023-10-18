@@ -1,10 +1,8 @@
 import { ChartItemType, ScriptItem, ScriptTriggerItem, ViewerItem } from '@/consts/types/codeFlowLab';
-import { RootState } from '@/reducers';
 import { setFlowLogAction } from '@/reducers/contentWizard/mainDocument';
-import { getSceneId, getVariables } from '@/src/utils/content';
 import dayjs from 'dayjs';
 import _ from 'lodash';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import ViewerButtonBlock from './viewerButtonBlock';
 import ViewerDivBlock from './viewerDivBlock';
 import ViewerParagraphBlock from './viewerParagraphBlock';
@@ -12,17 +10,12 @@ import ViewerSpanBlock from './viewerSpanBlock';
 
 interface Props {
   viewerItem: ViewerItem;
+  variables: {
+    [x: string]: any;
+  };
 }
-function ViewerElBlock({ viewerItem }: Props) {
+function ViewerElBlock({ viewerItem, variables }: Props) {
   const dispatch = useDispatch();
-
-  const variables = useSelector((state: RootState) => {
-    const sceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
-
-    const sceneItemIds = state.mainDocument.contentDocument.scene[sceneId]?.itemIds || [];
-
-    return getVariables(sceneId, state.mainDocument.contentDocument.items, sceneItemIds);
-  }, shallowEqual);
 
   const convertTriggerName = {
     click: 'onClick',
@@ -47,16 +40,16 @@ function ViewerElBlock({ viewerItem }: Props) {
         const conditionResult = new Function(`return ${__code}`)();
 
         if (conditionResult) {
-          for (let scriptBlock of _scriptBlock.script) {
-            executeScriptBlock(scriptBlock);
-          }
+          executeScriptBlock(_scriptBlock.script[0]);
+        } else {
+          executeScriptBlock(_scriptBlock.script[1]);
         }
 
         break;
       case ChartItemType.loop:
-        const _vStart = parseInt(variables[_scriptBlock.connectionVariables?.[0]?.connectParentId], 10);
-        const _vEnd = parseInt(variables[_scriptBlock.connectionVariables?.[1]?.connectParentId], 10);
-        const _vIncrease = parseInt(variables[_scriptBlock.connectionVariables?.[2]?.connectParentId], 10);
+        const [_vStart, _vEnd, _vIncrease] = new Array(3)
+          .fill(undefined)
+          .map((__, _i) => parseInt(variables[_scriptBlock.connectionVariables?.[_i]?.connectParentId] as string, 10));
 
         for (
           let _i = _.isNaN(_vStart) ? _scriptBlock.loop.start : _vStart || 0;
@@ -72,7 +65,13 @@ function ViewerElBlock({ viewerItem }: Props) {
         const _var = variables[_scriptBlock.connectionVariables[0]?.connectParentId];
         const _date = dayjs().format('HH:mm ss');
 
-        dispatch(setFlowLogAction({ date: _date, text: _.isUndefined(_var) ? _scriptBlock.text : _var, type: 'log' }));
+        dispatch(
+          setFlowLogAction({
+            date: _date,
+            text: _.isUndefined(_var) ? _scriptBlock.text : (_var as string),
+            type: 'log',
+          })
+        );
         break;
 
       default:
@@ -101,10 +100,18 @@ function ViewerElBlock({ viewerItem }: Props) {
     <>
       {
         {
-          [ChartItemType.div]: <ViewerDivBlock viewerItem={viewerItem} triggerProps={triggerProps} />,
-          [ChartItemType.button]: <ViewerButtonBlock viewerItem={viewerItem} triggerProps={triggerProps} />,
-          [ChartItemType.paragraph]: <ViewerParagraphBlock viewerItem={viewerItem} triggerProps={triggerProps} />,
-          [ChartItemType.span]: <ViewerSpanBlock viewerItem={viewerItem} triggerProps={triggerProps} />,
+          [ChartItemType.div]: (
+            <ViewerDivBlock viewerItem={viewerItem} triggerProps={triggerProps} variables={variables} />
+          ),
+          [ChartItemType.button]: (
+            <ViewerButtonBlock viewerItem={viewerItem} triggerProps={triggerProps} variables={variables} />
+          ),
+          [ChartItemType.paragraph]: (
+            <ViewerParagraphBlock viewerItem={viewerItem} triggerProps={triggerProps} variables={variables} />
+          ),
+          [ChartItemType.span]: (
+            <ViewerSpanBlock viewerItem={viewerItem} triggerProps={triggerProps} variables={variables} />
+          ),
         }[viewerItem.elType]
       }
     </>

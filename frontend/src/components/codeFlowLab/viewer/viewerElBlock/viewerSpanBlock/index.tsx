@@ -1,9 +1,6 @@
 import { ChartSpanItem, TriggerProps, ViewerItem } from '@/consts/types/codeFlowLab';
-import { RootState } from '@/reducers';
-import { getSceneId, getVariables } from '@/src/utils/content';
 import _ from 'lodash';
-import { useEffect, useMemo } from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
+import { useMemo } from 'react';
 
 interface SpanViewerItem extends ViewerItem {
   text?: ChartSpanItem['text'];
@@ -12,16 +9,11 @@ interface SpanViewerItem extends ViewerItem {
 interface Props {
   viewerItem: SpanViewerItem;
   triggerProps: TriggerProps;
+  variables: {
+    [x: string]: any;
+  };
 }
-function ViewerSpanBlock({ viewerItem, triggerProps }: Props) {
-  const variables = useSelector((state: RootState) => {
-    const sceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
-
-    const sceneItemIds = state.mainDocument.contentDocument.scene[sceneId]?.itemIds || [];
-
-    return getVariables(sceneId, state.mainDocument.contentDocument.items, sceneItemIds);
-  }, shallowEqual);
-
+function ViewerSpanBlock({ viewerItem, triggerProps, variables }: Props) {
   const textVariable = useMemo(
     () => variables[viewerItem.connectionVariables[0]?.connectParentId],
     [variables, viewerItem]

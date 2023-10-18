@@ -42,6 +42,10 @@ function PanelItem({ itemType }: Props) {
     [ChartItemType.variable]: '페이지 또는 프로젝트에서 사용할 변수를 담아 놓은 박스 입니다.',
     [ChartItemType.if]: 'Condition 블럭과 조합하여 특정 함수를 실행하는 분기를 설정 합니다.',
     [ChartItemType.condition]: '변수 블럭과 조합하여 참/거짓을 반환합니다.',
+    [ChartItemType.size]:
+      '변수의 글자 수를 반환합니다. 특정 문자를 입력 시, 변수 안에서 해당 글자의 갯수를 반환합니다.',
+    [ChartItemType.includes]: '변수 블럭 내에 특정 글자가 있는지 확인하여 참/거짓을 반환합니다.',
+    [ChartItemType.indexOf]: '특정 문자가 변수 내에서 몇 번째 위치에 있는지 반환합니다.',
   };
 
   const handleMakeItem = () => {

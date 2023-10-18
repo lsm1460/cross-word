@@ -196,8 +196,8 @@ export const getConnectOperationsForCondition = (
             connectionVariables: [
               ..._item.connectionVariables,
               {
-                parentId: _nextPos.parentId,
-                connectParentId: _prevPos.parentId,
+                parentId: targetPos.parentId,
+                connectParentId: ifPos.parentId,
                 connectType: connectType as ChartItemType,
                 index: parseInt(index, 10),
               },
@@ -211,7 +211,15 @@ export const getConnectOperationsForCondition = (
 
     if (newTargetItems) {
       operations = Object.values(newTargetItems).map((_item) => {
-        const _changeKey = _item.connectionVariables ? 'connectionVariables' : 'connectionIds';
+        let _changeKey;
+
+        if (_deletePos && _deletePos.parentId === _item.id && !_deletePos.isSlave) {
+          _changeKey = 'connectionIds';
+        } else if (targetPos && targetPos.parentId === _item.id && !targetPos.isSlave) {
+          _changeKey = 'connectionIds';
+        } else {
+          _changeKey = _item.connectionVariables ? 'connectionVariables' : 'connectionIds';
+        }
 
         return {
           key: `items.${_item.id}.${_changeKey}`,
@@ -232,17 +240,22 @@ export const getConnectOperationsForVariable = (
 ): Operation[] => {
   let newTargetItems: _.Dictionary<ChartItems>;
 
-  const targetEltypeList = _.compact([
-    selectedChartItem[_prevPos.parentId].elType,
-    selectedChartItem[_nextPos?.parentId]?.elType,
-    selectedChartItem[_deletePos?.parentId]?.elType,
-  ]);
+  const _targetPosList = _.compact([_prevPos, _nextPos, _deletePos]);
 
   // 블록과 변수 간 연결상황일 때
-  let variablePosIndex = targetEltypeList.indexOf(ChartItemType.variable);
-  variablePosIndex = variablePosIndex === -1 ? targetEltypeList.indexOf(ChartItemType.condition) : variablePosIndex;
+  let variablePosIndex = -1;
 
-  const _targetPosList = _.compact([_prevPos, _nextPos, _deletePos]);
+  for (let _i = 0; _i < _targetPosList.length; _i++) {
+    if (!_targetPosList[_i].isSlave) {
+      variablePosIndex = _i;
+      break;
+    }
+  }
+
+  if (variablePosIndex < 0) {
+    return;
+  }
+
   const variablePos = _targetPosList[variablePosIndex];
   const targetPos = _targetPosList[Number(!variablePosIndex)];
 
@@ -315,6 +328,8 @@ export const getConnectOperationsForVariable = (
       let _changeKey;
 
       if (_item.id === variablePos.parentId) {
+        _changeKey = 'connectionIds';
+      } else if (_deletePos && _item.id === _deletePos.parentId && !_deletePos.isSlave) {
         _changeKey = 'connectionIds';
       } else if (_item.connectionVariables) {
         _changeKey = 'connectionVariables';

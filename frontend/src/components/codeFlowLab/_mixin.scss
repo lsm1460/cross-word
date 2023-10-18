@@ -68,7 +68,10 @@
   }
 
   &.variable::before,
-  &.condition::before {
+  &.condition::before,
+  &.size::before,
+  &.includes::before,
+  &.indexOf::before {
     background-color: $variable-point-color;
   }
 }

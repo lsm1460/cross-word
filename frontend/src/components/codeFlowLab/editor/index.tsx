@@ -2,6 +2,7 @@ import classNames from 'classnames/bind';
 import styles from './editor.module.scss';
 const cx = classNames.bind(styles);
 //
+import { CHART_VARIABLE_ITEMS } from '@/consts/codeFlowLab/items';
 import { ChartItemType, PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { Operation, setDocumentValueAction, setFlowLogAction } from '@/reducers/contentWizard/mainDocument';
@@ -90,12 +91,11 @@ function CodeFlowLabEditor() {
     //_prevPos, _nextPos, _deletePos의 id로 elType을 가져온 후 변수일 경우
     const isIfFlog =
       targetEltypeList.includes(ChartItemType.if) && (_prevPos.isSlave || _nextPos?.isSlave || _deletePos?.isSlave);
-    const isVariableFlag = !_.isEmpty(
-      _.intersection(targetEltypeList, [ChartItemType.variable, ChartItemType.condition])
-    );
+    const isVariableFlag = !_.isEmpty(_.intersection(targetEltypeList, CHART_VARIABLE_ITEMS));
 
     if (isIfFlog) {
       operations = getConnectOperationsForCondition(selectedChartItem, _prevPos, _nextPos, _deletePos);
+      console.log('operations--', operations);
     } else if (isVariableFlag) {
       operations = getConnectOperationsForVariable(selectedChartItem, _prevPos, _nextPos, _deletePos);
     } else {

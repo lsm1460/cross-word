@@ -61,10 +61,10 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
       return;
     }
 
-    const connectedIdList = [
+    const connectedIdList = _.compact([
       ...conditionList[1].condition.map(({ point }) => point.connectParentId),
-      conditionList[1].functionPoint.connectParentId,
-    ];
+      conditionList[1].functionPoint?.connectParentId,
+    ]);
 
     let operations: Operation[] = [
       {
@@ -85,6 +85,8 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
     operations = [...operations, ...itemDisconnectOperations];
 
     dispatch(setDocumentValueAction(operations));
+
+    setIsActiveElse(false);
   };
 
   const toggleLogical = (_connectedId: string, _logical = '&&') => {
@@ -112,48 +114,50 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
           )}
           <p className={cx('condition-title')}>{_i === 0 ? 'IF' : 'ELSE'}</p>
           <div key={_i} className={cx('property-wrap')}>
-            <div className={cx('condition-list')}>
-              <p className={cx('condition-sub-title')}>condition list</p>
-              <ul>
-                {_conditionBlock.condition.map((_conditionItem, _j) => (
-                  <li key={_j}>
-                    {_j !== 0 && (
-                      <button
-                        className={cx('logical', { [SCROLL_CLASS_PREFIX]: true })}
-                        onClick={() => toggleLogical(_conditionItem.point.connectParentId, _conditionItem.logical)}
-                      >
-                        {_conditionItem.logical || '&&'}
-                      </button>
-                    )}
-                    <span className={cx('item-name')}>
-                      {chartItems?.[_conditionItem.point.connectParentId].name || ''}
-                    </span>
+            {_i === 0 && (
+              <div className={cx('condition-list')}>
+                <p className={cx('condition-sub-title')}>condition list</p>
+                <ul>
+                  {_conditionBlock.condition.map((_conditionItem, _j) => (
+                    <li key={_j}>
+                      {_j !== 0 && (
+                        <button
+                          className={cx('logical', { [SCROLL_CLASS_PREFIX]: true })}
+                          onClick={() => toggleLogical(_conditionItem.point.connectParentId, _conditionItem.logical)}
+                        >
+                          {_conditionItem.logical || '&&'}
+                        </button>
+                      )}
+                      <span className={cx('item-name')}>
+                        {chartItems?.[_conditionItem.point.connectParentId].name || ''}
+                      </span>
 
+                      <ConnectDot
+                        parentId={id}
+                        connectDir={'right'}
+                        connectType={ChartItemType.variable}
+                        index={_i}
+                        typeIndex={_i + _j + 1}
+                        connectParentId={_conditionItem.point?.connectParentId}
+                        handlePointConnectStart={handlePointConnectStart}
+                        isSlave
+                      />
+                    </li>
+                  ))}
+                  <li>
                     <ConnectDot
                       parentId={id}
                       connectDir={'right'}
                       connectType={ChartItemType.variable}
                       index={_i}
-                      typeIndex={_i + _j + 1}
-                      connectParentId={_conditionItem.point?.connectParentId}
+                      typeIndex={_i + _conditionBlock.condition.length + 1}
                       handlePointConnectStart={handlePointConnectStart}
                       isSlave
                     />
                   </li>
-                ))}
-                <li>
-                  <ConnectDot
-                    parentId={id}
-                    connectDir={'right'}
-                    connectType={ChartItemType.variable}
-                    index={_i}
-                    typeIndex={_i + _conditionBlock.condition.length + 1}
-                    handlePointConnectStart={handlePointConnectStart}
-                    isSlave
-                  />
-                </li>
-              </ul>
-            </div>
+                </ul>
+              </div>
+            )}
             <p className={cx('function-connector')}>
               <span className={cx('condition-sub-title')}>function</span>
               <span className={cx('condition-sub-title')}>

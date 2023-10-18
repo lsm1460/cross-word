@@ -2,12 +2,12 @@ import classNames from 'classnames/bind';
 import styles from './textEditBlock.module.scss';
 const cx = classNames.bind(styles);
 //
-import { CONNECT_POINT_CLASS } from '@/consts/codeFlowLab/items';
+import { ChartItemType, ConnectPoint } from '@/consts/types/codeFlowLab';
 import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { useDebounceSubmitText } from '@/src/utils/content';
 import { MouseEventHandler, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { ChartItemType, ConnectPoint } from '@/consts/types/codeFlowLab';
+import ConnectDot from '../../connectDot';
 
 interface Props {
   id: string;
@@ -77,21 +77,17 @@ function TextEditBlock({ id, text, propertyKey, pointInfo, label, inputType = 't
         readOnly={!!pointInfo?.connectPoint}
         type={inputType}
       />
+
       {pointInfo && (
-        <span
-          className={cx('dot', {
-            [CONNECT_POINT_CLASS]: true,
-          })}
-          id={`${id}-dot-${propertyKey}`}
-          data-parent-id={id}
-          data-connect-dir={'right'}
-          data-connect-type={ChartItemType.variable}
-          data-index={0}
-          data-type-index={pointInfo?.pointIndex || 0}
-          {...(pointInfo.connectPoint && {
-            'data-connect-parent-id': pointInfo.connectPoint.connectParentId,
-          })}
-          onMouseDown={pointInfo.handlePointConnectStart}
+        <ConnectDot
+          parentId={id}
+          connectDir={'right'}
+          connectType={ChartItemType.variable}
+          index={0}
+          typeIndex={pointInfo?.pointIndex || 0}
+          connectParentId={pointInfo.connectPoint?.connectParentId}
+          handlePointConnectStart={pointInfo.handlePointConnectStart}
+          isSlave
         />
       )}
     </div>

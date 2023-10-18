@@ -11,6 +11,7 @@ import StyleEditBlock from './styleEditBlock';
 import TextEditBlock from './textEditBlock';
 import TriggerEditBlock from './triggerEditBlock';
 import VariableEditBlock from './variableEditBlock';
+import VariableUtilsEditBlock from './variableUtilsEditBlock';
 
 interface Props {
   chartItem: ChartItems;
@@ -63,6 +64,17 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
             id={chartItem.id}
             textList={chartItem.textList}
             conditions={chartItem.conditions}
+            connectionVariables={chartItem.connectionVariables}
+            handlePointConnectStart={handlePointConnectStart}
+          />
+        );
+      case ChartItemType.size:
+      case ChartItemType.includes:
+      case ChartItemType.indexOf:
+        return (
+          <VariableUtilsEditBlock
+            id={chartItem.id}
+            text={chartItem.text}
             connectionVariables={chartItem.connectionVariables}
             handlePointConnectStart={handlePointConnectStart}
           />

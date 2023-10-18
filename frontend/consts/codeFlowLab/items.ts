@@ -17,6 +17,14 @@ export const CHART_SCRIPT_ITEMS = [
   ChartItemType.if,
 ];
 
+export const CHART_VARIABLE_ITEMS = [
+  ChartItemType.variable,
+  ChartItemType.condition,
+  ChartItemType.size,
+  ChartItemType.includes,
+  ChartItemType.indexOf,
+];
+
 export const FLOW_CHART_ITEMS_STYLE: {
   [_key in ChartItemType]: {
     width: number;
@@ -164,6 +172,30 @@ export const FLOW_CHART_ITEMS_STYLE: {
       right: [],
     },
   },
+  [ChartItemType.size]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.variable],
+      right: [],
+    },
+  },
+  [ChartItemType.includes]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.variable],
+      right: [],
+    },
+  },
+  [ChartItemType.indexOf]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.variable],
+      right: [],
+    },
+  },
 };
 
 export const FLOW_ITEM_DEFAULT_INFO = {
@@ -213,6 +245,18 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     textList: ['', ''],
     connectionVariables: [],
     conditions: '==',
+  },
+  [ChartItemType.size]: {
+    connectionVariables: [],
+    text: '',
+  },
+  [ChartItemType.includes]: {
+    connectionVariables: [],
+    text: '',
+  },
+  [ChartItemType.indexOf]: {
+    connectionVariables: [],
+    text: '',
   },
 };
 

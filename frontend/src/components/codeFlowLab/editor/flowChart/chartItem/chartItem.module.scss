@@ -187,7 +187,10 @@
           }
 
           &.variable-variable::before,
-          &.condition-variable::before {
+          &.condition-variable::before,
+          &.size-variable::before,
+          &.includes-variable::before,
+          &.indexOf-variable::before {
             background-color: $variable-point-color;
           }
         }

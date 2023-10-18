@@ -1,10 +1,17 @@
 import _ from 'lodash';
 import { useCallback, useState } from 'react';
 
-import { ChartItemType, ChartVariableItem, CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
+import {
+  ChartItemType,
+  ChartUtilsItems,
+  ChartVariableItem,
+  CodeFlowChartDoc,
+  ConnectPoint,
+} from '@/consts/types/codeFlowLab';
 import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { nanoid } from 'nanoid';
 import { useDispatch } from 'react-redux';
+import { CHART_VARIABLE_ITEMS } from '@/consts/codeFlowLab/items';
 export * from './connect-point';
 
 interface imageSize {
@@ -98,11 +105,63 @@ export const getRandomId = (_length = 8) => {
   return 'fI_' + nanoid(_length);
 };
 
+const getSize = (_target: string, _id: string, _key: string) => {
+  if (_key) {
+    const rgxp = new RegExp(_key, 'g');
+    return _target.match(rgxp).length;
+  } else {
+    return _target.length;
+  }
+};
+
 export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items'], sceneItemIdList: string[]) => {
+  let searched = {};
+
+  const searchUtilsVariableLoop = (_items: CodeFlowChartDoc['items'], _item: ChartUtilsItems) => {
+    if (!_item.connectionVariables[0]) {
+      return undefined;
+    }
+
+    if (searched[_item.id]) {
+      return searched[_item.id];
+    }
+
+    const _targetId = _item.connectionVariables[0].connectParentId;
+
+    if (!CHART_VARIABLE_ITEMS.includes(_items[_targetId].elType)) {
+      return undefined;
+    }
+
+    let __var;
+
+    if (_items[_targetId].elType !== ChartItemType.variable) {
+      __var = searchUtilsVariableLoop(_items, _items[_targetId] as ChartUtilsItems);
+
+      searched = {
+        ...searched,
+        [_targetId]: __var,
+      };
+    } else {
+      __var = (_items[_targetId] as ChartVariableItem).var;
+    }
+
+    switch (_item.elType) {
+      case ChartItemType.size:
+        return getSize(`${__var}`, _targetId, _item.text);
+      case ChartItemType.includes:
+        return `${__var}`.includes(_item.text) ? 1 : 0;
+      case ChartItemType.indexOf:
+        return `${__var}`.indexOf(_item.text);
+
+      default:
+        return undefined;
+    }
+  };
+
   const _variableItemList = _.pickBy(_items, (_item) => {
     if (_item.elType === ChartItemType.variable) {
       return _item.sceneId === _sceneId || !_item.sceneId;
-    } else if (sceneItemIdList.includes(_item.id) && _item.elType === ChartItemType.condition) {
+    } else if (sceneItemIdList.includes(_item.id) && CHART_VARIABLE_ITEMS.includes(_item.elType)) {
       return true;
     }
 
@@ -110,27 +169,35 @@ export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items']
   });
 
   return _.mapValues(_variableItemList, (_item) => {
-    if (_item.elType === ChartItemType.variable) {
-      return _item.var;
-    } else if (_item.elType === ChartItemType.condition) {
-      const __code = _item.textList.reduce((_acc, _cur, _index) => {
-        let _text = '';
+    switch (_item.elType) {
+      case ChartItemType.variable:
+        return _item.var;
 
-        const _varId = _item.connectionVariables[_index]?.connectParentId;
-        const _var = (_items?.[_varId] as ChartVariableItem)?.var;
+      case ChartItemType.condition:
+        const __code = _item.textList.reduce((_acc, _cur, _index) => {
+          let _text = '';
 
-        if (_index !== 0) {
-          _text += _item.conditions;
-        }
+          const _varId = _item.connectionVariables[_index]?.connectParentId;
+          const _var = (_items?.[_varId] as ChartVariableItem)?.var;
 
-        _text += JSON.stringify(_var || _cur);
+          if (_index !== 0) {
+            _text += _item.conditions;
+          }
 
-        return _acc + _text;
-      }, '');
+          _text += JSON.stringify(_var || _cur);
 
-      const conditionResult = new Function(`return ${__code}`)();
+          return _acc + _text;
+        }, '');
 
-      return conditionResult ? '1' : '0';
+        const conditionResult = new Function(`return ${__code}`)();
+
+        return conditionResult ? 1 : 0;
+      case ChartItemType.size:
+      case ChartItemType.includes:
+      case ChartItemType.indexOf:
+        return searchUtilsVariableLoop(_items, _item);
+      default:
+        return undefined;
     }
   });
 };

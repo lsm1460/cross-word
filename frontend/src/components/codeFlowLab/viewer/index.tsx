@@ -5,7 +5,7 @@ const cx = classNames.bind(styles);
 import { ROOT_BLOCK_ID } from '@/consts/codeFlowLab/items';
 import { ChartItem, ChartItemType, ChartStyleItem, ConnectPoint, ViewerItem } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
-import { getChartItem, getSceneId } from '@/src/utils/content';
+import { getChartItem, getSceneId, getVariables } from '@/src/utils/content';
 import React, { useMemo } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import { getBlockType } from '../editor/flowChart/utils';
@@ -13,15 +13,18 @@ import ViewerElBlock from './viewerElBlock';
 
 interface Props {}
 function FlowChartViewer({}: Props) {
-  const { sceneOrder, chartItems, sceneItemIds } = useSelector((state: RootState) => {
-    const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
+  const { sceneId, sceneOrder, chartItems, sceneItemIds } = useSelector((state: RootState) => {
+    const sceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
+      sceneId,
       sceneOrder: state.mainDocument.sceneOrder,
       chartItems: state.mainDocument.contentDocument.items,
-      sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
+      sceneItemIds: state.mainDocument.contentDocument.scene[sceneId]?.itemIds || [],
     };
   }, shallowEqual);
+
+  const variables = useMemo(() => getVariables(sceneId, chartItems, sceneItemIds), [sceneId, chartItems]);
 
   const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
 
@@ -43,7 +46,7 @@ function FlowChartViewer({}: Props) {
 
     if (_chartItem.elType === ChartItemType.if) {
       script = _chartItem.connectionVariables
-        .filter((_var) => _var.connectType === 'function')
+        .filter((_var) => _var?.connectType === 'function')
         .map((_point) => makeScriptProps(selectedChartItem[_point.connectParentId]));
     } else {
       script = _chartItem.connectionIds.right.map((_point) =>
@@ -81,12 +84,10 @@ function FlowChartViewer({}: Props) {
     [selectedChartItem, sceneOrder]
   );
 
-  console.log('templateDocument', templateDocument);
-
   return (
     <div className={cx('viewer-wrap')} style={templateDocument.styles}>
       {templateDocument.children.map((_item) => (
-        <ViewerElBlock key={_item.id} viewerItem={_item} />
+        <ViewerElBlock key={_item.id} viewerItem={_item} variables={variables} />
       ))}
     </div>
   );
