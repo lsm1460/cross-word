@@ -25,6 +25,7 @@ import FlowLog from './flowLog';
 import FlowTabs from './flowTabs';
 import FlowToolbar from './flowToolbar';
 import FlowZoom from './flowZoom';
+import FlowOptionModal from './modal/flowOptionModal';
 
 export type MoveItems = (_itemIds: string[], _deltaX: number, _deltaY: number) => void;
 export type ConnectPoints = (_prev: PointPos, _next?: PointPos, _delete?: PointPos) => void;
@@ -34,7 +35,7 @@ function CodeFlowLabEditor() {
 
   const [moveItemInfo, setMoveItemInfo] = useState<{ ids: string[]; deltaX: number; deltaY: number }>(null);
 
-  const { selectedSceneId, chartItems, sceneItemIds, itemsPos } = useSelector((state: RootState) => {
+  const { selectedSceneId, chartItems, sceneItemIds, itemsPos, isModalOpen } = useSelector((state: RootState) => {
     const selectedSceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
 
     return {
@@ -42,6 +43,7 @@ function CodeFlowLabEditor() {
       itemsPos: state.mainDocument.contentDocument.itemsPos,
       selectedSceneId,
       sceneItemIds: state.mainDocument.contentDocument.scene[selectedSceneId]?.itemIds || [],
+      isModalOpen: !!state.mainDocument.selectModal,
     };
   }, shallowEqual);
 
@@ -95,7 +97,6 @@ function CodeFlowLabEditor() {
 
     if (isIfFlog) {
       operations = getConnectOperationsForCondition(selectedChartItem, _prevPos, _nextPos, _deletePos);
-      console.log('operations--', operations);
     } else if (isVariableFlag) {
       operations = getConnectOperationsForVariable(selectedChartItem, _prevPos, _nextPos, _deletePos);
     } else {
@@ -109,6 +110,7 @@ function CodeFlowLabEditor() {
 
   return (
     <>
+      {isModalOpen && <FlowOptionModal />}
       <FlowHeader />
       <div className={cx('editor-wrap')}>
         <FlowToolbar />

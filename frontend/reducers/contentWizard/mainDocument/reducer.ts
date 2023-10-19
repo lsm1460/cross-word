@@ -6,11 +6,13 @@ import { createReducer } from 'typesafe-actions';
 import {
   EMIT_DOCUMENT_VALUE,
   RESET_DOCUMENT_VALUE,
+  RESET_OPTION_MODAL_INFO,
   SET_DELETE_ANIMATION_ID_LIST,
   SET_DELETE_TARGET_ID_LIST,
   SET_DOCUMENT,
   SET_DOCUMENT_VALUE,
   SET_FLOW_LOG,
+  SET_OPTION_MODAL_INFO,
   SET_SCENE_ORDER,
 } from './actions';
 import { DocumentAction, DocumentState, Operation } from './types';
@@ -41,6 +43,7 @@ const initialState: DocumentState = {
   sceneOrder: 1,
   deleteTargetIdList: [],
   flowLogList: [],
+  selectModal: null,
 };
 
 const documentReducer = createReducer<DocumentState, DocumentAction>(initialState, {
@@ -83,6 +86,8 @@ const documentReducer = createReducer<DocumentState, DocumentAction>(initialStat
       flowLogList: logList,
     };
   },
+  [SET_OPTION_MODAL_INFO]: (state, { payload: selectModal }) => ({ ...state, selectModal }),
+  [RESET_OPTION_MODAL_INFO]: (state) => ({ ...state, selectModal: null }),
 });
 
 export default documentReducer;

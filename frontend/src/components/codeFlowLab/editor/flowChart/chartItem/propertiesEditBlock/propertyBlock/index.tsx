@@ -5,6 +5,7 @@ const cx = classNames.bind(styles);
 import OptionSelector from '@/src/components/common/optionSelector';
 import _ from 'lodash';
 import { KeyboardEventHandler, useCallback, useRef } from 'react';
+import { SCROLL_CLASS_PREFIX } from '@/consts/codeFlowLab/items';
 
 type SelectOption = { value: any; label: string; isDisabled?: boolean };
 
@@ -64,7 +65,7 @@ function PropertyBlock({ id, propertyKey, value, propertyKeyList, valueList, onC
       <div className={cx('property-header')}>
         {propertyKeyList ? (
           <OptionSelector
-            options={propertyKeyList.options}
+            optionList={propertyKeyList.options}
             defaultValue={propertyKey}
             isSearchable
             onChange={handleChangeKey}
@@ -74,11 +75,16 @@ function PropertyBlock({ id, propertyKey, value, propertyKeyList, valueList, onC
         )}
       </div>
       {valueList ? (
-        <OptionSelector options={valueList} defaultValue={value} isSearchable onChange={(_val) => changeValue(_val)} />
+        <OptionSelector
+          optionList={valueList}
+          defaultValue={value}
+          isSearchable
+          onChange={(_val) => changeValue(_val)}
+        />
       ) : (
         <input
           ref={valueInputRef}
-          className={cx('value-input')}
+          className={cx('value-input', SCROLL_CLASS_PREFIX)}
           defaultValue={value}
           onChange={handleOnChange}
           type={typeof value}

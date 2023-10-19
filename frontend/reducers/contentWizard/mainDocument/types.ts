@@ -10,6 +10,7 @@ export type DocumentState = {
   sceneOrder: number;
   deleteTargetIdList: string[];
   flowLogList: FlowLog[];
+  selectModal: SelectModal;
 };
 
 export interface Operation {
@@ -22,4 +23,16 @@ export interface Operation {
 export interface SagaOperationParam {
   type: string;
   payload: Operation | Operation[];
+}
+
+export interface SelectOption {
+  value: string | number;
+  label: string;
+}
+
+export interface SelectModal {
+  optionList: SelectOption[];
+  onChange: (value: string | number) => void;
+  defaultValue?: string | number;
+  isSearchable?: boolean;
 }

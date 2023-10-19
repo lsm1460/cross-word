@@ -7,6 +7,7 @@ import _ from 'lodash';
 import PropertyBlock from '../propertyBlock';
 import { useDispatch } from 'react-redux';
 import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { SCROLL_CLASS_PREFIX } from '@/consts/codeFlowLab/items';
 
 const CSS_PROPERTIES = {
   display: ['block', 'inline', 'inline-block', 'flex'],
@@ -110,21 +111,23 @@ function StyleEditBlock({ id, styles }: Props) {
 
   return (
     <div>
-      {Object.keys(styles).map((_cssKey) => (
-        <PropertyBlock
-          key={`${id}-${_cssKey}`}
-          id={id}
-          propertyKey={_cssKey}
-          value={styles[_cssKey]}
-          onChangeValue={onChangeValue}
-          propertyKeyList={{
-            options: cssPropertiesList,
-            onChangeKey,
-          }}
-          {...(_.isArray(CSS_PROPERTIES[_cssKey]) && { valueList: getValueList(_cssKey) })}
-          onDelete={onDelete}
-        />
-      ))}
+      <div className={cx('property-list', { [SCROLL_CLASS_PREFIX]: true })}>
+        {Object.keys(styles).map((_cssKey) => (
+          <PropertyBlock
+            key={`${id}-${_cssKey}`}
+            id={id}
+            propertyKey={_cssKey}
+            value={styles[_cssKey]}
+            onChangeValue={onChangeValue}
+            propertyKeyList={{
+              options: cssPropertiesList,
+              onChangeKey,
+            }}
+            {...(_.isArray(CSS_PROPERTIES[_cssKey]) && { valueList: getValueList(_cssKey) })}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
 
       <button className={cx('property-add-button')} onClick={handleAddProperty}>
         <i className="material-symbols-outlined">add</i>
