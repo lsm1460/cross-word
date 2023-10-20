@@ -46,6 +46,8 @@ function PanelItem({ itemType }: Props) {
       '변수의 글자 수를 반환합니다. 특정 문자를 입력 시, 변수 안에서 해당 글자의 갯수를 반환합니다.',
     [ChartItemType.includes]: '변수 블럭 내에 특정 글자가 있는지 확인하여 참/거짓을 반환합니다.',
     [ChartItemType.indexOf]: '특정 문자가 변수 내에서 몇 번째 위치에 있는지 반환합니다.',
+    [ChartItemType.changeValue]: '특정 변수의 값을 변경합니다.',
+    [ChartItemType.addStyle]: '선택한 엘리먼트에 스타일을 더합니다.',
   };
 
   const handleMakeItem = () => {

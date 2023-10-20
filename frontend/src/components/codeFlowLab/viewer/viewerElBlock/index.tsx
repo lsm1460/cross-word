@@ -1,5 +1,5 @@
 import { ChartItemType, ScriptItem, ScriptTriggerItem, ViewerItem } from '@/consts/types/codeFlowLab';
-import { setFlowLogAction } from '@/reducers/contentWizard/mainDocument';
+import { setDocumentValueAction, setFlowLogAction } from '@/reducers/contentWizard/mainDocument';
 import dayjs from 'dayjs';
 import _ from 'lodash';
 import { useDispatch } from 'react-redux';
@@ -22,6 +22,8 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
   };
 
   const executeScriptBlock = (_scriptBlock: ScriptItem) => {
+    let _var;
+
     switch (_scriptBlock.elType) {
       case ChartItemType.if:
         const __code = _scriptBlock.connectionVariables
@@ -62,7 +64,7 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
         }
         break;
       case ChartItemType.console:
-        const _var = variables[_scriptBlock.connectionVariables[0]?.connectParentId];
+        _var = variables[_scriptBlock.connectionVariables[0]?.connectParentId];
         const _date = dayjs().format('HH:mm ss');
 
         dispatch(
@@ -73,13 +75,43 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
           })
         );
         break;
+      case ChartItemType.changeValue:
+        const _varId = _scriptBlock.connectionVariables[0]?.connectParentId;
+        _var = variables[_scriptBlock.connectionVariables[1]?.connectParentId] || _scriptBlock.text;
+        let _result = _var;
+
+        if (!_varId) {
+          break;
+        }
+
+        let _targetVar = variables[_varId];
+
+        if (_scriptBlock.isNumber) {
+          _targetVar = parseInt(_targetVar, 10) || (_targetVar ? 1 : 0);
+          _var = parseInt(_var, 10) || (_var ? 1 : 0);
+        } else {
+          _targetVar = `'${_targetVar}'`;
+          _var = `'${_var}'`;
+        }
+
+        _result = new Function(`let a = ${_targetVar}; return a ${_scriptBlock.operator} ${_var}`)();
+
+        dispatch(
+          setDocumentValueAction({
+            key: `items.${_varId}.var`,
+            value: _result,
+          })
+        );
+        _scriptBlock.operator;
+
+        break;
 
       default:
         break;
     }
 
     if (![ChartItemType.loop, ChartItemType.if].includes(_scriptBlock.elType)) {
-      for (let scriptBlock of _scriptBlock.script) {
+      for (let scriptBlock of _scriptBlock?.script || []) {
         executeScriptBlock(scriptBlock);
       }
     }

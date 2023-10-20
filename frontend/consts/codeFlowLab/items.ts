@@ -15,6 +15,8 @@ export const CHART_SCRIPT_ITEMS = [
   ChartItemType.loop,
   // ChartItemType.variable,
   ChartItemType.if,
+  ChartItemType.changeValue,
+  ChartItemType.addStyle,
 ];
 
 export const CHART_VARIABLE_ITEMS = [
@@ -103,7 +105,7 @@ export const FLOW_CHART_ITEMS_STYLE: {
     width: 200,
     height: 100,
     connectionTypeList: {
-      left: [ChartItemType.el, ChartItemType.style],
+      left: [ChartItemType.el, ChartItemType.style, ChartItemType.addStyle],
       right: [ChartItemType.style],
     },
   },
@@ -196,6 +198,22 @@ export const FLOW_CHART_ITEMS_STYLE: {
       right: [],
     },
   },
+  [ChartItemType.changeValue]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.function],
+      right: [],
+    },
+  },
+  [ChartItemType.addStyle]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.function],
+      right: [ChartItemType.style],
+    },
+  },
 };
 
 export const FLOW_ITEM_DEFAULT_INFO = {
@@ -257,6 +275,16 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
   [ChartItemType.indexOf]: {
     connectionVariables: [],
     text: '',
+  },
+  [ChartItemType.addStyle]: {
+    elId: '',
+  },
+  [ChartItemType.changeValue]: {
+    connectionVariables: [],
+    operator: '=',
+    isNumber: false,
+    text: '',
+    varId: '',
   },
 };
 

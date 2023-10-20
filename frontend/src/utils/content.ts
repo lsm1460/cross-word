@@ -108,7 +108,7 @@ export const getRandomId = (_length = 8) => {
 const getSize = (_target: string, _id: string, _key: string) => {
   if (_key) {
     const rgxp = new RegExp(_key, 'g');
-    return _target.match(rgxp).length;
+    return (_target.match(rgxp) || []).length;
   } else {
     return _target.length;
   }
@@ -127,31 +127,51 @@ export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items']
     }
 
     const _targetId = _item.connectionVariables[0].connectParentId;
+    const _textId = _item.connectionVariables[1]?.connectParentId;
 
     if (!CHART_VARIABLE_ITEMS.includes(_items[_targetId].elType)) {
       return undefined;
     }
 
-    let __var;
+    let __var, __text;
 
-    if (_items[_targetId].elType !== ChartItemType.variable) {
-      __var = searchUtilsVariableLoop(_items, _items[_targetId] as ChartUtilsItems);
+    if (!searched[_targetId]) {
+      if (_items[_targetId].elType !== ChartItemType.variable) {
+        __var = searchUtilsVariableLoop(_items, _items[_targetId] as ChartUtilsItems);
 
-      searched = {
-        ...searched,
-        [_targetId]: __var,
-      };
+        searched = {
+          ...searched,
+          [_targetId]: __var,
+        };
+      } else {
+        __var = (_items[_targetId] as ChartVariableItem).var;
+      }
     } else {
-      __var = (_items[_targetId] as ChartVariableItem).var;
+      __var = searched[_targetId];
+    }
+
+    if (!searched[_textId]) {
+      if (_textId && _items[_textId].elType !== ChartItemType.variable) {
+        __text = searchUtilsVariableLoop(_items, _items[_textId] as ChartUtilsItems);
+
+        searched = {
+          ...searched,
+          [_textId]: __text,
+        };
+      } else {
+        __text = _item.text;
+      }
+    } else {
+      __text = searched[_textId];
     }
 
     switch (_item.elType) {
       case ChartItemType.size:
-        return getSize(`${__var}`, _targetId, _item.text);
+        return getSize(`${__var}`, _targetId, __text);
       case ChartItemType.includes:
-        return `${__var}`.includes(_item.text) ? 1 : 0;
+        return `${__var}`.includes(__text) ? 1 : 0;
       case ChartItemType.indexOf:
-        return `${__var}`.indexOf(_item.text);
+        return `${__var}`.indexOf(__text);
 
       default:
         return undefined;

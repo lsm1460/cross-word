@@ -136,9 +136,12 @@ export const getBlockType = (_elType, _isDeep = false) => {
 export const getConnectSizeByType = (
   _idsByDic: ChartItems['connectionIds'],
   _chartItems: CodeFlowChartDoc['items'],
+  _sceneItemIds: string[],
   _isDeep: boolean
 ) => {
   return _.mapValues(_idsByDic, (_ids) => {
+    _ids = _ids.filter((_point) => _sceneItemIds.includes(_point.connectParentId));
+
     const typeGroup = _.groupBy(_ids, (_point) => getBlockType(_chartItems[_point.connectParentId]?.elType, _isDeep));
     return _.mapValues(typeGroup, (_ids) => _ids.length);
   });
@@ -197,4 +200,33 @@ export const makeNewRoot = (_sceneOrder: number): ChartBodyItem => {
       right: [],
     },
   };
+};
+
+export const getCanvasLineColor = (_originElType: ChartItemType, _nextElType: ChartItemType) => {
+  const _sortedType = _.sortBy([_nextElType, _originElType]);
+
+  if (_.isEqual(_sortedType, [ChartItemType.addStyle, ChartItemType.style])) {
+    return '#d3c355';
+  } else if (_.isEqual(_sortedType, [ChartItemType.style, ChartItemType.style])) {
+    return '#2ec438';
+  } else if (_sortedType.includes(ChartItemType.style)) {
+    return '#2e7d32';
+  } else if (_sortedType.includes(ChartItemType.span)) {
+    return '#a764db';
+  } else if (_sortedType.includes(ChartItemType.variable)) {
+    return '#ffc95c';
+  } else if (
+    _sortedType.includes(ChartItemType.script) ||
+    _.isEqual(_sortedType, [ChartItemType.function, ChartItemType.function])
+  ) {
+    return '#dadada';
+  } else if (_sortedType.includes(ChartItemType.function)) {
+    return '#cd823d';
+  } else if (_sortedType.includes(ChartItemType.trigger)) {
+    return '#e36775';
+  } else if (_sortedType.includes(ChartItemType.el)) {
+    return '#7b7be8';
+  } else {
+    return 'red';
+  }
 };

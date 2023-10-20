@@ -14,7 +14,7 @@ import {
 import { ChartItemType, ChartItems, CodeFlowChartDoc, ConnectPoint } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { setDeleteTargetIdListAction, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
-import { useDebounceSubmitText } from '@/src/utils/content';
+import { getSceneId, useDebounceSubmitText } from '@/src/utils/content';
 import _ from 'lodash';
 import { KeyboardEventHandler, MouseEventHandler, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,7 +32,14 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   const dispatch = useDispatch();
   const [debounceSubmitText] = useDebounceSubmitText(`items.${itemInfo.id}.name`);
 
-  const deleteTargetIdList = useSelector((state: RootState) => state.mainDocument.deleteTargetIdList);
+  const { deleteTargetIdList, sceneItemIds } = useSelector((state: RootState) => {
+    const sceneId = getSceneId(state.mainDocument.contentDocument.scene, state.mainDocument.sceneOrder);
+
+    return {
+      deleteTargetIdList: state.mainDocument.deleteTargetIdList,
+      sceneItemIds: state.mainDocument.contentDocument.scene[sceneId]?.itemIds || [],
+    };
+  });
 
   const checkDeep = ![
     ChartItemType.function,
@@ -42,8 +49,8 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   ].includes(itemInfo.elType);
 
   const connectSizeByType = useMemo(
-    () => getConnectSizeByType(itemInfo.connectionIds, chartItems, checkDeep),
-    [chartItems, itemInfo]
+    () => getConnectSizeByType(itemInfo.connectionIds, chartItems, sceneItemIds, checkDeep),
+    [chartItems, itemInfo, sceneItemIds]
   );
 
   const [itemName, setItemName] = useState(itemInfo.name);
@@ -67,7 +74,11 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
   const selectedName = useMemo(() => selectName(isTyping, itemInfo.name, itemName), [isTyping, itemInfo, itemName]);
   const connectPointList = useMemo(() => {
     return Object.keys(FLOW_CHART_ITEMS_STYLE[itemInfo.elType].connectionTypeList).map((_x, _i) => {
-      const typeGroup = _.groupBy(itemInfo.connectionIds[_x], (_point) => {
+      const _connectedSceneItemIdList = (itemInfo.connectionIds[_x] || []).filter((_pos: ConnectPoint) =>
+        sceneItemIds.includes(_pos.connectParentId)
+      );
+
+      const typeGroup = _.groupBy(_connectedSceneItemIdList, (_point) => {
         // 일반적으로는 그룹 별로 묶지만, 변수의 경우 다양한 블록들과 그룹지어 연결하지 않기 때문에 분기처리 추가
         if (checkVariableBlock(itemInfo.elType)) {
           return ChartItemType.variable;
@@ -128,7 +139,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
         </ul>
       );
     });
-  }, [connectSizeByType]);
+  }, [connectSizeByType, sceneItemIds]);
 
   const handleCancelInsert: KeyboardEventHandler<HTMLInputElement> = (_event) => {
     if (_event.code === 'Escape') {

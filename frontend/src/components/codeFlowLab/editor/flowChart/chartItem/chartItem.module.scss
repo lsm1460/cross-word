@@ -175,6 +175,11 @@
             background-color: $style-style-point-color;
           }
 
+          &.style-addStyle::before,
+          &.script-style::before {
+            background-color: $style-addStyle-point-color;
+          }
+
           &.element-trigger::before,
           &.span-trigger::before,
           &.trigger-element::before {

@@ -22,6 +22,8 @@ export enum ChartItemType {
   size = 'size',
   includes = 'includes',
   indexOf = 'indexOf',
+  changeValue = 'changeValue',
+  addStyle = 'addStyle',
 }
 
 interface FlowScene {
@@ -131,6 +133,19 @@ export interface ChartIndexOfItem extends ChartItem {
   text: string;
 }
 
+export interface ChartChangeValueItem extends ChartItem {
+  elType: ChartItemType.changeValue;
+  operator: '=' | '+=' | '-=' | '*=' | '/=';
+  isNumber: boolean;
+  text: string;
+  varId: string;
+}
+
+export interface ChartAddStyleItem extends ChartItem {
+  elType: ChartItemType.addStyle;
+  elId: string;
+}
+
 export type ChartItems =
   | ChartBodyItem
   | ChartButtonItem
@@ -145,7 +160,9 @@ export type ChartItems =
   | ChartConditionItem
   | ChartSizeItem
   | ChartIncludesItem
-  | ChartIndexOfItem;
+  | ChartIndexOfItem
+  | ChartChangeValueItem
+  | ChartAddStyleItem;
 
 export type ChartUtilsItems = ChartSizeItem | ChartIncludesItem | ChartIndexOfItem;
 
@@ -189,7 +206,21 @@ export interface ScriptIfItem extends ChartIfItem {
   script: ScriptItem[];
 }
 
-export type ScriptItem = ScriptTriggerItem | ScriptLoopItem | ScriptConsoleItem | ScriptIfItem;
+export interface ScriptChangeValueItem extends ChartChangeValueItem {
+  script: ScriptItem[];
+}
+
+export interface ScriptAddStyleItem extends ChartAddStyleItem {
+  script: ScriptItem[];
+}
+
+export type ScriptItem =
+  | ScriptTriggerItem
+  | ScriptLoopItem
+  | ScriptConsoleItem
+  | ScriptIfItem
+  | ScriptChangeValueItem
+  | ScriptAddStyleItem;
 
 export interface ViewerItem extends ChartItem {
   children: ViewerItem[];

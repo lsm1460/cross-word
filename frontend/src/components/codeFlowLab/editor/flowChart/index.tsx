@@ -2,7 +2,7 @@ import classNames from 'classnames/bind';
 import styles from './flowChart.module.scss';
 const cx = classNames.bind(styles);
 //
-import { CONNECT_POINT_CLASS } from '@/consts/codeFlowLab/items';
+import { CHART_SCRIPT_ITEMS, CONNECT_POINT_CLASS } from '@/consts/codeFlowLab/items';
 import { ChartItemType, ChartItems, ConnectPoint, PointPos } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { setDeleteTargetIdListAction } from '@/reducers/contentWizard/mainDocument';
@@ -12,7 +12,7 @@ import { MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState } 
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { ConnectPoints, MoveItems } from '..';
 import ChartItem from './chartItem';
-import { doPolygonsIntersect, getBlockType, getRectPoints } from './utils';
+import { doPolygonsIntersect, getBlockType, getCanvasLineColor, getRectPoints } from './utils';
 
 type PathInfo = { pos: string; prev: string; prevList: string[] };
 
@@ -280,26 +280,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     _ctx.strokeStyle = '#ff0000';
 
     if (_next && _next.el !== _origin.el) {
-      const _sortedType = _.sortBy([_next.connectType, _origin.connectType]);
-
-      if (_sortedType.includes(ChartItemType.style)) {
-        _ctx.strokeStyle = '#2ec438';
-      } else if (_sortedType.includes(ChartItemType.span)) {
-        _ctx.strokeStyle = '#a764db';
-      } else if (_sortedType.includes(ChartItemType.variable)) {
-        _ctx.strokeStyle = '#ffc95c';
-      } else if (
-        _sortedType.includes(ChartItemType.script) ||
-        _.isEqual(_sortedType, [ChartItemType.function, ChartItemType.function])
-      ) {
-        _ctx.strokeStyle = '#dadada';
-      } else if (_sortedType.includes(ChartItemType.function)) {
-        _ctx.strokeStyle = '#cd823d';
-      } else if (_sortedType.includes(ChartItemType.trigger)) {
-        _ctx.strokeStyle = '#e36775';
-      } else if (_sortedType.includes(ChartItemType.el)) {
-        _ctx.strokeStyle = '#7b7be8';
-      }
+      _ctx.strokeStyle = getCanvasLineColor(_origin.connectType, _next.connectType);
 
       _ctx.lineTo(_next.left + transX, _next.top + transY);
     } else if (_type === 'line' && selectedConnectionPoint.current) {
@@ -404,13 +385,21 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const _elType = selectedChartItem[originParentId].elType;
     const _targetType = selectedChartItem[targetParentId].elType;
 
+    if ([_elType, _targetType].includes(ChartItemType.changeValue)) {
+      // 변수 변경 블럭은 정말 변수만 연결되어야 한다.
+      return _.intersection([_elType, _targetType], [ChartItemType.variable, ...CHART_SCRIPT_ITEMS]).length > 1;
+    }
+
     const isTargetDeepCheck =
       _.intersection([_elType, _targetType], [ChartItemType.trigger, ChartItemType.function]).length > 1;
 
     const _convertedElType = getBlockType(_elType);
     const _convertedTargetElType = getBlockType(selectedChartItem[targetParentId].elType, isTargetDeepCheck);
 
-    if (originConnectType === ChartItemType.variable && targetConnectType === ChartItemType.variable) {
+    if (
+      (originConnectType === ChartItemType.variable && targetConnectType === ChartItemType.variable) ||
+      (originConnectType === ChartItemType.style && targetConnectType === ChartItemType.style)
+    ) {
       return true;
     }
 

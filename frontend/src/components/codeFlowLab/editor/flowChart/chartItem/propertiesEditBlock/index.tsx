@@ -12,6 +12,7 @@ import TextEditBlock from './textEditBlock';
 import TriggerEditBlock from './triggerEditBlock';
 import VariableEditBlock from './variableEditBlock';
 import VariableUtilsEditBlock from './variableUtilsEditBlock';
+import ChangeValueEditBlock from './changeValueEditBlock';
 
 interface Props {
   chartItem: ChartItems;
@@ -75,6 +76,17 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
           <VariableUtilsEditBlock
             id={chartItem.id}
             text={chartItem.text}
+            connectionVariables={chartItem.connectionVariables}
+            handlePointConnectStart={handlePointConnectStart}
+          />
+        );
+      case ChartItemType.changeValue:
+        return (
+          <ChangeValueEditBlock
+            id={chartItem.id}
+            text={chartItem.text}
+            isNumber={chartItem.isNumber}
+            operator={chartItem.operator}
             connectionVariables={chartItem.connectionVariables}
             handlePointConnectStart={handlePointConnectStart}
           />

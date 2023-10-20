@@ -40,7 +40,16 @@ function VariableUtilsEditBlock({ id, text, connectionVariables, handlePointConn
           </div>
         </div>
       </div>
-      <TextEditBlock id={id} text={text} propertyKey="text" />
+      <TextEditBlock
+        id={id}
+        text={text}
+        propertyKey="text"
+        pointInfo={{
+          pointIndex: 1,
+          connectPoint: connectionVariables[1],
+          handlePointConnectStart,
+        }}
+      />
     </div>
   );
 }
