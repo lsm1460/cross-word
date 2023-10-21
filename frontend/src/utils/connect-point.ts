@@ -161,43 +161,44 @@ export const getConnectOperationsForCondition = (
     );
 
     newTargetItems = _.mapValues(targetItems, (_item) => {
-      if (_item.id === ifPos.parentId) {
+      if (_item.id === _nextPos.parentId) {
         const { connectType, index } = ifPos.el.dataset;
 
         return {
           ..._item,
-          connectionVariables: [
-            ..._item.connectionVariables,
-            {
-              parentId: ifPos.parentId,
-              connectParentId: targetPos.parentId,
-              connectType: connectType as ChartItemType,
-              index: parseInt(index, 10),
-            },
-          ].filter((_var) => _var.connectParentId !== _deletePos.parentId),
-        };
-      } else if (_item.id !== targetPos.parentId && _item.id === _deletePos.parentId) {
-        return {
-          ..._item,
-          connectionIds: getDisconnectIds(_item.connectionIds, _deletePos, _prevPos),
-          ...(_item.connectionVariables && {
-            connectionVariables: _item.connectionVariables.filter(
-              (_var) => _var.connectParentId !== targetPos.parentId
-            ),
-          }),
-        };
-      } else if (_item.id === targetPos.parentId && _item.id !== _deletePos.parentId) {
-        const { connectType, index } = _nextPos.el.dataset;
-
-        return {
-          ..._item,
-          connectionIds: getChangeConnectIds(_item.connectionIds, targetPos, ifPos, _deletePos),
+          connectionIds: getConnectionIds(_item.connectionIds, _nextPos, _prevPos),
           ...(_item.connectionVariables && {
             connectionVariables: [
               ..._item.connectionVariables,
               {
-                parentId: targetPos.parentId,
-                connectParentId: ifPos.parentId,
+                parentId: _nextPos.parentId,
+                connectParentId: _prevPos.parentId,
+                connectType: connectType as ChartItemType,
+                index: parseInt(index, 10),
+              },
+            ].filter((_var) => _var.connectParentId !== _deletePos.parentId),
+          }),
+        };
+      } else if (_item.id === _deletePos.parentId) {
+        return {
+          ..._item,
+          connectionIds: getDisconnectIds(_item.connectionIds, _deletePos, _prevPos),
+          ...(_item.connectionVariables && {
+            connectionVariables: _item.connectionVariables.filter((_var) => _var.connectParentId !== _prevPos.parentId),
+          }),
+        };
+      } else if (_item.id === _prevPos.parentId) {
+        const { connectType, index } = _nextPos.el.dataset;
+
+        return {
+          ..._item,
+          connectionIds: getChangeConnectIds(_item.connectionIds, _prevPos, _nextPos, _deletePos),
+          ...(_item.connectionVariables && {
+            connectionVariables: [
+              ..._item.connectionVariables,
+              {
+                parentId: _prevPos.parentId,
+                connectParentId: _nextPos.parentId,
                 connectType: connectType as ChartItemType,
                 index: parseInt(index, 10),
               },
@@ -211,14 +212,14 @@ export const getConnectOperationsForCondition = (
 
     if (newTargetItems) {
       operations = Object.values(newTargetItems).map((_item) => {
-        let _changeKey;
+        let _changeKey = 'connectionVariables';
 
         if (_deletePos && _deletePos.parentId === _item.id && !_deletePos.isSlave) {
           _changeKey = 'connectionIds';
-        } else if (targetPos && targetPos.parentId === _item.id && !targetPos.isSlave) {
+        } else if (_nextPos && _nextPos.parentId === _item.id && !_nextPos.isSlave) {
           _changeKey = 'connectionIds';
-        } else {
-          _changeKey = _item.connectionVariables ? 'connectionVariables' : 'connectionIds';
+        } else if (_prevPos.parentId === _item.id && !_prevPos.isSlave) {
+          _changeKey = 'connectionIds';
         }
 
         return {

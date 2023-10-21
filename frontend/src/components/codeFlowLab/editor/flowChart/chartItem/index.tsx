@@ -4,6 +4,7 @@ const cx = classNames.bind(styles);
 //
 import {
   BLOCK_HEADER_SIZE,
+  CHART_SCRIPT_ITEMS,
   CONNECT_POINT_CLASS,
   CONNECT_POINT_GAP,
   CONNECT_POINT_SIZE,
@@ -41,12 +42,7 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
     };
   });
 
-  const checkDeep = ![
-    ChartItemType.function,
-    ChartItemType.trigger,
-    ChartItemType.style,
-    ChartItemType.console,
-  ].includes(itemInfo.elType);
+  const checkDeep = ![ChartItemType.trigger, ChartItemType.style, ...CHART_SCRIPT_ITEMS].includes(itemInfo.elType);
 
   const connectSizeByType = useMemo(
     () => getConnectSizeByType(itemInfo.connectionIds, chartItems, sceneItemIds, checkDeep),

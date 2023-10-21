@@ -123,7 +123,7 @@ export const getBlockType = (_elType, _isDeep = false) => {
 
     return ChartItemType.el;
   } else if (CHART_SCRIPT_ITEMS.includes(_elType)) {
-    if (_isDeep && _elType === ChartItemType.function) {
+    if (_isDeep) {
       return _elType;
     }
 
