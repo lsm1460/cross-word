@@ -24,6 +24,12 @@ export enum ChartItemType {
   indexOf = 'indexOf',
   changeValue = 'changeValue',
   addStyle = 'addStyle',
+  removeStyle = 'removeStyle',
+  toggleStyle = 'toggleStyle',
+  moveScene = 'moveScene',
+  moveNextScene = 'moveNextScene',
+  movePrevScene = 'movePrevScene',
+  getSceneOrder = 'getSceneOrder',
 }
 
 interface FlowScene {
@@ -146,6 +152,38 @@ export interface ChartAddStyleItem extends ChartItem {
   elId: string;
 }
 
+export interface ChartAddStyleItem extends ChartItem {
+  elType: ChartItemType.addStyle;
+  elId: string;
+}
+
+export interface ChartRemoveStyleItem extends ChartItem {
+  elType: ChartItemType.removeStyle;
+  elId: string;
+}
+
+export interface ChartToggleStyleItem extends ChartItem {
+  elType: ChartItemType.toggleStyle;
+  elId: string;
+}
+
+export interface ChartMoveSceneItem extends ChartItem {
+  elType: ChartItemType.moveScene;
+  sceneOrder: number;
+}
+
+export interface ChartMoveNextSceneItem extends ChartItem {
+  elType: ChartItemType.moveNextScene;
+}
+
+export interface ChartMovePrevSceneItem extends ChartItem {
+  elType: ChartItemType.movePrevScene;
+}
+
+export interface ChartGetSceneOrderItem extends ChartItem {
+  elType: ChartItemType.getSceneOrder;
+}
+
 export type ChartItems =
   | ChartBodyItem
   | ChartButtonItem
@@ -162,7 +200,13 @@ export type ChartItems =
   | ChartIncludesItem
   | ChartIndexOfItem
   | ChartChangeValueItem
-  | ChartAddStyleItem;
+  | ChartAddStyleItem
+  | ChartRemoveStyleItem
+  | ChartToggleStyleItem
+  | ChartMoveSceneItem
+  | ChartMoveNextSceneItem
+  | ChartMovePrevSceneItem
+  | ChartGetSceneOrderItem;
 
 export type ChartUtilsItems = ChartSizeItem | ChartIncludesItem | ChartIndexOfItem;
 
@@ -214,13 +258,43 @@ export interface ScriptAddStyleItem extends ChartAddStyleItem {
   script: ScriptItem[];
 }
 
+export interface ScriptRemoveStyleItem extends ChartRemoveStyleItem {
+  script: ScriptItem[];
+}
+
+export interface ScriptToggleStyleItem extends ChartToggleStyleItem {
+  script: ScriptItem[];
+}
+
+export interface ScriptMoveSceneItem extends ChartMoveSceneItem {
+  script: ScriptItem[];
+}
+
+export interface ScriptMoveNextSceneItem extends ChartMoveNextSceneItem {
+  script: ScriptItem[];
+}
+
+export interface ScriptMovePrevSceneItem extends ChartMovePrevSceneItem {
+  script: ScriptItem[];
+}
+
+export interface ScriptGetSceneOrderItem extends ChartGetSceneOrderItem {
+  script: ScriptItem[];
+}
+
 export type ScriptItem =
   | ScriptTriggerItem
   | ScriptLoopItem
   | ScriptConsoleItem
   | ScriptIfItem
   | ScriptChangeValueItem
-  | ScriptAddStyleItem;
+  | ScriptAddStyleItem
+  | ScriptRemoveStyleItem
+  | ScriptToggleStyleItem
+  | ScriptMoveSceneItem
+  | ScriptMoveNextSceneItem
+  | ScriptMovePrevSceneItem
+  | ScriptGetSceneOrderItem;
 
 export interface ViewerItem extends ChartItem {
   children: ViewerItem[];

@@ -48,6 +48,14 @@ function PanelItem({ itemType }: Props) {
     [ChartItemType.indexOf]: '특정 문자가 변수 내에서 몇 번째 위치에 있는지 반환합니다.',
     [ChartItemType.changeValue]: '특정 변수의 값을 변경합니다.',
     [ChartItemType.addStyle]: '선택한 엘리먼트에 스타일을 더합니다.',
+    [ChartItemType.removeStyle]: '선택한 엘리먼트에 스타일을 지웁니다.',
+    [ChartItemType.toggleStyle]:
+      '선택한 엘리먼트의 스타일을 더하거나 지웁니다.  만약 실행 시점에서 스타일에 누락이 있다면, 더하는 이벤트만 실행이 됩니다.',
+    [ChartItemType.moveScene]:
+      '원하는 장면의 다음 장면으로 화면을 전환합니다. 범위를 초과하는 값이 입력된 경우 첫 페이지 또는 마지막 페이지로 이동될 수 있습니다.',
+    [ChartItemType.moveNextScene]: '현재 장면의 다음 장면으로 화면을 전환합니다. 마지막 장면인 경우 전환되지 않습니다.',
+    [ChartItemType.movePrevScene]: '현재 장면의 전 장면으로 화면을 전환합니다. 첫 장면인 경우 전환되지 않습니다.',
+    [ChartItemType.getSceneOrder]: '현재 장면의 순서를 반환합니다.',
   };
 
   const handleMakeItem = () => {

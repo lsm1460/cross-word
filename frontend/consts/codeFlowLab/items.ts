@@ -17,6 +17,11 @@ export const CHART_SCRIPT_ITEMS = [
   ChartItemType.if,
   ChartItemType.changeValue,
   ChartItemType.addStyle,
+  ChartItemType.removeStyle,
+  ChartItemType.toggleStyle,
+  ChartItemType.moveScene,
+  ChartItemType.moveNextScene,
+  ChartItemType.movePrevScene,
 ];
 
 export const CHART_VARIABLE_ITEMS = [
@@ -214,6 +219,54 @@ export const FLOW_CHART_ITEMS_STYLE: {
       right: [ChartItemType.style],
     },
   },
+  [ChartItemType.removeStyle]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.function],
+      right: [ChartItemType.style],
+    },
+  },
+  [ChartItemType.toggleStyle]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.function],
+      right: [ChartItemType.style],
+    },
+  },
+  [ChartItemType.moveScene]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.function],
+      right: [],
+    },
+  },
+  [ChartItemType.moveNextScene]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.function],
+      right: [],
+    },
+  },
+  [ChartItemType.movePrevScene]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.function],
+      right: [],
+    },
+  },
+  [ChartItemType.getSceneOrder]: {
+    width: 200,
+    height: 100,
+    connectionTypeList: {
+      left: [ChartItemType.function],
+      right: [],
+    },
+  },
 };
 
 export const FLOW_ITEM_DEFAULT_INFO = {
@@ -279,6 +332,12 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
   [ChartItemType.addStyle]: {
     elId: '',
   },
+  [ChartItemType.removeStyle]: {
+    elId: '',
+  },
+  [ChartItemType.toggleStyle]: {
+    elId: '',
+  },
   [ChartItemType.changeValue]: {
     connectionVariables: [],
     operator: '=',
@@ -286,6 +345,12 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     text: '',
     varId: '',
   },
+  [ChartItemType.moveScene]: {
+    sceneOrder: 0,
+  },
+  [ChartItemType.moveNextScene]: {},
+  [ChartItemType.movePrevScene]: {},
+  [ChartItemType.getSceneOrder]: {},
 };
 
 export const CONNECT_POINT_START = 15;

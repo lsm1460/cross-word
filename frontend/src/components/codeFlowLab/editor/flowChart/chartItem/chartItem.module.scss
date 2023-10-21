@@ -176,7 +176,9 @@
           }
 
           &.style-addStyle::before,
-          &.script-style::before {
+          &.addStyle-style::before,
+          &.removeStyle-style::before,
+          &.toggleStyle-style::before {
             background-color: $style-addStyle-point-color;
           }
 
