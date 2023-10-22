@@ -55,13 +55,20 @@ function PanelItem({ itemType }: Props) {
       '원하는 장면의 다음 장면으로 화면을 전환합니다. 범위를 초과하는 값이 입력된 경우 첫 페이지 또는 마지막 페이지로 이동될 수 있습니다.',
     [ChartItemType.moveNextScene]: '현재 장면의 다음 장면으로 화면을 전환합니다. 마지막 장면인 경우 전환되지 않습니다.',
     [ChartItemType.movePrevScene]: '현재 장면의 전 장면으로 화면을 전환합니다. 첫 장면인 경우 전환되지 않습니다.',
-    [ChartItemType.getSceneOrder]: '현재 장면의 순서를 반환합니다.',
+    [ChartItemType.sceneOrder]: '현재 장면의 순서를 반환합니다.',
   };
 
   const handleMakeItem = () => {
     const zoomArea = document.getElementById(ZOOM_AREA_ELEMENT_ID);
 
-    const [newFlowItem, pos, newItemId] = makeNewItem(zoomArea, selectedChartItem, itemsPos, itemType, selectedSceneId);
+    const [newFlowItem, pos, newItemId] = makeNewItem(
+      zoomArea,
+      chartItems,
+      selectedChartItem,
+      itemsPos,
+      itemType,
+      selectedSceneId
+    );
 
     const operations: Operation[] = [
       {

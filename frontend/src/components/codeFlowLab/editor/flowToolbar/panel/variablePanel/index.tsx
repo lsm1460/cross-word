@@ -28,7 +28,7 @@ function VariablePanel({ isSubOpen, setIsSubOpen }: Props) {
   return (
     <div className={cx('variable-panel-wrap')}>
       <PanelItemList itemList={CHART_VARIABLE_ITEMS} ableSearch={false} />
-      <div className={cx('globals-variable-wrap')}>
+      <div className={cx('globals-variable-wrap', { 'is-open': isSubOpen })}>
         <input
           type="checkbox"
           id="globalVariableOpener"

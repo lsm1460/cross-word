@@ -1,4 +1,3 @@
-import { CSSProperties } from 'react';
 import PropertyBlock from '../propertyBlock';
 
 const TRIGGER_LIST = [

@@ -1,3 +1,4 @@
+@import '../../variables';
 @import '../../mixin';
 
 $main-bg-color-light: #1c1c1c;
@@ -11,6 +12,7 @@ $tabs-selected-text-color: #c1c1c1;
 
 .flow-tabs-wrap {
   width: 100%;
+  height: $editor-tabs-height;
   overflow: hidden;
 }
 

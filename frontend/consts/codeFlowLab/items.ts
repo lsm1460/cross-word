@@ -30,6 +30,7 @@ export const CHART_VARIABLE_ITEMS = [
   ChartItemType.size,
   ChartItemType.includes,
   ChartItemType.indexOf,
+  ChartItemType.sceneOrder,
 ];
 
 export const FLOW_CHART_ITEMS_STYLE: {
@@ -259,11 +260,11 @@ export const FLOW_CHART_ITEMS_STYLE: {
       right: [],
     },
   },
-  [ChartItemType.getSceneOrder]: {
+  [ChartItemType.sceneOrder]: {
     width: 200,
     height: 100,
     connectionTypeList: {
-      left: [ChartItemType.function],
+      left: [ChartItemType.variable],
       right: [],
     },
   },
@@ -350,7 +351,7 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
   },
   [ChartItemType.moveNextScene]: {},
   [ChartItemType.movePrevScene]: {},
-  [ChartItemType.getSceneOrder]: {},
+  [ChartItemType.sceneOrder]: {},
 };
 
 export const CONNECT_POINT_START = 15;

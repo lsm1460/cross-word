@@ -7,13 +7,16 @@ import {
   EMIT_DOCUMENT_VALUE,
   RESET_DOCUMENT_VALUE,
   RESET_OPTION_MODAL_INFO,
+  SET_ADDED_STYLES,
   SET_DELETE_ANIMATION_ID_LIST,
   SET_DELETE_TARGET_ID_LIST,
   SET_DOCUMENT,
   SET_DOCUMENT_VALUE,
   SET_FLOW_LOG,
   SET_OPTION_MODAL_INFO,
+  SET_REMOVE_STYLES,
   SET_SCENE_ORDER,
+  SET_TOGGLE_STYLES,
 } from './actions';
 import { DocumentAction, DocumentState, Operation } from './types';
 
@@ -44,6 +47,7 @@ const initialState: DocumentState = {
   deleteTargetIdList: [],
   flowLogList: [],
   selectModal: null,
+  addedStyles: {},
 };
 
 const documentReducer = createReducer<DocumentState, DocumentAction>(initialState, {
@@ -88,6 +92,67 @@ const documentReducer = createReducer<DocumentState, DocumentAction>(initialStat
   },
   [SET_OPTION_MODAL_INFO]: (state, { payload: selectModal }) => ({ ...state, selectModal }),
   [RESET_OPTION_MODAL_INFO]: (state) => ({ ...state, selectModal: null }),
+  [SET_ADDED_STYLES]: (state, { payload }) => {
+    const { id, style } = payload;
+
+    if (!Object.keys(state.contentDocument.items).includes(id)) {
+      return state;
+    }
+
+    return {
+      ...state,
+      addedStyles: {
+        ...state.addedStyles,
+        [id]: {
+          ...(state.addedStyles[id] || {}),
+          ...style,
+        },
+      },
+    };
+  },
+  [SET_REMOVE_STYLES]: (state, { payload }) => {
+    const { id, style } = payload;
+
+    if (!Object.keys(state.contentDocument.items).includes(id)) {
+      return state;
+    }
+
+    return {
+      ...state,
+      addedStyles: {
+        ...state.addedStyles,
+        [id]: _.pickBy(state.addedStyles[id] || {}, (_val, _key) => style[_key] !== _val),
+      },
+    };
+  },
+  [SET_TOGGLE_STYLES]: (state, { payload }) => {
+    const { id, style } = payload;
+
+    if (!Object.keys(state.contentDocument.items).includes(id)) {
+      return state;
+    }
+
+    if (_.isEqual(state.addedStyles[id], style)) {
+      return {
+        ...state,
+        addedStyles: {
+          ...state.addedStyles,
+          [id]: _.pickBy(state.addedStyles[id] || {}, (_val, _key) => style[_key] !== _val),
+        },
+      };
+    } else {
+      return {
+        ...state,
+        addedStyles: {
+          ...state.addedStyles,
+          [id]: {
+            ...(state.addedStyles[id] || {}),
+            ...style,
+          },
+        },
+      };
+    }
+  },
 });
 
 export default documentReducer;

@@ -591,7 +591,6 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   };
 
   const handleMouseUpPoint = (_event) => {
-    console.log(0);
     setIsClearCanvasTrigger(true);
     setPointMove(null);
 
@@ -611,7 +610,6 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
         connectPoint = makePointPosByEl(_upEl);
       }
 
-      console.log(1);
       if (disconnectionPoint.current && _connected) {
         // change
         connectPoints(selectedConnectionPoint.current, connectPoint, disconnectionPoint.current);

@@ -28,12 +28,28 @@ function FlowOptionModal() {
   }, [isOpen, isSearchable]);
 
   useEffect(() => {
+    const closeModal = (_event) => {
+      if (_event.key === 'Escape') {
+        dispatch(resetOptionModalInfoAction());
+      }
+    };
+
+    window.addEventListener('keydown', closeModal);
+
+    return () => {
+      window.removeEventListener('keydown', closeModal);
+    };
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (selectContainerRef.current && !selectContainerRef.current.contains(event.target as Node)) {
         dispatch(resetOptionModalInfoAction());
       }
     };
+
     document.addEventListener('mousedown', handleClickOutside);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };

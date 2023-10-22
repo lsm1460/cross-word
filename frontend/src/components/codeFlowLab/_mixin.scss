@@ -67,11 +67,7 @@
     background-color: $function-point-color;
   }
 
-  &.variable::before,
-  &.condition::before,
-  &.size::before,
-  &.includes::before,
-  &.indexOf::before {
+  &.variable::before {
     background-color: $variable-point-color;
   }
 }

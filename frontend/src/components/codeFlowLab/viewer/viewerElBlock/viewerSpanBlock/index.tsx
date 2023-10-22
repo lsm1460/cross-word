@@ -1,6 +1,6 @@
 import { ChartSpanItem, TriggerProps, ViewerItem } from '@/consts/types/codeFlowLab';
 import _ from 'lodash';
-import { useMemo } from 'react';
+import { CSSProperties, useMemo } from 'react';
 
 interface SpanViewerItem extends ViewerItem {
   text?: ChartSpanItem['text'];
@@ -12,15 +12,16 @@ interface Props {
   variables: {
     [x: string]: any;
   };
+  addedStyle: CSSProperties;
 }
-function ViewerSpanBlock({ viewerItem, triggerProps, variables }: Props) {
+function ViewerSpanBlock({ viewerItem, triggerProps, variables, addedStyle }: Props) {
   const textVariable = useMemo(
     () => variables[viewerItem.connectionVariables[0]?.connectParentId],
     [variables, viewerItem]
   );
 
   return (
-    <span style={viewerItem.styles} {...triggerProps}>
+    <span style={{ ...viewerItem.styles, ...addedStyle }} {...triggerProps}>
       {_.isUndefined(textVariable) ? viewerItem.text : textVariable}
     </span>
   );

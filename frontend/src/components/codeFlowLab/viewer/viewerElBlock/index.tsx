@@ -1,8 +1,28 @@
-import { ChartItemType, ScriptItem, ScriptTriggerItem, ViewerItem } from '@/consts/types/codeFlowLab';
-import { setDocumentValueAction, setFlowLogAction } from '@/reducers/contentWizard/mainDocument';
+import {
+  ChartItemType,
+  ChartStyleItem,
+  ScriptAddStyleItem,
+  ScriptChangeValueItem,
+  ScriptConsoleItem,
+  ScriptIfItem,
+  ScriptItem,
+  ScriptLoopItem,
+  ScriptRemoveStyleItem,
+  ScriptToggleStyleItem,
+  ScriptTriggerItem,
+  ViewerItem,
+} from '@/consts/types/codeFlowLab';
+import { RootState } from '@/reducers';
+import {
+  setAddedStylesAction,
+  setDocumentValueAction,
+  setFlowLogAction,
+  setRemoveStylesAction,
+  setToggleStylesAction,
+} from '@/reducers/contentWizard/mainDocument';
 import dayjs from 'dayjs';
 import _ from 'lodash';
-import { useDispatch } from 'react-redux';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import ViewerButtonBlock from './viewerButtonBlock';
 import ViewerDivBlock from './viewerDivBlock';
 import ViewerParagraphBlock from './viewerParagraphBlock';
@@ -17,93 +37,139 @@ interface Props {
 function ViewerElBlock({ viewerItem, variables }: Props) {
   const dispatch = useDispatch();
 
+  const addedStyle = useSelector(
+    (state: RootState) => state.mainDocument.addedStyles[viewerItem.id] || {},
+    shallowEqual
+  );
+
   const convertTriggerName = {
     click: 'onClick',
   };
 
-  const executeScriptBlock = (_scriptBlock: ScriptItem) => {
-    let _var;
+  const executeConditionScript = (_scriptBlock: ScriptIfItem) => {
+    const __code = _scriptBlock.connectionVariables
+      .filter((_var) => _var.connectType === 'variable')
+      .reduce((_acc, _cur, _index) => {
+        let _text = '';
 
-    switch (_scriptBlock.elType) {
-      case ChartItemType.if:
-        const __code = _scriptBlock.connectionVariables
-          .filter((_var) => _var.connectType === 'variable')
-          .reduce((_acc, _cur, _index) => {
-            let _text = '';
-
-            if (_index !== 0) {
-              _text += _scriptBlock.conditions?.[_cur.connectParentId] || '&&';
-            }
-            _text += variables[_cur.connectParentId];
-
-            return _acc + _text;
-          }, '');
-
-        const conditionResult = new Function(`return ${__code}`)();
-
-        if (conditionResult) {
-          executeScriptBlock(_scriptBlock.script[0]);
-        } else {
-          executeScriptBlock(_scriptBlock.script[1]);
+        if (_index !== 0) {
+          _text += _scriptBlock.conditions?.[_cur.connectParentId] || '&&';
         }
+        _text += variables[_cur.connectParentId];
 
+        return _acc + _text;
+      }, '');
+
+    const conditionResult = new Function(`return ${__code}`)();
+
+    if (conditionResult) {
+      executeScriptBlock(_scriptBlock.script[0]);
+    } else {
+      executeScriptBlock(_scriptBlock.script[1]);
+    }
+  };
+
+  const executeLoopScript = (_scriptBlock: ScriptLoopItem) => {
+    const [_vStart, _vEnd, _vIncrease] = new Array(3)
+      .fill(undefined)
+      .map((__, _i) => parseInt(variables[_scriptBlock.connectionVariables?.[_i]?.connectParentId] as string, 10));
+
+    for (
+      let _i = _.isNaN(_vStart) ? _scriptBlock.loop.start : _vStart || 0;
+      _i < (_.isNaN(_vEnd) ? _scriptBlock.loop.end : _vEnd || 1);
+      _i = _i + (_.isNaN(_vIncrease) ? _scriptBlock.loop.increase : _vIncrease || 1)
+    ) {
+      for (let scriptBlock of _scriptBlock.script) {
+        executeScriptBlock(scriptBlock);
+      }
+    }
+  };
+
+  const executeConsoleScript = (_scriptBlock: ScriptConsoleItem) => {
+    const _var = variables[_scriptBlock.connectionVariables[0]?.connectParentId];
+    const _date = dayjs().format('HH:mm ss');
+
+    dispatch(
+      setFlowLogAction({
+        date: _date,
+        text: _.isUndefined(_var) ? _scriptBlock.text : (_var as string),
+        type: 'log',
+      })
+    );
+  };
+
+  const executeChangeValueScript = (_scriptBlock: ScriptChangeValueItem) => {
+    const _varId = _scriptBlock.connectionVariables[0]?.connectParentId;
+    let _var = variables[_scriptBlock.connectionVariables[1]?.connectParentId] || _scriptBlock.text;
+    let _result = _var;
+
+    if (!_varId) {
+      return;
+    }
+
+    let _targetVar = variables[_varId];
+
+    if (_scriptBlock.isNumber) {
+      _targetVar = parseInt(_targetVar, 10) || (_targetVar ? 1 : 0);
+      _var = parseInt(_var, 10) || (_var ? 1 : 0);
+    } else {
+      _targetVar = `'${_targetVar}'`;
+      _var = `'${_var}'`;
+    }
+
+    _result = new Function(`let a = ${_targetVar}; return a ${_scriptBlock.operator} ${_var}`)();
+
+    dispatch(
+      setDocumentValueAction({
+        key: `items.${_varId}.var`,
+        value: _result,
+      })
+    );
+  };
+
+  const executeAddStyle = (_scriptBlock: ScriptAddStyleItem | ScriptRemoveStyleItem | ScriptToggleStyleItem) => {
+    if (!_scriptBlock.elId) {
+      return;
+    }
+
+    const _styles = _scriptBlock.script.reduce((_acc, _cur: ChartStyleItem) => {
+      return {
+        ..._acc,
+        ..._cur.styles,
+      };
+    }, {});
+
+    if (_scriptBlock.elType === ChartItemType.addStyle) {
+      dispatch(setAddedStylesAction({ id: _scriptBlock.elId, style: _styles }));
+    } else if (_scriptBlock.elType === ChartItemType.removeStyle) {
+      dispatch(setRemoveStylesAction({ id: _scriptBlock.elId, style: _styles }));
+    } else {
+      dispatch(setToggleStylesAction({ id: _scriptBlock.elId, style: _styles }));
+    }
+  };
+
+  const executeScriptBlock = (_scriptBlock: ScriptItem | ChartStyleItem) => {
+    if (!_scriptBlock || _scriptBlock.elType === ChartItemType.style) {
+      return;
+    }
+
+    switch (_scriptBlock?.elType) {
+      case ChartItemType.if:
+        executeConditionScript(_scriptBlock);
         break;
       case ChartItemType.loop:
-        const [_vStart, _vEnd, _vIncrease] = new Array(3)
-          .fill(undefined)
-          .map((__, _i) => parseInt(variables[_scriptBlock.connectionVariables?.[_i]?.connectParentId] as string, 10));
-
-        for (
-          let _i = _.isNaN(_vStart) ? _scriptBlock.loop.start : _vStart || 0;
-          _i < (_.isNaN(_vEnd) ? _scriptBlock.loop.end : _vEnd || 1);
-          _i = _i + (_.isNaN(_vIncrease) ? _scriptBlock.loop.increase : _vIncrease || 1)
-        ) {
-          for (let scriptBlock of _scriptBlock.script) {
-            executeScriptBlock(scriptBlock);
-          }
-        }
+        executeLoopScript(_scriptBlock);
         break;
       case ChartItemType.console:
-        _var = variables[_scriptBlock.connectionVariables[0]?.connectParentId];
-        const _date = dayjs().format('HH:mm ss');
-
-        dispatch(
-          setFlowLogAction({
-            date: _date,
-            text: _.isUndefined(_var) ? _scriptBlock.text : (_var as string),
-            type: 'log',
-          })
-        );
+        executeConsoleScript(_scriptBlock);
         break;
       case ChartItemType.changeValue:
-        const _varId = _scriptBlock.connectionVariables[0]?.connectParentId;
-        _var = variables[_scriptBlock.connectionVariables[1]?.connectParentId] || _scriptBlock.text;
-        let _result = _var;
-
-        if (!_varId) {
-          break;
-        }
-
-        let _targetVar = variables[_varId];
-
-        if (_scriptBlock.isNumber) {
-          _targetVar = parseInt(_targetVar, 10) || (_targetVar ? 1 : 0);
-          _var = parseInt(_var, 10) || (_var ? 1 : 0);
-        } else {
-          _targetVar = `'${_targetVar}'`;
-          _var = `'${_var}'`;
-        }
-
-        _result = new Function(`let a = ${_targetVar}; return a ${_scriptBlock.operator} ${_var}`)();
-
-        dispatch(
-          setDocumentValueAction({
-            key: `items.${_varId}.var`,
-            value: _result,
-          })
-        );
-        _scriptBlock.operator;
-
+        executeChangeValueScript(_scriptBlock);
+        break;
+      case ChartItemType.addStyle:
+      case ChartItemType.removeStyle:
+      case ChartItemType.toggleStyle:
+        executeAddStyle(_scriptBlock);
         break;
 
       default:
@@ -133,16 +199,36 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
       {
         {
           [ChartItemType.div]: (
-            <ViewerDivBlock viewerItem={viewerItem} triggerProps={triggerProps} variables={variables} />
+            <ViewerDivBlock
+              viewerItem={viewerItem}
+              triggerProps={triggerProps}
+              variables={variables}
+              addedStyle={addedStyle}
+            />
           ),
           [ChartItemType.button]: (
-            <ViewerButtonBlock viewerItem={viewerItem} triggerProps={triggerProps} variables={variables} />
+            <ViewerButtonBlock
+              viewerItem={viewerItem}
+              triggerProps={triggerProps}
+              variables={variables}
+              addedStyle={addedStyle}
+            />
           ),
           [ChartItemType.paragraph]: (
-            <ViewerParagraphBlock viewerItem={viewerItem} triggerProps={triggerProps} variables={variables} />
+            <ViewerParagraphBlock
+              viewerItem={viewerItem}
+              triggerProps={triggerProps}
+              variables={variables}
+              addedStyle={addedStyle}
+            />
           ),
           [ChartItemType.span]: (
-            <ViewerSpanBlock viewerItem={viewerItem} triggerProps={triggerProps} variables={variables} />
+            <ViewerSpanBlock
+              viewerItem={viewerItem}
+              triggerProps={triggerProps}
+              variables={variables}
+              addedStyle={addedStyle}
+            />
           ),
         }[viewerItem.elType]
       }

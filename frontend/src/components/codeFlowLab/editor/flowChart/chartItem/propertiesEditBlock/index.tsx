@@ -4,7 +4,9 @@ const cx = classNames.bind(styles);
 //
 import { ChartItemType, ChartItems } from '@/consts/types/codeFlowLab';
 import { MouseEventHandler } from 'react';
+import ChangeValueEditBlock from './changeValueEditBlock';
 import ConditionEditBlock from './conditionEditBlock';
+import IdSelectBlock from './idSelectBlock';
 import IfEditBlock from './ifEditBlock';
 import LoopEditBlock from './loopEditBlock';
 import StyleEditBlock from './styleEditBlock';
@@ -12,7 +14,6 @@ import TextEditBlock from './textEditBlock';
 import TriggerEditBlock from './triggerEditBlock';
 import VariableEditBlock from './variableEditBlock';
 import VariableUtilsEditBlock from './variableUtilsEditBlock';
-import ChangeValueEditBlock from './changeValueEditBlock';
 
 interface Props {
   chartItem: ChartItems;
@@ -91,6 +92,11 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
             handlePointConnectStart={handlePointConnectStart}
           />
         );
+
+      case ChartItemType.addStyle:
+      case ChartItemType.removeStyle:
+      case ChartItemType.toggleStyle:
+        return <IdSelectBlock id={chartItem.id} elId={chartItem.elId} />;
 
       default:
         return <></>;

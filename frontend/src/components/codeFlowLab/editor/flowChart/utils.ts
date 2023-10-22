@@ -111,11 +111,10 @@ export const checkVariableBlock = (_elType: ChartItemType) => {
 
 export const getBlockType = (_elType, _isDeep = false) => {
   if (checkVariableBlock(_elType)) {
-    return _elType;
+    return ChartItemType.variable;
   }
 
   // 트리거는 function만 붙일 수 있도록 예외처리 추가
-
   if (CHART_ELEMENT_ITEMS.includes(_elType)) {
     if (_isDeep && _elType === ChartItemType.span) {
       return _elType;
@@ -149,6 +148,7 @@ export const getConnectSizeByType = (
 
 export const makeNewItem = (
   zoomArea: HTMLElement,
+  chartItems: CodeFlowChartDoc['items'],
   selectedChartItems: CodeFlowChartDoc['items'],
   itemsPos: CodeFlowChartDoc['itemsPos'],
   itemType: ChartItemType,
@@ -161,7 +161,7 @@ export const makeNewItem = (
 
   const itemList = Object.values(selectedChartItems);
   const lastEl = itemList[itemList.length - 1];
-  const itemSize = _.filter(itemList, (_item) => _item.elType === itemType).length;
+  const itemSize = Object.values(chartItems).filter((_item) => _item.elType === itemType).length;
 
   let _pos = {
     left: width / parseFloat(scale) / 2 - parseFloat(transX),

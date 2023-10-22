@@ -193,11 +193,7 @@
             background-color: $trigger-function-point-color;
           }
 
-          &.variable-variable::before,
-          &.condition-variable::before,
-          &.size-variable::before,
-          &.includes-variable::before,
-          &.indexOf-variable::before {
+          &.variable-variable::before {
             background-color: $variable-point-color;
           }
         }

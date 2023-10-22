@@ -10,6 +10,7 @@ import React, { useMemo } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import { getBlockType } from '../editor/flowChart/utils';
 import ViewerElBlock from './viewerElBlock';
+import ViewerBodyBlock from './viewerElBlock/viewerBodyBlock';
 
 interface Props {}
 function FlowChartViewer({}: Props) {
@@ -24,7 +25,10 @@ function FlowChartViewer({}: Props) {
     };
   }, shallowEqual);
 
-  const variables = useMemo(() => getVariables(sceneId, chartItems, sceneItemIds), [sceneId, chartItems]);
+  const variables = useMemo(
+    () => getVariables(sceneId, chartItems, sceneItemIds, sceneOrder),
+    [sceneId, chartItems, sceneOrder]
+  );
 
   const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds]);
 
@@ -85,11 +89,11 @@ function FlowChartViewer({}: Props) {
   );
 
   return (
-    <div className={cx('viewer-wrap')} style={templateDocument.styles}>
+    <ViewerBodyBlock styles={templateDocument.styles}>
       {templateDocument.children.map((_item) => (
         <ViewerElBlock key={_item.id} viewerItem={_item} variables={variables} />
       ))}
-    </div>
+    </ViewerBodyBlock>
   );
 }
 

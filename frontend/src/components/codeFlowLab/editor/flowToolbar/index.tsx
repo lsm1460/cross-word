@@ -4,13 +4,13 @@ const cx = classNames.bind(styles);
 //
 import { ZOOM_AREA_ELEMENT_ID } from '@/consts/codeFlowLab/items';
 import { ChartItemType } from '@/consts/types/codeFlowLab';
+import { RootState } from '@/reducers';
 import { Operation, setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
+import { getChartItem, getSceneId } from '@/src/utils/content';
 import { useMemo, useState } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { makeNewItem } from '../flowChart/utils';
 import ToolbarPanel from './panel';
-import { RootState } from '@/reducers';
-import { getChartItem, getSceneId } from '@/src/utils/content';
 
 function FlowToolbar() {
   const dispatch = useDispatch();
@@ -35,6 +35,7 @@ function FlowToolbar() {
 
     const [newFlowItem, pos, newItemId] = makeNewItem(
       zoomArea,
+      chartItems,
       selectedChartItem,
       itemsPos,
       _itemType,

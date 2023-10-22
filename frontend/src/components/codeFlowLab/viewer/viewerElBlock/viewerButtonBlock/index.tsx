@@ -1,4 +1,5 @@
 import { TriggerProps, ViewerItem } from '@/consts/types/codeFlowLab';
+import { CSSProperties } from 'react';
 import ViewerElBlock from '..';
 
 interface Props {
@@ -7,10 +8,11 @@ interface Props {
   variables: {
     [x: string]: any;
   };
+  addedStyle: CSSProperties;
 }
-function ViewerButtonBlock({ viewerItem, triggerProps, variables }: Props) {
+function ViewerButtonBlock({ viewerItem, triggerProps, variables, addedStyle }: Props) {
   return (
-    <button style={viewerItem.styles} {...triggerProps}>
+    <button style={{ ...viewerItem.styles, ...addedStyle }} {...triggerProps}>
       {viewerItem.children.map((_item) => (
         <ViewerElBlock key={_item.id} viewerItem={_item} variables={variables} />
       ))}

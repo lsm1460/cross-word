@@ -2,18 +2,22 @@ import classNames from 'classnames/bind';
 import styles from './optionSelector.module.scss';
 const cx = classNames.bind(styles);
 //
-import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { SelectModal, setOptionModalInfoAction } from '@/reducers/contentWizard/mainDocument';
 import { SCROLL_CLASS_PREFIX } from '@/consts/codeFlowLab/items';
+import { SelectModal, setOptionModalInfoAction } from '@/reducers/contentWizard/mainDocument';
+import _ from 'lodash';
+import { useMemo } from 'react';
+import { useDispatch } from 'react-redux';
 
 export interface Props extends SelectModal {}
 function OptionSelector(props: Props) {
   const dispatch = useDispatch();
 
-  const { defaultValue } = props;
+  const { defaultValue, optionList } = props;
 
-  const [selectedOption] = useState(defaultValue || '');
+  const selectedOption = useMemo(
+    () => _.find(optionList, (_opt) => _opt.value === defaultValue)?.label,
+    [defaultValue, optionList]
+  );
 
   const handleOpenSelectModal = () => {
     dispatch(setOptionModalInfoAction(props));

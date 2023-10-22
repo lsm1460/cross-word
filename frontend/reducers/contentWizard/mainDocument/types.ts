@@ -1,4 +1,5 @@
 import { CodeFlowChartDoc } from '@/consts/types/codeFlowLab';
+import { CSSProperties } from 'react';
 import { ActionType } from 'typesafe-actions';
 import * as actions from './actions';
 
@@ -11,6 +12,7 @@ export type DocumentState = {
   deleteTargetIdList: string[];
   flowLogList: FlowLog[];
   selectModal: SelectModal;
+  addedStyles: { [_id: string]: CSSProperties };
 };
 
 export interface Operation {

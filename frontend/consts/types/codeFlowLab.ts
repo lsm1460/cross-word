@@ -29,7 +29,7 @@ export enum ChartItemType {
   moveScene = 'moveScene',
   moveNextScene = 'moveNextScene',
   movePrevScene = 'movePrevScene',
-  getSceneOrder = 'getSceneOrder',
+  sceneOrder = 'sceneOrder',
 }
 
 interface FlowScene {
@@ -180,8 +180,8 @@ export interface ChartMovePrevSceneItem extends ChartItem {
   elType: ChartItemType.movePrevScene;
 }
 
-export interface ChartGetSceneOrderItem extends ChartItem {
-  elType: ChartItemType.getSceneOrder;
+export interface ChartSceneOrderItem extends ChartItem {
+  elType: ChartItemType.sceneOrder;
 }
 
 export type ChartItems =
@@ -206,7 +206,7 @@ export type ChartItems =
   | ChartMoveSceneItem
   | ChartMoveNextSceneItem
   | ChartMovePrevSceneItem
-  | ChartGetSceneOrderItem;
+  | ChartSceneOrderItem;
 
 export type ChartUtilsItems = ChartSizeItem | ChartIncludesItem | ChartIndexOfItem;
 
@@ -255,15 +255,15 @@ export interface ScriptChangeValueItem extends ChartChangeValueItem {
 }
 
 export interface ScriptAddStyleItem extends ChartAddStyleItem {
-  script: ScriptItem[];
+  script: ChartStyleItem[];
 }
 
 export interface ScriptRemoveStyleItem extends ChartRemoveStyleItem {
-  script: ScriptItem[];
+  script: ChartStyleItem[];
 }
 
 export interface ScriptToggleStyleItem extends ChartToggleStyleItem {
-  script: ScriptItem[];
+  script: ChartStyleItem[];
 }
 
 export interface ScriptMoveSceneItem extends ChartMoveSceneItem {
@@ -278,10 +278,6 @@ export interface ScriptMovePrevSceneItem extends ChartMovePrevSceneItem {
   script: ScriptItem[];
 }
 
-export interface ScriptGetSceneOrderItem extends ChartGetSceneOrderItem {
-  script: ScriptItem[];
-}
-
 export type ScriptItem =
   | ScriptTriggerItem
   | ScriptLoopItem
@@ -293,8 +289,7 @@ export type ScriptItem =
   | ScriptToggleStyleItem
   | ScriptMoveSceneItem
   | ScriptMoveNextSceneItem
-  | ScriptMovePrevSceneItem
-  | ScriptGetSceneOrderItem;
+  | ScriptMovePrevSceneItem;
 
 export interface ViewerItem extends ChartItem {
   children: ViewerItem[];

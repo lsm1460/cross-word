@@ -114,10 +114,15 @@ const getSize = (_target: string, _id: string, _key: string) => {
   }
 };
 
-export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items'], sceneItemIdList: string[]) => {
+export const getVariables = (
+  _sceneId: string,
+  _items: CodeFlowChartDoc['items'],
+  sceneItemIdList: string[],
+  _sceneOrder: number
+) => {
   let searched = {};
 
-  const searchUtilsVariableLoop = (_items: CodeFlowChartDoc['items'], _item: ChartUtilsItems) => {
+  const searchUtilsVariableLoop = (_items: CodeFlowChartDoc['items'], _item: ChartUtilsItems, _sceneOrder: number) => {
     if (!_item.connectionVariables[0]) {
       return undefined;
     }
@@ -136,8 +141,10 @@ export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items']
     let __var, __text;
 
     if (!searched[_targetId]) {
-      if (_items[_targetId].elType !== ChartItemType.variable) {
-        __var = searchUtilsVariableLoop(_items, _items[_targetId] as ChartUtilsItems);
+      if (_items[_targetId].elType !== ChartItemType.sceneOrder) {
+        __var = _sceneOrder;
+      } else if (_items[_targetId].elType !== ChartItemType.variable) {
+        __var = searchUtilsVariableLoop(_items, _items[_targetId] as ChartUtilsItems, _sceneOrder);
 
         searched = {
           ...searched,
@@ -151,8 +158,10 @@ export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items']
     }
 
     if (!searched[_textId]) {
-      if (_textId && _items[_textId].elType !== ChartItemType.variable) {
-        __text = searchUtilsVariableLoop(_items, _items[_textId] as ChartUtilsItems);
+      if (_textId && _items[_textId].elType === ChartItemType.sceneOrder) {
+        __text = _sceneOrder;
+      } else if (_textId && _items[_textId].elType !== ChartItemType.variable) {
+        __text = searchUtilsVariableLoop(_items, _items[_textId] as ChartUtilsItems, _sceneOrder);
 
         searched = {
           ...searched,
@@ -215,7 +224,7 @@ export const getVariables = (_sceneId: string, _items: CodeFlowChartDoc['items']
       case ChartItemType.size:
       case ChartItemType.includes:
       case ChartItemType.indexOf:
-        return searchUtilsVariableLoop(_items, _item);
+        return searchUtilsVariableLoop(_items, _item, _sceneOrder);
       default:
         return undefined;
     }

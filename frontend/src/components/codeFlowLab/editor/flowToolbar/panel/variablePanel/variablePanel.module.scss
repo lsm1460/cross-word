@@ -4,10 +4,16 @@ $label-height: 30px;
 
 .variable-panel-wrap {
   height: 100%;
-  display: grid;
-  grid-template-rows: 525px 1fr;
+  display: flex;
+  flex-direction: column;
 
   .globals-variable-wrap {
+    padding-bottom: 20px;
+
+    &.is-open {
+      height: 590px;
+    }
+
     label {
       padding: 0 10px;
       font-family: sans-serif;
