@@ -30,6 +30,7 @@ export enum ChartItemType {
   moveNextScene = 'moveNextScene',
   movePrevScene = 'movePrevScene',
   sceneOrder = 'sceneOrder',
+  link = 'link',
 }
 
 interface FlowScene {
@@ -184,6 +185,11 @@ export interface ChartSceneOrderItem extends ChartItem {
   elType: ChartItemType.sceneOrder;
 }
 
+export interface ChartLinkItem extends ChartItem {
+  elType: ChartItemType.link;
+  link: string;
+}
+
 export type ChartItems =
   | ChartBodyItem
   | ChartButtonItem
@@ -206,7 +212,8 @@ export type ChartItems =
   | ChartMoveSceneItem
   | ChartMoveNextSceneItem
   | ChartMovePrevSceneItem
-  | ChartSceneOrderItem;
+  | ChartSceneOrderItem
+  | ChartLinkItem;
 
 export type ChartUtilsItems = ChartSizeItem | ChartIncludesItem | ChartIndexOfItem;
 

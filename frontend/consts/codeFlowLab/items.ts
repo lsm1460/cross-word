@@ -7,6 +7,7 @@ export const CHART_ELEMENT_ITEMS = [
   ChartItemType.span,
   ChartItemType.button,
   ChartItemType.image,
+  ChartItemType.link,
 ];
 
 export const CHART_SCRIPT_ITEMS = [
@@ -268,6 +269,14 @@ export const FLOW_CHART_ITEMS_STYLE: {
       right: [],
     },
   },
+  [ChartItemType.link]: {
+    width: 200,
+    height: 70,
+    connectionTypeList: {
+      left: [ChartItemType.el],
+      right: [ChartItemType.span, ChartItemType.style, ChartItemType.trigger],
+    },
+  },
 };
 
 export const FLOW_ITEM_DEFAULT_INFO = {
@@ -350,9 +359,9 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     connectionVariables: [],
     sceneOrder: 0,
   },
-  [ChartItemType.moveNextScene]: {},
-  [ChartItemType.movePrevScene]: {},
-  [ChartItemType.sceneOrder]: {},
+  [ChartItemType.link]: {
+    line: '',
+  },
 };
 
 export const CONNECT_POINT_START = 15;

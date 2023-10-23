@@ -31,6 +31,7 @@ import ViewerButtonBlock from './viewerButtonBlock';
 import ViewerDivBlock from './viewerDivBlock';
 import ViewerParagraphBlock from './viewerParagraphBlock';
 import ViewerSpanBlock from './viewerSpanBlock';
+import ViewerLinkBlock from './viewerLinkBlock';
 
 interface Props {
   viewerItem: ViewerItem;
@@ -259,6 +260,14 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
           ),
           [ChartItemType.span]: (
             <ViewerSpanBlock
+              viewerItem={viewerItem}
+              triggerProps={triggerProps}
+              variables={variables}
+              addedStyle={addedStyle}
+            />
+          ),
+          [ChartItemType.link]: (
+            <ViewerLinkBlock
               viewerItem={viewerItem}
               triggerProps={triggerProps}
               variables={variables}

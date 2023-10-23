@@ -56,6 +56,7 @@ function PanelItem({ itemType }: Props) {
     [ChartItemType.moveNextScene]: '현재 장면의 다음 장면으로 화면을 전환합니다. 마지막 장면인 경우 전환되지 않습니다.',
     [ChartItemType.movePrevScene]: '현재 장면의 전 장면으로 화면을 전환합니다. 첫 장면인 경우 전환되지 않습니다.',
     [ChartItemType.sceneOrder]: '현재 장면의 순서를 반환합니다.',
+    [ChartItemType.link]: '기입된 링크의 페이지를 오픈합니다.',
   };
 
   const handleMakeItem = () => {
