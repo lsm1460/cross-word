@@ -22,7 +22,8 @@ $tabs-selected-text-color: #c1c1c1;
   padding-top: 8px;
   background-color: #2c2e32;
   width: calc(100% + 5px);
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   position: relative;
 
   &::-webkit-scrollbar-track {

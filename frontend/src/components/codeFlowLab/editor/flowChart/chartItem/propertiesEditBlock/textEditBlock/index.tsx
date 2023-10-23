@@ -27,7 +27,7 @@ function TextEditBlock({ id, text, propertyKey, pointInfo, label, inputType = 't
   const [isTyping, setIsTyping] = useState(false);
   const [typingText, setTypingText] = useState(text);
 
-  const [debounceSubmitText] = useDebounceSubmitText(`items.${id}.${propertyKey}`);
+  const [debounceSubmitText] = useDebounceSubmitText(`items.${id}.${propertyKey}`, inputType === 'number');
 
   const selectText = (_isTyping, _originText, _insertedText) => {
     if (_isTyping) {
@@ -51,6 +51,10 @@ function TextEditBlock({ id, text, propertyKey, pointInfo, label, inputType = 't
     debounceSubmitText.cancel();
 
     if (_text !== text) {
+      if (inputType === 'number') {
+        _text = parseInt(_text, 10);
+      }
+
       dispatch(
         setDocumentValueAction({
           key: `items.${id}.${propertyKey}`,

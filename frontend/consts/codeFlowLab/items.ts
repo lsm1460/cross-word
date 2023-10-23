@@ -347,6 +347,7 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     varId: '',
   },
   [ChartItemType.moveScene]: {
+    connectionVariables: [],
     sceneOrder: 0,
   },
   [ChartItemType.moveNextScene]: {},

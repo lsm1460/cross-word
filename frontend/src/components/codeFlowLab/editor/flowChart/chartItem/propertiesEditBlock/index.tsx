@@ -97,6 +97,20 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
       case ChartItemType.removeStyle:
       case ChartItemType.toggleStyle:
         return <IdSelectBlock id={chartItem.id} elId={chartItem.elId} />;
+      case ChartItemType.moveScene:
+        return (
+          <TextEditBlock
+            id={chartItem.id}
+            text={chartItem.sceneOrder}
+            propertyKey={'sceneOrder'}
+            inputType={'number'}
+            pointInfo={{
+              pointIndex: 0,
+              connectPoint: chartItem.connectionVariables[0],
+              handlePointConnectStart,
+            }}
+          />
+        );
 
       default:
         return <></>;

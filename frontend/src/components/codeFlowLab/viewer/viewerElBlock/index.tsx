@@ -7,6 +7,9 @@ import {
   ScriptIfItem,
   ScriptItem,
   ScriptLoopItem,
+  ScriptMoveNextSceneItem,
+  ScriptMovePrevSceneItem,
+  ScriptMoveSceneItem,
   ScriptRemoveStyleItem,
   ScriptToggleStyleItem,
   ScriptTriggerItem,
@@ -18,6 +21,7 @@ import {
   setDocumentValueAction,
   setFlowLogAction,
   setRemoveStylesAction,
+  setSceneOrderAction,
   setToggleStylesAction,
 } from '@/reducers/contentWizard/mainDocument';
 import dayjs from 'dayjs';
@@ -37,8 +41,12 @@ interface Props {
 function ViewerElBlock({ viewerItem, variables }: Props) {
   const dispatch = useDispatch();
 
-  const addedStyle = useSelector(
-    (state: RootState) => state.mainDocument.addedStyles[viewerItem.id] || {},
+  const { addedStyle, sceneOrder, scene } = useSelector(
+    (state: RootState) => ({
+      addedStyle: state.mainDocument.addedStyles[viewerItem.id] || {},
+      sceneOrder: state.mainDocument.sceneOrder,
+      scene: state.mainDocument.contentDocument.scene,
+    }),
     shallowEqual
   );
 
@@ -148,6 +156,28 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
     }
   };
 
+  const executeMoveScene = (_scriptBlock: ScriptMoveSceneItem | ScriptMoveNextSceneItem | ScriptMovePrevSceneItem) => {
+    let targetSceneOrder = 0;
+
+    if (_scriptBlock.elType === ChartItemType.moveScene) {
+      targetSceneOrder =
+        parseInt(variables[_scriptBlock.connectionVariables?.[0]?.connectParentId] as string, 10) ||
+        _scriptBlock.sceneOrder;
+    } else if (_scriptBlock.elType === ChartItemType.moveNextScene) {
+      targetSceneOrder = sceneOrder + 1;
+    } else {
+      targetSceneOrder = sceneOrder - 1;
+    }
+
+    targetSceneOrder = Math.min(Math.max(0, targetSceneOrder), Object.keys(scene).length);
+
+    if (targetSceneOrder === sceneOrder) {
+      return;
+    }
+
+    dispatch(setSceneOrderAction(targetSceneOrder));
+  };
+
   const executeScriptBlock = (_scriptBlock: ScriptItem | ChartStyleItem) => {
     if (!_scriptBlock || _scriptBlock.elType === ChartItemType.style) {
       return;
@@ -170,6 +200,11 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
       case ChartItemType.removeStyle:
       case ChartItemType.toggleStyle:
         executeAddStyle(_scriptBlock);
+        break;
+      case ChartItemType.moveScene:
+      case ChartItemType.moveNextScene:
+      case ChartItemType.movePrevScene:
+        executeMoveScene(_scriptBlock);
         break;
 
       default:

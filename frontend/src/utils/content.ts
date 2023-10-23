@@ -80,12 +80,16 @@ export const getChartItem = (sceneItemIdList: string[], chartItem: CodeFlowChart
   return _.pickBy(chartItem, (_item) => (sceneItemIdList || []).includes(_item.id));
 };
 
-export const useDebounceSubmitText = (_dispatchKey, _debounceCallbak = undefined) => {
+export const useDebounceSubmitText = (_dispatchKey, _debounceCallbak = undefined, isNumber = false) => {
   const [dispatchKey, setDispatchKey] = useState(_dispatchKey);
   const dispatch = useDispatch();
 
   const onChange = useCallback(
     _.debounce((_text) => {
+      if (isNumber) {
+        _text = parseInt(_text, 10);
+      }
+
       dispatch(
         setDocumentValueAction({
           key: dispatchKey,
@@ -123,7 +127,7 @@ export const getVariables = (
   let searched = {};
 
   const searchUtilsVariableLoop = (_items: CodeFlowChartDoc['items'], _item: ChartUtilsItems, _sceneOrder: number) => {
-    if (!_item.connectionVariables[0]) {
+    if (!_item.connectionVariables?.[0]) {
       return undefined;
     }
 
@@ -141,8 +145,8 @@ export const getVariables = (
     let __var, __text;
 
     if (!searched[_targetId]) {
-      if (_items[_targetId].elType !== ChartItemType.sceneOrder) {
-        __var = _sceneOrder;
+      if (_items[_targetId].elType === ChartItemType.sceneOrder) {
+        __var = `${_sceneOrder}`;
       } else if (_items[_targetId].elType !== ChartItemType.variable) {
         __var = searchUtilsVariableLoop(_items, _items[_targetId] as ChartUtilsItems, _sceneOrder);
 
@@ -159,7 +163,7 @@ export const getVariables = (
 
     if (!searched[_textId]) {
       if (_textId && _items[_textId].elType === ChartItemType.sceneOrder) {
-        __text = _sceneOrder;
+        __text = `${_sceneOrder}`;
       } else if (_textId && _items[_textId].elType !== ChartItemType.variable) {
         __text = searchUtilsVariableLoop(_items, _items[_textId] as ChartUtilsItems, _sceneOrder);
 
@@ -174,6 +178,7 @@ export const getVariables = (
       __text = searched[_textId];
     }
 
+    console.log('__var', __var);
     switch (_item.elType) {
       case ChartItemType.size:
         return getSize(`${__var}`, _targetId, __text);
@@ -207,7 +212,13 @@ export const getVariables = (
           let _text = '';
 
           const _varId = _item.connectionVariables[_index]?.connectParentId;
-          const _var = (_items?.[_varId] as ChartVariableItem)?.var;
+
+          let _var;
+          if (_items?.[_varId]?.elType === ChartItemType.variable) {
+            _var = (_items?.[_varId] as ChartVariableItem)?.var;
+          } else if (_items?.[_varId]?.elType === ChartItemType.sceneOrder) {
+            _var = `${_sceneOrder}`;
+          }
 
           if (_index !== 0) {
             _text += _item.conditions;
@@ -225,6 +236,8 @@ export const getVariables = (
       case ChartItemType.includes:
       case ChartItemType.indexOf:
         return searchUtilsVariableLoop(_items, _item, _sceneOrder);
+      case ChartItemType.sceneOrder:
+        return `${_sceneOrder}`;
       default:
         return undefined;
     }
