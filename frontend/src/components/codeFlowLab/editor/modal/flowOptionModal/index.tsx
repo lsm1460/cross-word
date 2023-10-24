@@ -64,7 +64,7 @@ function FlowOptionModal() {
   const filteredOptions = optionList.filter((option) => option.label.toLowerCase().includes(searchValue.toLowerCase()));
 
   return (
-    <div className={cx('options--modal-wrap', { [SCROLL_CLASS_PREFIX]: true })} ref={selectContainerRef}>
+    <div className={cx('options-modal-wrap', { [SCROLL_CLASS_PREFIX]: true })} ref={selectContainerRef}>
       {isSearchable && (
         <input
           ref={searchInputRef}

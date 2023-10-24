@@ -8,12 +8,14 @@ import ChangeValueEditBlock from './changeValueEditBlock';
 import ConditionEditBlock from './conditionEditBlock';
 import IdSelectBlock from './idSelectBlock';
 import IfEditBlock from './ifEditBlock';
+import LinkEditBlock from './linkEditBlock';
 import LoopEditBlock from './loopEditBlock';
 import StyleEditBlock from './styleEditBlock';
 import TextEditBlock from './textEditBlock';
 import TriggerEditBlock from './triggerEditBlock';
 import VariableEditBlock from './variableEditBlock';
 import VariableUtilsEditBlock from './variableUtilsEditBlock';
+import InputEditBlock from './InputEditBlock';
 
 interface Props {
   chartItem: ChartItems;
@@ -109,6 +111,18 @@ function PropertiesEditBlock({ chartItem, handlePointConnectStart }: Props) {
               connectPoint: chartItem.connectionVariables[0],
               handlePointConnectStart,
             }}
+          />
+        );
+      case ChartItemType.link:
+        return <LinkEditBlock id={chartItem.id} link={chartItem.link} />;
+      case ChartItemType.input:
+        return (
+          <InputEditBlock
+            id={chartItem.id}
+            placeholder={chartItem.placeholder}
+            text={chartItem.text}
+            connectionVariables={chartItem.connectionVariables}
+            handlePointConnectStart={handlePointConnectStart}
           />
         );
 

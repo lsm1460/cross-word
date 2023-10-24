@@ -1,17 +1,17 @@
 import _ from 'lodash';
 import { useCallback, useState } from 'react';
 
+import { CHART_VARIABLE_ITEMS, CUSTOM_TRIGGER_TYPE } from '@/consts/codeFlowLab/items';
 import {
   ChartItemType,
   ChartUtilsItems,
   ChartVariableItem,
   CodeFlowChartDoc,
-  ConnectPoint,
+  TriggerProps,
 } from '@/consts/types/codeFlowLab';
 import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 import { nanoid } from 'nanoid';
 import { useDispatch } from 'react-redux';
-import { CHART_VARIABLE_ITEMS } from '@/consts/codeFlowLab/items';
 export * from './connect-point';
 
 interface imageSize {
@@ -243,3 +243,6 @@ export const getVariables = (
     }
   });
 };
+
+export const getElementTrigger = (_triggerProps: TriggerProps) =>
+  _.pickBy(_triggerProps, (_trigger, _key) => !CUSTOM_TRIGGER_TYPE.includes(_key));

@@ -13,6 +13,8 @@ import {
   ScriptRemoveStyleItem,
   ScriptToggleStyleItem,
   ScriptTriggerItem,
+  TriggerName,
+  TriggerProps,
   ViewerItem,
 } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
@@ -24,15 +26,19 @@ import {
   setSceneOrderAction,
   setToggleStylesAction,
 } from '@/reducers/contentWizard/mainDocument';
+import { getElementTrigger } from '@/src/utils/content';
 import dayjs from 'dayjs';
 import _ from 'lodash';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useIsVisible } from 'react-is-visible';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import ViewerBodyBlock from './viewerBodyBlock';
 import ViewerButtonBlock from './viewerButtonBlock';
 import ViewerDivBlock from './viewerDivBlock';
+import ViewerInputBlock from './viewerInputBlock';
+import ViewerLinkBlock from './viewerLinkBlock';
 import ViewerParagraphBlock from './viewerParagraphBlock';
 import ViewerSpanBlock from './viewerSpanBlock';
-import ViewerLinkBlock from './viewerLinkBlock';
-
 interface Props {
   viewerItem: ViewerItem;
   variables: {
@@ -50,10 +56,6 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
     }),
     shallowEqual
   );
-
-  const convertTriggerName = {
-    click: 'onClick',
-  };
 
   const executeConditionScript = (_scriptBlock: ScriptIfItem) => {
     const __code = _scriptBlock.connectionVariables
@@ -132,6 +134,7 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
       setDocumentValueAction({
         key: `items.${_varId}.var`,
         value: _result,
+        isSkip: true,
       })
     );
   };
@@ -219,61 +222,68 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
     }
   };
 
-  const triggerProps = viewerItem.triggers.reduce((_acc, _cur: ScriptTriggerItem) => {
-    return {
-      ..._acc,
-      [convertTriggerName[_cur.triggerType]]: () => {
-        for (let scriptBlock of _cur.script) {
-          executeScriptBlock(scriptBlock);
-        }
-      },
-    };
-  }, {});
+  const triggerProps: TriggerProps = useMemo(
+    () =>
+      viewerItem.triggers.reduce(
+        (_acc, _cur: ScriptTriggerItem) => ({
+          ..._acc,
+          [TriggerName[_cur.triggerType]]: () => {
+            for (let scriptBlock of _cur.script) {
+              executeScriptBlock(scriptBlock);
+            }
+          },
+        }),
+        {}
+      ),
+    [viewerItem]
+  );
+
+  const elementTriggerProps = useMemo(() => getElementTrigger(triggerProps), [triggerProps]);
+
+  const elementRef = useRef(null);
+  const isVisible = useIsVisible(elementRef);
+
+  const [isFirstShow, setIsFirstShow] = useState(false);
+
+  useEffect(() => {
+    if (triggerProps.load) {
+      triggerProps.load();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isVisible) {
+      setIsFirstShow(true);
+
+      if (triggerProps.visible) {
+        triggerProps.visible();
+      }
+    } else {
+      if (isFirstShow && triggerProps.invisible) {
+        triggerProps.invisible();
+      }
+    }
+  }, [isVisible, isFirstShow]);
+
+  const childProps = {
+    elRef: elementRef,
+    triggerProps: elementTriggerProps,
+    viewerItem,
+    variables,
+    addedStyle,
+  };
 
   return (
     <>
       {
         {
-          [ChartItemType.div]: (
-            <ViewerDivBlock
-              viewerItem={viewerItem}
-              triggerProps={triggerProps}
-              variables={variables}
-              addedStyle={addedStyle}
-            />
-          ),
-          [ChartItemType.button]: (
-            <ViewerButtonBlock
-              viewerItem={viewerItem}
-              triggerProps={triggerProps}
-              variables={variables}
-              addedStyle={addedStyle}
-            />
-          ),
-          [ChartItemType.paragraph]: (
-            <ViewerParagraphBlock
-              viewerItem={viewerItem}
-              triggerProps={triggerProps}
-              variables={variables}
-              addedStyle={addedStyle}
-            />
-          ),
-          [ChartItemType.span]: (
-            <ViewerSpanBlock
-              viewerItem={viewerItem}
-              triggerProps={triggerProps}
-              variables={variables}
-              addedStyle={addedStyle}
-            />
-          ),
-          [ChartItemType.link]: (
-            <ViewerLinkBlock
-              viewerItem={viewerItem}
-              triggerProps={triggerProps}
-              variables={variables}
-              addedStyle={addedStyle}
-            />
-          ),
+          [ChartItemType.body]: <ViewerBodyBlock {...childProps} />,
+          [ChartItemType.div]: <ViewerDivBlock {...childProps} />,
+          [ChartItemType.button]: <ViewerButtonBlock {...childProps} />,
+          [ChartItemType.paragraph]: <ViewerParagraphBlock {...childProps} />,
+          [ChartItemType.span]: <ViewerSpanBlock {...childProps} />,
+          [ChartItemType.link]: <ViewerLinkBlock {...childProps} />,
+          [ChartItemType.input]: <ViewerInputBlock {...childProps} />,
         }[viewerItem.elType]
       }
     </>

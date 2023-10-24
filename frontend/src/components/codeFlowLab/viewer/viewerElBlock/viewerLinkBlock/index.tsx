@@ -1,5 +1,5 @@
 import { ChartLinkItem, TriggerProps, ViewerItem } from '@/consts/types/codeFlowLab';
-import { CSSProperties } from 'react';
+import { CSSProperties, RefObject } from 'react';
 import ViewerElBlock from '..';
 
 interface LinkViewerItem extends ViewerItem {
@@ -7,6 +7,7 @@ interface LinkViewerItem extends ViewerItem {
 }
 
 interface Props {
+  elRef: RefObject<HTMLAnchorElement>;
   viewerItem: LinkViewerItem;
   triggerProps: TriggerProps;
   variables: {
@@ -14,9 +15,15 @@ interface Props {
   };
   addedStyle: CSSProperties;
 }
-function ViewerLinkBlock({ viewerItem, triggerProps, variables, addedStyle }: Props) {
+function ViewerLinkBlock({ elRef, viewerItem, triggerProps, variables, addedStyle }: Props) {
   return (
-    <a style={{ ...viewerItem.styles, ...addedStyle }} {...triggerProps} href={viewerItem.link} target="_blank">
+    <a
+      ref={elRef}
+      style={{ ...viewerItem.styles, ...addedStyle }}
+      {...triggerProps}
+      href={viewerItem.link}
+      target="_blank"
+    >
       {viewerItem.children.map((_item) => (
         <ViewerElBlock key={_item.id} viewerItem={_item} variables={variables} />
       ))}

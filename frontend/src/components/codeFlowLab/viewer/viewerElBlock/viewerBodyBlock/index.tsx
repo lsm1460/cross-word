@@ -3,23 +3,32 @@ import styles from './viewerBodyBlock.module.scss';
 const cx = classNames.bind(styles);
 //
 import { ROOT_BLOCK_ID } from '@/consts/codeFlowLab/items';
+import { TriggerProps, ViewerItem } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
-import { CSSProperties, ReactElement } from 'react';
+import { CSSProperties, RefObject } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
+import ViewerElBlock from '..';
 
 interface Props {
-  styles: CSSProperties;
-  children: ReactElement[];
+  elRef: RefObject<HTMLDivElement>;
+  viewerItem: ViewerItem;
+  triggerProps: TriggerProps;
+  variables: {
+    [x: string]: any;
+  };
+  addedStyle: CSSProperties;
 }
-function ViewerBodyBlock({ styles, children }: Props) {
+function ViewerBodyBlock({ elRef, viewerItem, triggerProps, variables }: Props) {
   const addedStyle = useSelector(
     (state: RootState) => state.mainDocument.addedStyles[`${ROOT_BLOCK_ID}-${state.mainDocument.sceneOrder}`],
     shallowEqual
   );
 
   return (
-    <div className={cx('viewer-wrap')} style={{ ...styles, ...addedStyle }}>
-      {children}
+    <div ref={elRef} className={cx('viewer-wrap')} style={{ ...viewerItem.styles, ...addedStyle }} {...triggerProps}>
+      {viewerItem.children.map((_item) => (
+        <ViewerElBlock key={_item.id} viewerItem={_item} variables={variables} />
+      ))}
     </div>
   );
 }

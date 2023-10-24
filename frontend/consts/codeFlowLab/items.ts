@@ -8,6 +8,7 @@ export const CHART_ELEMENT_ITEMS = [
   ChartItemType.button,
   ChartItemType.image,
   ChartItemType.link,
+  ChartItemType.input,
 ];
 
 export const CHART_SCRIPT_ITEMS = [
@@ -277,6 +278,14 @@ export const FLOW_CHART_ITEMS_STYLE: {
       right: [ChartItemType.span, ChartItemType.style, ChartItemType.trigger],
     },
   },
+  [ChartItemType.input]: {
+    width: 200,
+    height: 70,
+    connectionTypeList: {
+      left: [ChartItemType.el],
+      right: [ChartItemType.style, ChartItemType.trigger],
+    },
+  },
 };
 
 export const FLOW_ITEM_DEFAULT_INFO = {
@@ -360,7 +369,12 @@ export const FLOW_ITEM_ADDITIONAL_INFO = {
     sceneOrder: 0,
   },
   [ChartItemType.link]: {
-    line: '',
+    link: '',
+  },
+  [ChartItemType.input]: {
+    connectionVariables: [],
+    placeholder: '',
+    text: '',
   },
 };
 
@@ -370,7 +384,16 @@ export const CONNECT_POINT_GAP = 4;
 export const BLOCK_HEADER_SIZE = 30;
 export const POINT_LIST_PADDING = 0;
 
-export const TRIGGER_TYPE = ['click', 'hover', 'mouseup', 'mousedown', 'mouseenter', 'mouseleave'];
+export const CUSTOM_TRIGGER_TYPE = ['load', 'visible', 'invisible' /* TODO: 'collision'*/];
+export const TRIGGER_TYPE = [
+  'click',
+  'mouseup',
+  'mousedown',
+  'mouseenter',
+  'mouseleave',
+  'mousemove',
+  ...CUSTOM_TRIGGER_TYPE,
+];
 
 export const ZOOM_AREA_ELEMENT_ID = 'flowZoomArea';
 export const SCROLL_CLASS_PREFIX = 'property-scroll';

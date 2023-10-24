@@ -57,6 +57,7 @@ function PanelItem({ itemType }: Props) {
     [ChartItemType.movePrevScene]: '현재 장면의 전 장면으로 화면을 전환합니다. 첫 장면인 경우 전환되지 않습니다.',
     [ChartItemType.sceneOrder]: '현재 장면의 순서를 반환합니다.',
     [ChartItemType.link]: '기입된 링크의 페이지를 오픈합니다.',
+    [ChartItemType.input]: '사용자가 기입할 수 있는 입력란을 제공합니다. variable블록의 값을 변경할 수 있습니다.',
   };
 
   const handleMakeItem = () => {

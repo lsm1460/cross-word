@@ -385,9 +385,15 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
     const _elType = selectedChartItem[originParentId].elType;
     const _targetType = selectedChartItem[targetParentId].elType;
 
-    if ([_elType, _targetType].includes(ChartItemType.changeValue)) {
+    const isOnlyConnectToVariable =
+      _.intersection([_elType, _targetType], [ChartItemType.changeValue, ChartItemType.input]).length > 0;
+
+    if (isOnlyConnectToVariable) {
       // 변수 변경 블럭은 정말 변수만 연결되어야 한다.
-      return _.intersection([_elType, _targetType], [ChartItemType.variable, ...CHART_SCRIPT_ITEMS]).length > 1;
+      return (
+        _.intersection([_elType, _targetType], [ChartItemType.input, ChartItemType.variable, ...CHART_SCRIPT_ITEMS])
+          .length > 1
+      );
     }
 
     const isTargetDeepCheck =

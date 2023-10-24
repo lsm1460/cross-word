@@ -1,7 +1,3 @@
-import classNames from 'classnames/bind';
-import styles from './viewer.module.scss';
-const cx = classNames.bind(styles);
-//
 import { ROOT_BLOCK_ID } from '@/consts/codeFlowLab/items';
 import { ChartItem, ChartItemType, ChartStyleItem, ConnectPoint, ViewerItem } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
@@ -10,7 +6,6 @@ import React, { useMemo } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import { getBlockType } from '../editor/flowChart/utils';
 import ViewerElBlock from './viewerElBlock';
-import ViewerBodyBlock from './viewerElBlock/viewerBodyBlock';
 
 interface Props {}
 function FlowChartViewer({}: Props) {
@@ -88,13 +83,7 @@ function FlowChartViewer({}: Props) {
     [selectedChartItem, sceneOrder]
   );
 
-  return (
-    <ViewerBodyBlock styles={templateDocument.styles}>
-      {templateDocument.children.map((_item) => (
-        <ViewerElBlock key={_item.id} viewerItem={_item} variables={variables} />
-      ))}
-    </ViewerBodyBlock>
-  );
+  return <ViewerElBlock viewerItem={templateDocument} variables={variables} />;
 }
 
 export default React.memo(FlowChartViewer);

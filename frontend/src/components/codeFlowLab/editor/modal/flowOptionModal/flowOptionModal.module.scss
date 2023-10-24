@@ -1,7 +1,7 @@
 @import '../../../variables';
 @import '../../../mixin';
 
-.options--modal-wrap {
+.options-modal-wrap {
   position: fixed;
   top: $editor-header-height + 10px;
   left: 50%;
@@ -19,6 +19,8 @@
     overflow-y: scroll;
     margin-top: 10px;
     height: 200px;
+    width: calc(100% + 10px);
+    padding-right: 10px;
 
     @include scroll-bar;
 
@@ -40,5 +42,6 @@
     border-radius: 5px;
     background-color: transparent;
     color: #9a9a9a;
+    border: 1px solid #3b3b3b;
   }
 }

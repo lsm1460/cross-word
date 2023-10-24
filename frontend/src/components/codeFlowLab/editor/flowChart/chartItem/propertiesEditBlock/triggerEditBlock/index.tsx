@@ -1,21 +1,20 @@
+import { TRIGGER_TYPE } from '@/consts/codeFlowLab/items';
 import PropertyBlock from '../propertyBlock';
-
-const TRIGGER_LIST = [
-  { value: 'click', label: 'click' },
-  { value: 'hover', label: 'hover' },
-  { value: 'mousein', label: 'mousein' },
-  { value: 'mouseleave', label: 'mouseleave' },
-  { value: 'touch', label: 'touch' },
-  { value: 'touchstart', label: 'touchstart' },
-  { value: 'touchend', label: 'touchend' },
-];
+import { useDispatch } from 'react-redux';
+import { setDocumentValueAction } from '@/reducers/contentWizard/mainDocument';
 
 interface Props {
   id: string;
   triggerType: string;
 }
 function TriggerEditBlock({ id, triggerType }: Props) {
-  const onChangeValue = () => {};
+  const dispatch = useDispatch();
+
+  const triggerList = TRIGGER_TYPE.map((_t) => ({ value: _t, label: _t }));
+
+  const onChangeValue = (_key, _val) => {
+    dispatch(setDocumentValueAction({ key: `items.${id}.triggerType`, value: _val }));
+  };
 
   return (
     <div>
@@ -24,7 +23,7 @@ function TriggerEditBlock({ id, triggerType }: Props) {
         propertyKey={'trigger'}
         value={triggerType}
         onChangeValue={onChangeValue}
-        valueList={TRIGGER_LIST}
+        valueList={triggerList}
       />
     </div>
   );

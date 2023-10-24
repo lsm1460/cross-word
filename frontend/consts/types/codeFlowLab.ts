@@ -31,6 +31,7 @@ export enum ChartItemType {
   movePrevScene = 'movePrevScene',
   sceneOrder = 'sceneOrder',
   link = 'link',
+  input = 'input',
 }
 
 interface FlowScene {
@@ -190,6 +191,12 @@ export interface ChartLinkItem extends ChartItem {
   link: string;
 }
 
+export interface ChartInputItem extends ChartItem {
+  elType: ChartItemType.input;
+  placeholder: string;
+  text: string;
+}
+
 export type ChartItems =
   | ChartBodyItem
   | ChartButtonItem
@@ -213,7 +220,8 @@ export type ChartItems =
   | ChartMoveNextSceneItem
   | ChartMovePrevSceneItem
   | ChartSceneOrderItem
-  | ChartLinkItem;
+  | ChartLinkItem
+  | ChartInputItem;
 
 export type ChartUtilsItems = ChartSizeItem | ChartIncludesItem | ChartIndexOfItem;
 
@@ -304,6 +312,18 @@ export interface ViewerItem extends ChartItem {
   triggers: ScriptItem[];
 }
 
-export interface TriggerProps {
-  onClick?: () => void;
+export enum TriggerName {
+  click = 'onClick',
+  mouseup = 'onMouseUp',
+  mousedown = 'onMouseDown',
+  mouseenter = 'onMouseEnter',
+  mouseleave = 'onMouseLeave',
+  mousemove = 'onMouseMove',
+  load = 'load',
+  visible = 'visible',
+  invisible = 'invisible',
 }
+
+export type TriggerProps = {
+  [_trigger in TriggerName]?: () => void;
+};
