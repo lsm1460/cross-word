@@ -127,7 +127,6 @@ function FlowTabs() {
       chosen?: boolean;
     }[]
   ) => {
-    console.log('_list', _list);
     let isChanged = false;
 
     for (let _i = 0; _i < _list.length; _i++) {

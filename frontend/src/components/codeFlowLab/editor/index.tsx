@@ -52,9 +52,9 @@ function CodeFlowLabEditor() {
   useEffect(() => {
     clearHistory();
 
-    const _date = dayjs().format('HH:mm ss');
-
-    dispatch(setFlowLogAction({ date: _date, text: '코드 플로우 랩에 오신 여러분을 환영합니다.', type: 'system' }));
+    dispatch(
+      setFlowLogAction({ date: new Date(), text: '코드 플로우 랩에 오신 여러분을 환영합니다.', type: 'system' })
+    );
   }, []);
 
   useEffect(() => {

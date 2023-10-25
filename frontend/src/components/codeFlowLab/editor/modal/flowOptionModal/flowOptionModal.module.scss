@@ -18,7 +18,7 @@
   .options-container {
     overflow-y: scroll;
     margin-top: 10px;
-    height: 200px;
+    height: 210px;
     width: calc(100% + 10px);
     padding-right: 10px;
 
@@ -30,7 +30,11 @@
       color: #9a9a9a;
 
       &:hover {
-        background-color: #eee;
+        background-color: rgba(255, 255, 255, 0.03);
+      }
+
+      &.active {
+        background-color: rgb(21, 49, 81);
       }
     }
   }

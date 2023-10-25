@@ -136,6 +136,7 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
                         parentId={id}
                         connectDir={'right'}
                         connectType={ChartItemType.variable}
+                        targetType={ChartItemType.variable}
                         index={_i}
                         typeIndex={_i + _j + 1}
                         connectParentId={_conditionItem.point?.connectParentId}
@@ -149,6 +150,7 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
                       parentId={id}
                       connectDir={'right'}
                       connectType={ChartItemType.variable}
+                      targetType={ChartItemType.variable}
                       index={_i}
                       typeIndex={_i + _conditionBlock.condition.length + 1}
                       handlePointConnectStart={handlePointConnectStart}
@@ -169,6 +171,7 @@ function IfEditBlock({ id, conditions, connectionVariables, handlePointConnectSt
                 parentId={id}
                 connectDir={'right'}
                 connectType={ChartItemType.function}
+                targetType={ChartItemType.function}
                 index={_i}
                 typeIndex={0}
                 handlePointConnectStart={handlePointConnectStart}

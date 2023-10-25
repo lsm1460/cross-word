@@ -5,12 +5,17 @@ const cx = classNames.bind(styles);
 import { SCROLL_CLASS_PREFIX } from '@/consts/codeFlowLab/items';
 import { RootState } from '@/reducers';
 import { SelectOption, resetOptionModalInfoAction } from '@/reducers/contentWizard/mainDocument';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import _ from 'lodash';
+
+const OPTION_LIST_MAX = 6;
+const OPTION_HEIGHT = 35;
 
 function FlowOptionModal() {
   const dispatch = useDispatch();
 
+  const scrollAreaRef = useRef<HTMLUListElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const selectContainerRef = useRef<HTMLDivElement>(null);
 
@@ -21,6 +26,14 @@ function FlowOptionModal() {
 
   const [searchValue, setSearchValue] = useState('');
 
+  const filteredOptions = useMemo(
+    () => optionList.filter((option) => option.label.toLowerCase().includes(searchValue.toLowerCase())),
+    [optionList, searchValue]
+  );
+
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(0);
+  const [optionTopIndex, setOptionTopIndex] = useState(0);
+
   useEffect(() => {
     if (isOpen && isSearchable) {
       searchInputRef.current?.focus();
@@ -28,18 +41,54 @@ function FlowOptionModal() {
   }, [isOpen, isSearchable]);
 
   useEffect(() => {
-    const closeModal = (_event) => {
+    const handleKeydown = (_event) => {
       if (_event.key === 'Escape') {
+        dispatch(resetOptionModalInfoAction());
+      } else if (_event.key === 'ArrowDown') {
+        setSelectedOptionIndex((_prev) => {
+          const _nextIndex = _prev + 1 > filteredOptions.length - 1 ? 0 : _prev + 1;
+
+          if (optionTopIndex + 6 === _nextIndex) {
+            scrollAreaRef.current.scroll(0, Math.max(0, _nextIndex - 5) * OPTION_HEIGHT);
+
+            setOptionTopIndex(Math.max(0, _nextIndex - 5));
+          } else if (_nextIndex === 0) {
+            scrollAreaRef.current.scroll(0, 0);
+
+            setOptionTopIndex(0);
+          }
+
+          return _nextIndex;
+        });
+      } else if (_event.key === 'ArrowUp') {
+        setSelectedOptionIndex((_prev) => {
+          const _prevIndex = _prev - 1 < 0 ? filteredOptions.length - 1 : _prev - 1;
+
+          if (_prevIndex === filteredOptions.length - 1) {
+            scrollAreaRef.current.scroll(0, filteredOptions.length * OPTION_HEIGHT);
+
+            setOptionTopIndex(filteredOptions.length - 1 - 5);
+          } else if (optionTopIndex === _prevIndex + 1) {
+            scrollAreaRef.current.scroll(0, Math.max(0, _prevIndex) * OPTION_HEIGHT);
+
+            setOptionTopIndex((_prev) => Math.max(0, _prevIndex));
+          }
+
+          return _prevIndex;
+        });
+      } else if (_event.key === 'Enter') {
+        onChange(filteredOptions[selectedOptionIndex].value);
+
         dispatch(resetOptionModalInfoAction());
       }
     };
 
-    window.addEventListener('keydown', closeModal);
+    window.addEventListener('keydown', handleKeydown);
 
     return () => {
-      window.removeEventListener('keydown', closeModal);
+      window.removeEventListener('keydown', handleKeydown);
     };
-  }, []);
+  }, [selectedOptionIndex, optionTopIndex]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -61,7 +110,17 @@ function FlowOptionModal() {
     dispatch(resetOptionModalInfoAction());
   };
 
-  const filteredOptions = optionList.filter((option) => option.label.toLowerCase().includes(searchValue.toLowerCase()));
+  useEffect(() => {
+    const targetIndex = _.findIndex(filteredOptions, (_opt) => _opt.value === defaultValue);
+
+    setSelectedOptionIndex(targetIndex);
+
+    scrollAreaRef.current.scroll(0, Math.max(0, targetIndex - 5) * OPTION_HEIGHT);
+
+    const topIndex = Math.max(0, targetIndex - 5);
+
+    setOptionTopIndex(topIndex);
+  }, [filteredOptions]);
 
   return (
     <div className={cx('options-modal-wrap', { [SCROLL_CLASS_PREFIX]: true })} ref={selectContainerRef}>
@@ -73,12 +132,21 @@ function FlowOptionModal() {
           onChange={(e) => setSearchValue(e.target.value)}
         />
       )}
-      <ul className={cx('options-container', { [SCROLL_CLASS_PREFIX]: true })}>
-        {filteredOptions.map((option) => (
+      <ul
+        className={cx('options-container', { [SCROLL_CLASS_PREFIX]: true })}
+        ref={scrollAreaRef}
+        style={{
+          height: OPTION_LIST_MAX * OPTION_HEIGHT,
+        }}
+      >
+        {filteredOptions.map((option, _i) => (
           <li
             key={option.value}
-            className={cx('option', { [SCROLL_CLASS_PREFIX]: true })}
+            className={cx('option', { active: _i === selectedOptionIndex, [SCROLL_CLASS_PREFIX]: true })}
             onClick={() => handleOptionClick(option)}
+            style={{
+              height: OPTION_HEIGHT,
+            }}
           >
             {option.label}
           </li>

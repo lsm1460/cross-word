@@ -6,6 +6,7 @@ import { createReducer } from 'typesafe-actions';
 import {
   EMIT_DOCUMENT_VALUE,
   RESET_DOCUMENT_VALUE,
+  RESET_FLOW_LOG,
   RESET_OPTION_MODAL_INFO,
   SET_ADDED_STYLES,
   SET_DELETE_ANIMATION_ID_LIST,
@@ -18,7 +19,7 @@ import {
   SET_SCENE_ORDER,
   SET_TOGGLE_STYLES,
 } from './actions';
-import { DocumentAction, DocumentState, Operation } from './types';
+import { DocumentAction, DocumentState, FlowLog, Operation } from './types';
 
 const initialState: DocumentState = {
   contentDocument: {
@@ -85,6 +86,14 @@ const documentReducer = createReducer<DocumentState, DocumentAction>(initialStat
   [SET_FLOW_LOG]: (state, { payload }) => {
     const logList = [...state.flowLogList, payload];
     logList.slice(-50, state.flowLogList.length);
+
+    return {
+      ...state,
+      flowLogList: logList,
+    };
+  },
+  [RESET_FLOW_LOG]: (state) => {
+    const logList: FlowLog[] = [{ date: new Date(), text: 'Console was cleared', type: 'log' }];
 
     return {
       ...state,

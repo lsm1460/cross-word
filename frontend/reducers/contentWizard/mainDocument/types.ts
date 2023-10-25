@@ -4,7 +4,7 @@ import { ActionType } from 'typesafe-actions';
 import * as actions from './actions';
 
 export type DocumentAction = ActionType<typeof actions>;
-export type FlowLog = { date: string; text: string; type: 'log' | 'system' };
+export type FlowLog = { date: Date; text: string; type: 'log' | 'system' };
 
 export type DocumentState = {
   contentDocument: CodeFlowChartDoc;

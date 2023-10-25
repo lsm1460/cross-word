@@ -13,6 +13,7 @@ interface Props {
   index: number;
   typeIndex: number;
   handlePointConnectStart: MouseEventHandler<HTMLElement>;
+  targetType: ChartItemType;
   connectParentId?: string;
   isSlave?: boolean;
 }
@@ -24,11 +25,12 @@ function ConnectDot({
   typeIndex,
   connectParentId,
   isSlave,
+  targetType,
   handlePointConnectStart,
 }: Props) {
   return (
     <span
-      className={cx('dot', connectType, {
+      className={cx('dot', `${targetType}-${connectType}`, {
         [CONNECT_POINT_CLASS]: true,
       })}
       data-parent-id={parentId}

@@ -20,6 +20,7 @@ import _ from 'lodash';
 import { KeyboardEventHandler, MouseEventHandler, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkVariableBlock, getBlockType, getConnectSizeByType } from '../utils';
+import ConnectDot from './connectDot';
 import PropertiesEditBlock from './propertiesEditBlock';
 
 interface Props {
@@ -110,23 +111,15 @@ function ChartItem({ chartItems, itemInfo, isSelected, handleItemMoveStart, hand
                     <span className={cx('label', _x)} title={_itemName}>
                       {_itemName}
                     </span>
-                    <span
-                      onMouseDown={handlePointConnectStart}
-                      className={cx('dot', `${getBlockType(itemInfo.elType, true)}-${_type}`, {
-                        [CONNECT_POINT_CLASS]: true,
-                      })}
-                      data-connect-dir={_x}
-                      data-parent-id={itemInfo.id}
-                      data-index={_j}
-                      data-type-index={_k}
-                      data-connect-type={_type}
-                      {...(_point && {
-                        'data-connect-parent-id': _point.connectParentId,
-                      })}
-                      style={{
-                        width: CONNECT_POINT_SIZE,
-                        height: CONNECT_POINT_SIZE,
-                      }}
+                    <ConnectDot
+                      parentId={itemInfo.id}
+                      connectDir={_x as 'left' | 'right'}
+                      connectType={_type}
+                      targetType={getBlockType(itemInfo.elType, true)}
+                      index={_j}
+                      typeIndex={_k}
+                      connectParentId={_point?.connectParentId}
+                      handlePointConnectStart={handlePointConnectStart}
                     />
                   </li>
                 );

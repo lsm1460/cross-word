@@ -53,8 +53,6 @@ function FlowZoom({ children }: Props) {
   }, [zoomRef]);
 
   const scrollArea = useMemo(() => {
-    // todo: resize event..?
-
     const [width, height] = originSize;
 
     const xCenter = width / 2 / scale;
@@ -72,7 +70,7 @@ function FlowZoom({ children }: Props) {
       );
       const _maxY = Math.max(
         Math.abs(itemsPos[_item.id][selectedSceneId].top - yCenter),
-        FLOW_CHART_ITEMS_STYLE[_item.elType].height + itemsPos[_item.id][selectedSceneId].top - yCenter
+        500 + itemsPos[_item.id][selectedSceneId].top - yCenter
       );
 
       maxX = maxX > _maxX ? maxX : _maxX;
@@ -102,6 +100,7 @@ function FlowZoom({ children }: Props) {
 
     setTransX(_transX);
   }, [scrollArea, horizonPos]);
+
   useEffect(() => {
     const _transY = -1 * ((scrollArea[1] * verticalPos) / 100 - scrollArea[1] / 2);
 

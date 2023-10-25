@@ -98,11 +98,10 @@ function ViewerElBlock({ viewerItem, variables }: Props) {
 
   const executeConsoleScript = (_scriptBlock: ScriptConsoleItem) => {
     const _var = variables[_scriptBlock.connectionVariables[0]?.connectParentId];
-    const _date = dayjs().format('HH:mm ss');
 
     dispatch(
       setFlowLogAction({
-        date: _date,
+        date: new Date(),
         text: _.isUndefined(_var) ? _scriptBlock.text : (_var as string),
         type: 'log',
       })

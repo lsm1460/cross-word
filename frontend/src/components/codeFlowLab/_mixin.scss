@@ -9,7 +9,7 @@
   opacity: 1;
   transition: 0.3s transform, 0.3s border, 0.3s opacity;
 
-  &:hover {
+  &.panel-item:hover {
     transform: translate(-2px, -2px);
   }
 }

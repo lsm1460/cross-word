@@ -87,6 +87,7 @@ function TextEditBlock({ id, text, propertyKey, pointInfo, label, inputType = 't
           parentId={id}
           connectDir={'right'}
           connectType={ChartItemType.variable}
+          targetType={ChartItemType.variable}
           index={0}
           typeIndex={pointInfo?.pointIndex || 0}
           connectParentId={pointInfo.connectPoint?.connectParentId}

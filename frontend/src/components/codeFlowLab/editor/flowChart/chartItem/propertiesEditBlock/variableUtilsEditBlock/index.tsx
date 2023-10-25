@@ -30,6 +30,7 @@ function VariableUtilsEditBlock({ id, text, connectionVariables, handlePointConn
                 parentId={id}
                 connectDir={'right'}
                 connectType={ChartItemType.variable}
+                targetType={ChartItemType.variable}
                 index={0}
                 typeIndex={0}
                 connectParentId={connectionVariables[0]?.connectParentId}

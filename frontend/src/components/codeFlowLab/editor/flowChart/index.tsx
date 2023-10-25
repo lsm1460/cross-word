@@ -53,6 +53,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
 
   const selectedChartItem = useMemo(() => getChartItem(sceneItemIds, chartItems), [chartItems, sceneItemIds, itemsPos]);
 
+  const [windowSize, setWindowSize] = useState(0);
   const [lineCanvasCtx, setLineCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [connectedCanvasCtx, setConnectedCanvasCtx] = useState<CanvasRenderingContext2D>(null);
   const [multiSelectedItemList, setMultiSelectedItemList] = useState<{ [_itemId: string]: { x: number; y: number } }>(
@@ -118,6 +119,18 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
   }, [selectedChartItem, scale, multiSelectedItemList, selectedItemId, itemsPos]);
 
   useEffect(() => {
+    const triggerResizeCanvas = _.debounce(() => {
+      setWindowSize(window.innerWidth);
+    }, 100);
+
+    window.addEventListener('resize', triggerResizeCanvas);
+
+    return () => {
+      window.removeEventListener('resize', triggerResizeCanvas);
+    };
+  }, []);
+
+  useEffect(() => {
     const connected = [],
       result = [];
 
@@ -160,7 +173,7 @@ function FlowChart({ scale, transX, transY, moveItems, connectPoints }: Props) {
       connectedCanvas.width = connectedCanvas.parentElement.clientWidth;
       connectedCanvas.height = connectedCanvas.parentElement.clientHeight;
     }
-  }, [lineCanvasRef, connectedCanvasRef, scale]);
+  }, [lineCanvasRef, connectedCanvasRef, windowSize]);
 
   useEffect(() => {
     if (lineCanvasRef.current && connectedCanvasRef.current) {

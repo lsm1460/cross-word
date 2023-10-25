@@ -38,7 +38,6 @@ export const CHART_VARIABLE_ITEMS = [
 export const FLOW_CHART_ITEMS_STYLE: {
   [_key in ChartItemType]: {
     width: number;
-    height: number;
     connectionTypeList: {
       right?: ChartItemType[];
       left?: ChartItemType[];
@@ -47,14 +46,12 @@ export const FLOW_CHART_ITEMS_STYLE: {
 } = {
   [ChartItemType.body]: {
     width: 200,
-    height: 70,
     connectionTypeList: {
       right: [ChartItemType.el, ChartItemType.style, ChartItemType.trigger],
     },
   },
   [ChartItemType.button]: {
     width: 200,
-    height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
       right: [ChartItemType.span, ChartItemType.style, ChartItemType.trigger],
@@ -62,7 +59,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.div]: {
     width: 200,
-    height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
       right: [ChartItemType.el, ChartItemType.style, ChartItemType.trigger],
@@ -70,7 +66,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.paragraph]: {
     width: 200,
-    height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
       right: [ChartItemType.span, ChartItemType.style, ChartItemType.trigger],
@@ -78,7 +73,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.span]: {
     width: 200,
-    height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
       right: [ChartItemType.style, ChartItemType.trigger],
@@ -86,7 +80,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.note]: {
     width: 200,
-    height: 70,
     connectionTypeList: {
       left: [],
       right: [],
@@ -95,7 +88,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   [ChartItemType.el]: {
     //dummy
     width: 0,
-    height: 0,
     connectionTypeList: {
       left: [],
       right: [],
@@ -103,7 +95,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.image]: {
     width: 200,
-    height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
       right: [ChartItemType.style, ChartItemType.trigger],
@@ -111,7 +102,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.style]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.el, ChartItemType.style, ChartItemType.addStyle],
       right: [ChartItemType.style],
@@ -119,7 +109,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.trigger]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.el],
       right: [ChartItemType.function],
@@ -128,7 +117,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   [ChartItemType.script]: {
     //dummy
     width: 0,
-    height: 0,
     connectionTypeList: {
       left: [],
       right: [],
@@ -136,7 +124,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.function]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.trigger, ChartItemType.function],
       right: [ChartItemType.script],
@@ -144,7 +131,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.console]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [],
@@ -152,7 +138,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.loop]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [ChartItemType.function],
@@ -160,7 +145,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.variable]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.variable],
       right: [],
@@ -168,7 +152,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.if]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [],
@@ -176,7 +159,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.condition]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.variable],
       right: [],
@@ -184,7 +166,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.size]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.variable],
       right: [],
@@ -192,7 +173,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.includes]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.variable],
       right: [],
@@ -200,7 +180,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.indexOf]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.variable],
       right: [],
@@ -208,7 +187,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.changeValue]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [],
@@ -216,7 +194,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.addStyle]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [ChartItemType.style],
@@ -224,7 +201,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.removeStyle]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [ChartItemType.style],
@@ -232,7 +208,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.toggleStyle]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [ChartItemType.style],
@@ -240,7 +215,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.moveScene]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [],
@@ -248,7 +222,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.moveNextScene]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [],
@@ -256,7 +229,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.movePrevScene]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.function],
       right: [],
@@ -264,7 +236,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.sceneOrder]: {
     width: 200,
-    height: 100,
     connectionTypeList: {
       left: [ChartItemType.variable],
       right: [],
@@ -272,7 +243,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.link]: {
     width: 200,
-    height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
       right: [ChartItemType.span, ChartItemType.style, ChartItemType.trigger],
@@ -280,7 +250,6 @@ export const FLOW_CHART_ITEMS_STYLE: {
   },
   [ChartItemType.input]: {
     width: 200,
-    height: 70,
     connectionTypeList: {
       left: [ChartItemType.el],
       right: [ChartItemType.style, ChartItemType.trigger],

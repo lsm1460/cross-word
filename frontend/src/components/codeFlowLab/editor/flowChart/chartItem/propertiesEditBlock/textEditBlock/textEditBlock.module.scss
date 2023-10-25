@@ -42,23 +42,6 @@
     }
   }
 
-  .dot {
-    position: absolute;
-    transform: translate(50%, -50%);
-    top: 50%;
-    right: 0;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    transition: 0.3s width, 0.3s height;
-    background-color: $variable-point-color;
-
-    &:hover {
-      width: 10px;
-      height: 10px;
-    }
-  }
-
   & + .text-input-wrap {
     margin-top: 8px;
   }
