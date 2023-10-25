@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import _ from 'lodash';
 
-const OPTION_LIST_MAX = 6;
+const OPTION_LIST_MAX = 10;
 const OPTION_HEIGHT = 35;
 
 function FlowOptionModal() {
@@ -48,10 +48,10 @@ function FlowOptionModal() {
         setSelectedOptionIndex((_prev) => {
           const _nextIndex = _prev + 1 > filteredOptions.length - 1 ? 0 : _prev + 1;
 
-          if (optionTopIndex + 6 === _nextIndex) {
-            scrollAreaRef.current.scroll(0, Math.max(0, _nextIndex - 5) * OPTION_HEIGHT);
+          if (optionTopIndex + OPTION_LIST_MAX === _nextIndex) {
+            scrollAreaRef.current.scroll(0, Math.max(0, _nextIndex - (OPTION_LIST_MAX - 1)) * OPTION_HEIGHT);
 
-            setOptionTopIndex(Math.max(0, _nextIndex - 5));
+            setOptionTopIndex(Math.max(0, _nextIndex - (OPTION_LIST_MAX - 1)));
           } else if (_nextIndex === 0) {
             scrollAreaRef.current.scroll(0, 0);
 
@@ -67,7 +67,7 @@ function FlowOptionModal() {
           if (_prevIndex === filteredOptions.length - 1) {
             scrollAreaRef.current.scroll(0, filteredOptions.length * OPTION_HEIGHT);
 
-            setOptionTopIndex(filteredOptions.length - 1 - 5);
+            setOptionTopIndex(filteredOptions.length - OPTION_LIST_MAX);
           } else if (optionTopIndex === _prevIndex + 1) {
             scrollAreaRef.current.scroll(0, Math.max(0, _prevIndex) * OPTION_HEIGHT);
 
@@ -115,9 +115,9 @@ function FlowOptionModal() {
 
     setSelectedOptionIndex(targetIndex);
 
-    scrollAreaRef.current.scroll(0, Math.max(0, targetIndex - 5) * OPTION_HEIGHT);
+    scrollAreaRef.current.scroll(0, Math.max(0, targetIndex - (OPTION_LIST_MAX - 1)) * OPTION_HEIGHT);
 
-    const topIndex = Math.max(0, targetIndex - 5);
+    const topIndex = Math.max(0, targetIndex - (OPTION_LIST_MAX - 1));
 
     setOptionTopIndex(topIndex);
   }, [filteredOptions]);
@@ -136,7 +136,7 @@ function FlowOptionModal() {
         className={cx('options-container', { [SCROLL_CLASS_PREFIX]: true })}
         ref={scrollAreaRef}
         style={{
-          height: OPTION_LIST_MAX * OPTION_HEIGHT,
+          maxHeight: OPTION_LIST_MAX * OPTION_HEIGHT,
         }}
       >
         {filteredOptions.map((option, _i) => (
