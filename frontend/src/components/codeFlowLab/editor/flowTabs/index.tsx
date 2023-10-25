@@ -4,10 +4,12 @@ const cx = classNames.bind(styles);
 //
 import { ChartItemType, ChartVariableItem } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
-import { setDocumentValueAction, setSceneOrderAction } from '@/reducers/contentWizard/mainDocument';
+import { Operation, setDocumentValueAction, setSceneOrderAction } from '@/reducers/contentWizard/mainDocument';
 import { getRandomId } from '@/src/utils/content';
 import _ from 'lodash';
+import { useMemo } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { ReactSortable } from 'react-sortablejs';
 import { makeNewRoot } from '../flowChart/utils';
 
 function FlowTabs() {
@@ -21,6 +23,14 @@ function FlowTabs() {
       flowItemsPos: state.mainDocument.contentDocument.itemsPos,
     }),
     shallowEqual
+  );
+
+  const sceneList = useMemo(
+    () =>
+      Object.keys(flowScene)
+        .map((_key, _i) => ({ id: _key, name: `scene-${_i + 1}`, order: flowScene[_key].order }))
+        .sort((a, b) => a.order - b.order),
+    [flowScene]
   );
 
   const selectScene = (_sceneOrder: number) => {
@@ -58,6 +68,7 @@ function FlowTabs() {
         value: {
           ...flowScene,
           [_sceneId]: {
+            name: `scene-${newSceneOrder}`,
             itemIds: [newRootBlock.id],
             order: newSceneOrder,
           },
@@ -109,36 +120,70 @@ function FlowTabs() {
     dispatch(setDocumentValueAction(operations));
   };
 
+  const setList = (
+    _list: {
+      id: string;
+      name: string;
+      chosen?: boolean;
+    }[]
+  ) => {
+    console.log('_list', _list);
+    let isChanged = false;
+
+    for (let _i = 0; _i < _list.length; _i++) {
+      if (flowScene[_list[_i].id].order !== _i + 1) {
+        isChanged = true;
+
+        break;
+      }
+    }
+
+    if (!isChanged) {
+      return;
+    }
+
+    const changedTabOrder = _.findIndex(_list, (_item) => _.isBoolean(_item.chosen));
+
+    const operations: Operation[] = _list.map((_item, _i) => ({ key: `scene.${_item.id}.order`, value: _i + 1 }));
+
+    dispatch(setDocumentValueAction(operations));
+
+    console.log();
+    dispatch(setSceneOrderAction(changedTabOrder + 1));
+  };
+
   return (
     <div className={cx('flow-tabs-wrap')}>
       <div className={cx('flow-tabs')}>
-        <ul>
-          {Object.keys(flowScene).map((_sceneId, _i) => (
-            <li
-              key={_sceneId}
-              className={cx('tab', { active: _i + 1 === sceneOrder })}
-              onClick={() => selectScene(_i + 1)}
-            >
-              scene-{_i + 1}
-              {_i !== 0 && (
-                <button
-                  onClick={(_event) => {
-                    _event.stopPropagation();
+        <div className={cx('scene-list')}>
+          <ReactSortable list={sceneList} setList={setList}>
+            {sceneList.map((_scene, _i) => (
+              <div
+                key={_scene.id}
+                className={cx('tab', { active: _i + 1 === sceneOrder })}
+                onClick={() => selectScene(_i + 1)}
+              >
+                {_scene.name}
+                {_i !== 0 && (
+                  <button
+                    onClick={(_event) => {
+                      _event.stopPropagation();
 
-                    removeScene(_sceneId);
-                  }}
-                >
-                  <i className="material-symbols-outlined">close</i>
-                </button>
-              )}
-            </li>
-          ))}
-          <li className={cx('add-scene-wrap')}>
+                      removeScene(_scene.id);
+                    }}
+                  >
+                    <i className="material-symbols-outlined">close</i>
+                  </button>
+                )}
+              </div>
+            ))}
+          </ReactSortable>
+          <div className={cx('add-scene-wrap')}>
             <button onClick={handleAddScene}>
               <i className="material-symbols-outlined">add</i>
             </button>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

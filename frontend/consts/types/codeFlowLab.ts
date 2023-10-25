@@ -35,6 +35,7 @@ export enum ChartItemType {
 }
 
 interface FlowScene {
+  name: string;
   itemIds: string[];
   order: number;
 }

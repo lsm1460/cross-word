@@ -39,6 +39,7 @@ const initialState: DocumentState = {
     scene: {
       'origin-scene': {
         itemIds: [`${ROOT_BLOCK_ID}-1`],
+        name: 'scene-1',
         order: 1,
       },
     },

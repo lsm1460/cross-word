@@ -50,15 +50,19 @@ $tabs-selected-text-color: #c1c1c1;
     }
   }
 
-  ul {
+  .scene-list {
     white-space: nowrap;
     padding: 0 15px;
 
-    & > li {
+    & > div {
+      display: inline-block;
+    }
+
+    .tab {
       vertical-align: bottom;
     }
 
-    & > li.tab {
+    .tab.tab {
       background-color: $tabs-bg-color;
       padding: 3px 5px 5px 10px;
       display: inline-flex;

@@ -1,7 +1,7 @@
-import { ROOT_BLOCK_ID } from '@/consts/codeFlowLab/items';
 import { ChartItem, ChartItemType, ChartStyleItem, ConnectPoint, ViewerItem } from '@/consts/types/codeFlowLab';
 import { RootState } from '@/reducers';
 import { getChartItem, getSceneId, getVariables } from '@/src/utils/content';
+import _ from 'lodash';
 import React, { useMemo } from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 import { getBlockType } from '../editor/flowChart/utils';
@@ -78,10 +78,11 @@ function FlowChartViewer({}: Props) {
     };
   };
 
-  const templateDocument: ViewerItem = useMemo(
-    () => makeViewerDocument(selectedChartItem[`${ROOT_BLOCK_ID}-${sceneOrder}`]),
-    [selectedChartItem, sceneOrder]
-  );
+  const templateDocument: ViewerItem = useMemo(() => {
+    const rootId = _.find(selectedChartItem, (_item) => _item.elType === ChartItemType.body).id;
+
+    return makeViewerDocument(selectedChartItem[rootId]);
+  }, [selectedChartItem, sceneOrder]);
 
   return <ViewerElBlock viewerItem={templateDocument} variables={variables} />;
 }
